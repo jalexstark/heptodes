@@ -12,15 +12,12 @@ all:	$(TARGETS)
 # $(BASETARGETS):	%.html: %.md
 
 %.html: %.md crested.css
-	pandoc --toc --standalone --to html5 -H header-html.html -d defs-html.yaml -c crested.css --mathjax="${MATHJAX_URL}?config=TeX-AMS_HTML" -f markdown -t html $< -o $@
+	pandoc --toc --standalone --to html5 -H header-html.html --metadata-file defs-html.yaml -c crested.css \
+	--mathjax="${MATHJAX_URL}?config=TeX-AMS_HTML" -f markdown -t html --number-sections $< -o $@
 
 %.pdf:	%.md
-	pandoc --toc -f markdown --pdf-engine=pdflatex -H header-pdflatex.tex -d defs-pdflatex.yaml \
-	--pdf-engine=xelatex \
-	--variable monofont="DejaVu Sans Mono" --variable fontsize=10pt \
-	--variable fontfamily="gentium" \
-	--variable mainfont="Gentium" --variable colorlinks \
-	--variable geometry="paperwidth=209mm,paperheight=10.9in,nohead,margin=1.2in" $< -o $@
+	pandoc --toc -f markdown --pdf-engine=pdflatex -H header-pdflatex.tex --metadata-file defs-pdflatex.yaml \
+	--pdf-engine=xelatex $< -o $@
 
 clean:	tidy
 	rm -f $(TARGETS)

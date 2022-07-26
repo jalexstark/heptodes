@@ -24,7 +24,7 @@ as in figure captions.
 ----------------------------------------
 
 
-# Figures
+# Figures and tables
 
 ![XXXXXXXXXXXXXX\label{figA}.](figs/RatQuad-A.svg)
 
@@ -35,6 +35,25 @@ as in figure captions.
 ![XXXXXXXXXXXXXX\label{figE}.](figs/RatQuad-E.svg)
 
 ![XXXXXXXXXXXXXX\label{figF}.](figs/RatQuad-F.svg)
+
+
+
+--------------------------------------------------------------------------------
+Arc type                           Angle range                         $\beta$       $\rho$         $\alpha$
+---------------------------------  -------------                       -----------   -----------    -----------
+Parabola                           $-\epsilon^\circ,\epsilon^\circ$    $0$           $1$            $1$
+
+Arc less than semicircle                                               $(0,2)$       $(0,1)$        $(1/2,1)$
+
+Semicircle                         $-90^\circ,90^\circ$                $2$           $0$            $1/2$
+
+Arc greater than semicircle                                            $(2,\infty)$  $(-1,0)$       $(0,1/2)$
+
+Full circle / indeterminate        $-180^\circ,180^\circ$              $\infty$      $-1$           $0$
+--------------------------------------------------------------------------------
+
+Table: CCCC brevity.\label{tabH}
+
 
 # Equations
 
@@ -492,79 +511,271 @@ $$
 Equation \ref{Eq67}:Eq67.
 
 $$
-XXX \label{Eq67}
+\sigma = \sqrt\frac{w_A}{w_C} \label{Eq67}
 $$
 
 
 Equation \ref{Eq68}:Eq68.
 
 $$
-XXX \label{Eq68}
+\left|p_m-p_3\right| = \left|p_m-p_0\right| \label{Eq68}
 $$
 
 Equation \ref{Eq69}:Eq69.
 
 $$
-XXX \label{Eq69}
+\rho = \frac{w_B}{\sqrt{w_Aw_C}} \label{Eq69}
 $$
 
 Equation \ref{Eq70}:Eq70.
 
 $$
-XXX \label{Eq70}
+p_q = \rho p_m \label{Eq70}
 $$
 
 Equation \ref{Eq71}:Eq71.
 
 $$
-XXX \label{Eq71}
+p_q = \left(\frac{1}{\sqrt{w_Aw_C}}\right) p_n \label{Eq71}
 $$
 
 Equation \ref{Eq72}:Eq72.
 
 $$
-XXX \label{Eq72}
+p_q = \left(\frac23\right)\frac{\left|d\right|^2}{\sqrt{(a\cdot n)(b\cdot n)}} \label{Eq72}
 $$
 
 Equation \ref{Eq73}:Eq73.
 
 $$
-XXX \label{Eq73}
+f_\rho(t) = \frac{%
+\Bigl(\frac12-t\Bigr)^2p_0 + 2\Bigl(\frac12-t\Bigr)\Bigl(\frac12+t\Bigr)p_q + \Bigl(\frac12+t\Bigr)^2p_3
+}{%
+\Bigl(\frac12-t\Bigr)^2 + 2\rho\Bigl(\frac12-t\Bigr)\Bigl(\frac12+t\Bigr) + \Bigl(\frac12+t\Bigr)^2
+} \label{Eq73}
 $$
 
 Equation \ref{Eq74}:Eq74.
 
 $$
-XXX \label{Eq74}
+\alpha = \frac12(1+\rho) \label{Eq74}
 $$
 
 Equation \ref{Eq75}:Eq75.
 
 $$
-XXX \label{Eq75}
+\alpha\beta^2 = \frac12(1-\rho) \label{Eq75}
 $$
 
 Equation \ref{Eq76}:Eq76.
 
 $$
-XXX \label{Eq76}
+f_\rho(t) = \frac{%
+\frac14\bigl(p_0+2p_q+p_3) + t\bigl(p_3-p_0\bigr) + t^2\bigl(p_o-2p_q+p_3\bigr)
+}{%
+\alpha(1+\beta^2t^2)
+} \label{Eq76}
 $$
 
 Equation \ref{Eq77}:Eq77.
 
 $$
-XXX \label{Eq77}
+p_a = \frac1{8\alpha}\Bigl(p_0+2p_q+p_3\Bigr) + \frac1{2\alpha\beta^2}\Bigl(p_0-2p_q+p_3\Bigr) \label{Eq77}
 $$
 
 
 Equation \ref{Eq78}:Eq78.
 
 $$
-XXX \label{Eq78}
+p_c = \frac1{8\alpha}\Bigl(p_0+2p_q+p_3\Bigr) - \frac1{2\alpha\beta^2}\Bigl(p_0-2p_q+p_3\Bigr) \label{Eq78}
 $$
 
 Equation \ref{Eq79}:Eq79.
 
 $$
-XXX \label{Eq79}
+p_s(t) = \frac1{2\alpha\beta}\Bigl(p_3-p_0\Bigr) \label{Eq79}
+$$
+
+Equation \ref{Eq80}:Eq80.
+
+$$
+f_\rho(t) = p_a + \left(\frac{2\beta t}{1+\beta^2 t^2}\right)p_s + \left(\frac{1-\beta^2 t^2}{1+\beta^2 t^2}\right)p_c \label{Eq80}
+$$
+
+Equation \ref{Eq81}:Eq81.
+
+$$
+\left[\, -2\tan^{-1}\left(\frac\beta2\right),\,\, 2\tan^{-1}\left(\frac\beta2\right)\, \right] \label{Eq81}
+$$
+
+Equation \ref{Eq82}:Eq82.
+
+$$
+(a\cdot n)(b\cdot n) > 0 \label{Eq82}
+$$
+
+Equation \ref{Eq83}:Eq83.
+
+$$
+\lambda\mu > 0 \label{Eq83}
+$$
+
+Equation \ref{Eq84}:Eq84.
+
+$$
+w_Aw_C > 0 \label{Eq84}
+$$
+
+Equation \ref{Eq85}:Eq85.
+
+$$
+\frac{(a\cdot n)(b\cdot n)}{\left|d\right|^2} \label{Eq85}
+$$
+
+Equation \ref{Eq86}:Eq86.
+
+$$
+-1 < \rho < 1 \label{Eq86}
+$$
+
+Equation \ref{Eq87}:Eq87.
+
+$$
+w_B = \sqrt{w_Aw_C} \label{Eq87}
+$$
+
+Equation \ref{Eq88}:Eq88.
+
+$$
+w_B = \left(\frac32\right) \frac{\sqrt{(a\cdot n)(b\cdot n)}}{\left|d\right|^2} \label{Eq88}
+$$
+
+Equation \ref{Eq89}:Eq89.
+
+$$
+f_\alpha(t) = (1-t)^3p_0 + 3t(1-t)^2\left(\frac23p_q + \frac13p_0\right) + 3t^2(1-t)\left(\frac23p_q + \frac13p_3\right) + t^3p_3 \label{Eq89}
+$$
+
+
+Equation \ref{Eq90}:Eq90.
+
+$$
+\lambda = \sigma\sqrt{\frac29\Bigl(1-\cos(\Omega)\Bigr)} = \frac{2w_B}{3w_A} \label{Eq90}
+$$
+
+Equation \ref{Eq91}:Eq91.
+
+$$
+\mu = \frac1\sigma\sqrt{\frac29\Bigl(1-\cos(\Omega)\Bigr)} = \frac{2w_B}{3w_C} \label{Eq91}
+$$
+
+Equation \ref{Eq92}:Eq92.
+
+$$
+w_A = \frac1\sigma \label{Eq92}
+$$
+
+Equation \ref{Eq93}:Eq93.
+
+$$
+w_B = \sqrt{\frac{1-\cos(\Omega)}{2}} = \rho \label{Eq93}
+$$
+
+Equation \ref{Eq94}:Eq94.
+
+$$
+w_C = \sigma \label{Eq94}
+$$
+
+Equation \ref{Eq95}:Eq95.
+
+$$
+XXX \label{Eq95}
+$$
+
+Equation \ref{Eq96}:Eq96.
+
+$$
+XXX \label{Eq96}
+$$
+
+Equation \ref{Eq97}:Eq97.
+
+$$
+XXX \label{Eq97}
+$$
+
+
+Equation \ref{Eq98}:Eq98.
+
+$$
+XXX \label{Eq98}
+$$
+
+Equation \ref{Eq99}:Eq99.
+
+$$
+XXX \label{Eq99}
+$$
+
+
+Equation \ref{Eq100}:Eq100.
+
+$$
+XXX \label{Eq100}
+$$
+
+Equation \ref{Eq101}:Eq101.
+
+$$
+XXX \label{Eq101}
+$$
+
+Equation \ref{Eq102}:Eq102.
+
+$$
+XXX \label{Eq102}
+$$
+
+Equation \ref{Eq103}:Eq103.
+
+$$
+XXX \label{Eq103}
+$$
+
+Equation \ref{Eq104}:Eq104.
+
+$$
+XXX \label{Eq104}
+$$
+
+Equation \ref{Eq105}:Eq105.
+
+$$
+XXX \label{Eq105}
+$$
+
+Equation \ref{Eq106}:Eq106.
+
+$$
+XXX \label{Eq106}
+$$
+
+Equation \ref{Eq107}:Eq107.
+
+$$
+XXX \label{Eq107}
+$$
+
+
+Equation \ref{Eq108}:Eq108.
+
+$$
+XXX \label{Eq108}
+$$
+
+Equation \ref{Eq109}:Eq109.
+
+$$
+XXX \label{Eq109}
 $$

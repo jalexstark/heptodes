@@ -13,3 +13,44 @@
 # limitations under the License.
 
 fail-if-warnings: true
+
+variable:
+- colorlinks: true
+
+number-sections: true
+
+fontsize: 10pt
+# fontfamily: "TeX Gyre Pagella"
+mainfont: "Gentium"
+sansfont: "Cabin"
+# mathfont: "libertinus math"   # Not properly supported.
+mathfont: "TeXGyreDejaVuMath-Regular"
+monofont: "Latin Modern Mono"
+mainfontoptions:
+- "BoldFont=Gentium Basic Bold"
+- "ItalicFont=Gentium Italic"
+# - Scale = MatchLowercase  # Default anyway.
+# Other font packages considered:
+# \usepackage[libertine,bigdelims,vvarbb]{newtxmath}
+# \usepackage[cal=boondoxo]{mathalfa}
+
+colorlinks: true
+geometry: "paperwidth=209mm,paperheight=10.9in,nohead,margin=1.2in"
+
+hyperrefoptions:
+- linktoc=all
+- colorlinks
+- extension=pdf
+- bookmarksnumbered
+- bookmarksopen
+- bookmarksopenlevel=2
+# - pdfwindowui
+# - pdfpagemode=FullScreen
+
+# colorlinks
+# add color to link text; automatically enabled if any of linkcolor, filecolor, citecolor, urlcolor, or toccolor are set
+linkcolor: hyperred
+filecolor: hypermagenta
+citecolor: hypergreen
+urlcolor: hypercyan
+toccolor: hyperred
