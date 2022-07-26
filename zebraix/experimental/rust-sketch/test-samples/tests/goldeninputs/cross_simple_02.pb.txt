@@ -1,0 +1,56 @@
+# proto-file: /zebraix/base/zebraix_graph.proto
+# proto-message: ZebraixGraph
+
+# layout {
+#   sep_points: 30
+#   direction: N
+# }
+
+base_node {
+  label_text: ""
+}
+
+nodes {
+  prime_rank: 0
+  obverse_rank: 0
+}
+
+nodes {
+  prime_rank: 1
+  obverse_rank: 3
+}
+
+nodes {
+  prime_rank: 2
+  obverse_rank: 2
+}
+
+nodes {
+  prime_rank: 3
+  obverse_rank: 1
+}
+
+nodes {
+  prime_rank: 4
+  obverse_rank: 7
+}
+
+nodes {
+  prime_rank: 5
+  obverse_rank: 5
+}
+
+nodes {
+  prime_rank: 6
+  obverse_rank: 4
+}
+
+nodes {
+  prime_rank: 7
+  obverse_rank: 6
+}
+
+nodes {
+  prime_rank: 8
+  obverse_rank: 8
+}

@@ -1,0 +1,137 @@
+TREE:
+(  salientTop
+   (  entitySeq
+      (  topEntity
+         (  heading #title
+            (  headingContent
+               (  paraBlockText
+                  (  linearContent Test of text styling  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  heading #toc
+            (  qualifier { toc_depth=4 }  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  heading #=
+            (  headingContent
+               (  paraBlockText
+                  (  linearContent Simple inline styles  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  heading #==
+            (  headingContent
+               (  paraBlockText
+                  (  linearContent Unnested  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  heading #==
+            (  headingContent
+               (  paraBlockText
+                  (  linearContent Text  )
+                  (  inBetween  )
+                  (  linearContent **
+                     (  paraBlockText
+                        (  linearContent bold  )  )
+                     **  )
+                  (  linearContent style  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Lorem ipsum  )
+                     (  inBetween  )
+                     (  linearContent **
+                        (  paraBlockText
+                           (  linearContent dolor sit  )  )
+                        **  )
+                     (  linearContent amet  )
+                     (  linearContent ,  )
+                     (  inBetween \n  )
+                     (  linearContent consectetur  )
+                     (  inBetween  )
+                     (  linearContent **
+                        (  paraBlockText
+                           (  linearContent adipiscing elit  )
+                           (  linearContent ,  )  )
+                        **  )
+                     (  linearContent sed do  )
+                     (  inBetween  )
+                     (  linearContent **
+                        (  paraBlockText
+                           (  linearContent eiusmod  )  )
+                        (  inBetween  )
+                        **  )
+                     (  linearContent tempor incididunt  )
+                     (  linearContent **
+                        (  paraBlockText
+                           (  linearContent ut labore et dolore  )  )
+                        **  )
+                     (  linearContent magna aliqua  )
+                     (  linearContent .  )
+                     (  linearContent Ut enim ad minim veniam  )
+                     (  linearContent ,  )
+                     (  linearContent quis  )
+                     (  inBetween \n  )
+                     (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                     (  linearContent .  )
+                     (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                     (  inBetween \n  )
+                     (  linearContent fugiat nulla pariatur  )
+                     (  linearContent .  )
+                     (  linearContent Excepteur  )
+                     (  inBetween \n  )
+                     (  linearContent sint occaecat cupidatat non proident  )
+                     (  linearContent ,  )
+                     (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  heading #==
+            (  headingContent
+               (  paraBlockText
+                  (  linearContent Text  )
+                  (  inBetween  )
+                  (  linearContent //
+                     (  paraBlockText
+                        (  linearContent italic  )  )
+                     //  )
+                  (  linearContent style  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Lorem ipsum  )
+                     (  inBetween  )
+                     (  linearContent //
+                        (  paraBlockText
+                           (  linearContent dolor sit amet  )
+                           (  linearContent ,  )
+                           (  inBetween \n  )
+                           (  linearContent consectetur adipiscing elit  )
+                           (  linearContent ,  )
+                           (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                           (  linearContent .  )
+                           (  linearContent Ut enim ad minim veniam  )
+                           (  linearContent ,  )
+                           (  linearContent quis  )
+                           (  inBetween \n  )
+                           (  linearContent nostrud exercitation ullamco  )  )
+                        //  )
+                     (  linearContent laboris nisi ut aliquip ex ea commodo consequat  )
+                     (  linearContent .  )
+                     (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                     (  inBetween \n  )
+                     (  linearContent fugiat nulla pariatur  )
+                     (  linearContent .  )
+                     (  linearContent Excepteur  )
+                     (  inBetween \n  )
+                     (  linearContent sint occaecat cupidatat non proident  )
+                     (  linearContent ,  )
+                     (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n\n  )  )
+   (  eof <EOF>  )  )

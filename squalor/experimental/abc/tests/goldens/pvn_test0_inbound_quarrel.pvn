@@ -1,0 +1,145 @@
+TREE:
+(  quarrelTop
+   (  module module
+      (  identifier InQuarrel  )  )
+   (  gClass class
+      (  identifier Coord  )
+      (  openStmt |  )
+      (  classPiece fun
+         (  identifier Characterizer  )
+         POPEN  
+           PCLOSE
+         ->
+         (  identifier result_val  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier int  )  )  )
+         (  statementSeq
+            (  openStmt |  )
+            (  statement
+               (  identifier result_val  )
+               :=
+               (  expression
+                  (  constant 42  )  )  )
+            (  closeStmt |  )  )  )
+      (  closeStmt |  )  )
+   (  funProc proc
+      (  identifier Modify  )
+      POPEN  (  identifierList
+         (  identifier zero_coord  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier bool  )  )  )  )  PCLOSE
+      (  statementSeq
+         (  openStmt |  )
+         (  statement if
+            (  expression
+               POPEN  (  expression
+                  (  identifier zero_coord  )  )  PCLOSE  )
+            (  statementSeqCont
+               (  openStmt |  )
+               (  statement
+                  (  identifier x  )
+                  :=
+                  (  expression
+                     (  constant 0  )  )  )
+               (  statement
+                  (  identifier y  )
+                  :=
+                  (  expression
+                     (  constant 0  )  )  )
+               (  spliceStmt |  )  )
+            else
+            (  statementSeq
+               (  openStmt |  )
+               (  statement
+                  (  identifier t  )
+                  (  qualifiers
+                     (  singleQualifier :
+                        (  identifier float  )  )  )
+                  :=
+                  (  expression
+                     (  identifier x  )  )  )
+               (  statement
+                  (  identifier x  )
+                  :=
+                  (  expression
+                     (  identifier y  )  )  )
+               (  statement
+                  (  identifier y  )
+                  :=
+                  (  expression
+                     (  identifier t  )  )  )
+               (  closeStmt |  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier Characterizer  )
+      POPEN  
+        PCLOSE
+      ->
+      (  identifier result_val  )
+      (  qualifiers
+         (  singleQualifier :
+            (  identifier int  )  )  )
+      (  statementSeq
+         (  openStmt |  )
+         (  statement
+            (  identifier result_val  )
+            :=
+            (  expression
+               (  constant 42  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier AcrossLines  )
+      POPEN  
+        PCLOSE
+      (  statementSeq
+         (  openStmt |  )
+         (  contractSeq
+            (  contractClause
+               (  contractPrefix |->  )
+               (  identifier result_val  )
+               (  qualifiers
+                  (  singleQualifier :
+                     (  identifier int  )  )  )  )  )
+         (  statement
+            (  identifier result_val  )
+            :=
+            (  expression
+               (  constant 42  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier WithComment  )
+      POPEN  
+        PCLOSE
+      ->
+      (  identifier result_val  )
+      (  qualifiers
+         (  singleQualifier :
+            (  identifier int  )  )  )
+      (  statementSeq
+         (  openStmt |  )
+         (  statement
+            (  identifier result_val  )
+            :=
+            (  expression
+               (  constant 42  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier WithMultiLineComment  )
+      POPEN  
+        PCLOSE
+      ->
+      (  identifier result_val  )
+      (  qualifiers
+         (  singleQualifier :
+            (  identifier int  )  )  )
+      (  statementSeq
+         (  openStmt |  )
+         (  statement
+            (  identifier result_val  )
+            :=
+            (  expression
+               (  constant 42  )  )  )
+         (  closeStmt |  )  )  )
+   <EOF>  )

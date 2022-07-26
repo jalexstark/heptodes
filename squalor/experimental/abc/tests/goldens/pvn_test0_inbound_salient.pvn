@@ -1,0 +1,16 @@
+TREE:
+(  salientTop
+   (  salientInCode
+      (  enterSalient #\\\  )
+      (  entitySeq
+         (  blankLine \n\n  )
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent This is in Salient  )
+                        (  linearContent .  )  )  )  )  )  )
+         (  blankLine \n\n\n  )  )
+      (  exitSalient \\\  )  )
+   (  eof <EOF>  )  )

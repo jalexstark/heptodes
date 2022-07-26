@@ -1,0 +1,630 @@
+TREE:
+(  salientTop
+   (  salientInCode
+      (  enterSalient ;;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Triple  )
+                        (  linearContent -  )
+                        (  linearContent semi comments always start in column zero  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Triple  )
+                        (  linearContent -  )
+                        (  linearContent semi comment separated from preceding by blank line  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent At the top  )
+                        (  linearContent -  )
+                        (  linearContent level  )
+                        (  linearContent ,  )
+                        (  linearContent double  )
+                        (  linearContent -  )
+                        (  linearContent semi comments also start in column zero  )
+                        (  linearContent ,  )
+                        (  linearContent and will break a preceding  )
+                        (  inBetween \n;;  )
+                        (  linearContent triple  )
+                        (  linearContent -  )
+                        (  linearContent semi comment  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent This is a single line comment  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent This is a multiple  )
+                        (  linearContent -  )
+                        (  linearContent line comment  )
+                        (  linearContent ,  )
+                        (  linearContent that is one  )
+                        (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                        (  linearContent that extends across more than one line  )
+                        (  linearContent .  )
+                        (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                        (  linearContent Salient parsing allows only continuations  )
+                        (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                        (  linearContent within the same comment type  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Single  )
+                        (  linearContent -  )
+                        (  linearContent semi comment separated from preceding  )
+                        (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                        (  linearContent by a blank line  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Code  )
+                        (  linearContent -  )
+                        (  linearContent level comment before dedent  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent This is a procedure  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent This is a comment  )
+                        (  linearContent -  )
+                        (  linearContent column comment is broken by  )
+                        (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                        (  linearContent transitioning to a double  )
+                        (  linearContent -  )
+                        (  linearContent semi comment  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent A double  )
+                        (  linearContent -  )
+                        (  linearContent semi comment that ends with a blank line  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent A double  )
+                        (  linearContent -  )
+                        (  linearContent semi comment that is separated from its predecessor by a blank line  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent After increase in indent  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent In  )
+                        (  linearContent -  )
+                        (  linearContent between  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient #\\\  )
+      (  entitySeq \n
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent This is Salient documentation in a block  )
+                        (  linearContent .  )
+                        (  linearContent In the future we should provide for nesting of such  )
+                        (  inBetween \n  )
+                        (  linearContent blocks within Quarrel code  )
+                        (  linearContent .  )  )  )  )  )  )
+         (  blankLine \n\n  )
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockPlusMore
+                        (  detachedList
+                           (  eitherList
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Planar graphs  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent assumed to be DAGs  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent are graphs that can be drawing without  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> edge crossings  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Every st  )
+                                       (  linearContent -  )
+                                       (  linearContent planar graph has one source node and one sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent All nodes can  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> be reached from the source and are able to reach the sink  )
+                                       (  linearContent .  )
+                                       (  linearContent In other words  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> there is only one graph and the source node is the only one without parents  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> and the sink node is the only one without children  )
+                                       (  linearContent .  )
+                                       (  linearContent EXTRA CHARACTERS  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Often either a source or sink node is not needed  )
+                                       (  linearContent .  )
+                                       (  linearContent This is the case for  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> trees  )
+                                       (  linearContent ,  )
+                                       (  linearContent which have a root  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent the source  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent but no sink  )
+                                       (  linearContent .  )
+                                       (  linearContent Patinon can extrapolate a  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> source and  )
+                                       (  linearContent /  )
+                                       (  linearContent or sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent The graph must be laid out so that all nodes that  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> are without a parent can be connected to the source  )
+                                       (  linearContent ,  )
+                                       (  linearContent and all nodes without a  )
+                                       (  inBetween \n  )
+                                       (  linearContent <SP><SP><SP> child can be connected to the sink  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+         \n  )
+      (  exitSalient \\\  )
+      (  enterSalient ;;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Extended triple  )
+                        (  linearContent -  )
+                        (  linearContent semi comment  )
+                        (  linearContent ,  )
+                        (  linearContent spanning a set of lines  )
+                        (  linearContent ,  )
+                        (  linearContent with a sampling of real Salient formatting  )
+                        (  inBetween \n;;;  )
+                        (  linearContent features used  )
+                        (  linearContent .  )  )  )  )  )  )
+         (  blankLine \n;;;\n;;;  )
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockPlusMore
+                        (  detachedList
+                           (  eitherList
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Planar graphs  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent assumed to be DAGs  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent are graphs that can be drawing without  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> edge crossings  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n;;;  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Every st  )
+                                       (  linearContent -  )
+                                       (  linearContent planar graph has one source node and one sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent All nodes can  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> be reached from the source and are able to reach the sink  )
+                                       (  linearContent .  )
+                                       (  linearContent In other words  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> there is only one graph and the source node is the only one without parents  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> and the sink node is the only one without children  )
+                                       (  linearContent .  )
+                                       (  linearContent EXTRA CHARACTERS  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n;;;  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Often either a source or sink node is not needed  )
+                                       (  linearContent .  )
+                                       (  linearContent This is the case for  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> trees  )
+                                       (  linearContent ,  )
+                                       (  linearContent which have a root  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent the source  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent but no sink  )
+                                       (  linearContent .  )
+                                       (  linearContent Patinon can extrapolate a  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> source and  )
+                                       (  linearContent /  )
+                                       (  linearContent or sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent The graph must be laid out so that all nodes that  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> are without a parent can be connected to the source  )
+                                       (  linearContent ,  )
+                                       (  linearContent and all nodes without a  )
+                                       (  inBetween \n;;;  )
+                                       (  linearContent <SP><SP><SP> child can be connected to the sink  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Extended single  )
+                        (  linearContent -  )
+                        (  linearContent semi comment  )
+                        (  linearContent ,  )
+                        (  linearContent spanning a set of lines  )
+                        (  linearContent ,  )
+                        (  linearContent with a sampling of real Salient formatting  )
+                        (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                        (  linearContent features used  )
+                        (  linearContent .  )  )  )  )  )  )
+         (  blankLine \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;\n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockPlusMore
+                        (  detachedList
+                           (  eitherList
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Planar graphs  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent assumed to be DAGs  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent are graphs that can be drawing without  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> edge crossings  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Every st  )
+                                       (  linearContent -  )
+                                       (  linearContent planar graph has one source node and one sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent All nodes can  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> be reached from the source and are able to reach the sink  )
+                                       (  linearContent .  )
+                                       (  linearContent In other words  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> there is only one graph and the source node is the only one without parents  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> and the sink node is the only one without children  )
+                                       (  linearContent .  )
+                                       (  linearContent EXTRA CHARACTERS  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Often either a source or sink node is not needed  )
+                                       (  linearContent .  )
+                                       (  linearContent This is the case for  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> trees  )
+                                       (  linearContent ,  )
+                                       (  linearContent which have a root  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent the source  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent but no sink  )
+                                       (  linearContent .  )
+                                       (  linearContent Patinon can extrapolate a  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> source and  )
+                                       (  linearContent /  )
+                                       (  linearContent or sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent The graph must be laid out so that all nodes that  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> are without a parent can be connected to the source  )
+                                       (  linearContent ,  )
+                                       (  linearContent and all nodes without a  )
+                                       (  inBetween \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;  )
+                                       (  linearContent <SP><SP><SP> child can be connected to the sink  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Extended double  )
+                        (  linearContent -  )
+                        (  linearContent semi comment  )
+                        (  linearContent ,  )
+                        (  linearContent spanning a set of lines  )
+                        (  linearContent ,  )
+                        (  linearContent with a sampling of real Salient formatting  )
+                        (  inBetween \n <SP><SP><SP><SP> ;;  )
+                        (  linearContent features used  )
+                        (  linearContent .  )  )  )  )  )  )
+         (  blankLine \n <SP><SP><SP><SP> ;;\n <SP><SP><SP><SP> ;;  )
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockPlusMore
+                        (  detachedList
+                           (  eitherList
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Planar graphs  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent assumed to be DAGs  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent are graphs that can be drawing without  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> edge crossings  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n <SP><SP><SP><SP> ;;  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Every st  )
+                                       (  linearContent -  )
+                                       (  linearContent planar graph has one source node and one sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent All nodes can  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> be reached from the source and are able to reach the sink  )
+                                       (  linearContent .  )
+                                       (  linearContent In other words  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> there is only one graph and the source node is the only one without parents  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> and the sink node is the only one without children  )
+                                       (  linearContent .  )
+                                       (  linearContent EXTRA CHARACTERS  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n <SP><SP><SP><SP> ;;  )
+                              (  listItem
+                                 (  paraBlockItem @  )
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP><SP> Often either a source or sink node is not needed  )
+                                       (  linearContent .  )
+                                       (  linearContent This is the case for  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> trees  )
+                                       (  linearContent ,  )
+                                       (  linearContent which have a root  )
+                                       (  inBetween  )
+                                       (  linearContent
+                                          POPEN  
+                                            )
+                                       (  linearContent the source  )
+                                       (  linearContent  PCLOSE  )
+                                       (  linearContent but no sink  )
+                                       (  linearContent .  )
+                                       (  linearContent Patinon can extrapolate a  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> source and  )
+                                       (  linearContent /  )
+                                       (  linearContent or sink node  )
+                                       (  linearContent .  )
+                                       (  linearContent The graph must be laid out so that all nodes that  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> are without a parent can be connected to the source  )
+                                       (  linearContent ,  )
+                                       (  linearContent and all nodes without a  )
+                                       (  inBetween \n <SP><SP><SP><SP> ;;  )
+                                       (  linearContent <SP><SP><SP> child can be connected to the sink  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Quarrel space before  )
+                        (  linearContent ,  )
+                        (  linearContent Salient space after  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n <SP><SP><SP><SP><SP><SP><SP> ;;\n  )
+      (  enterSalient ;;  )
+      (  entitySeq \n <SP><SP><SP><SP><SP><SP><SP> ;;
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Salient space before  )
+                        (  linearContent ,  )
+                        (  linearContent Quarrel space after  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;;  )
+      (  entitySeq
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Quarrel space before  )
+                        (  linearContent ,  )
+                        (  linearContent Salient space after  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n;;;\n  )
+      (  enterSalient ;;;  )
+      (  entitySeq \n;;;
+         (  topEntity
+            (  para
+               (  paraBlock
+                  (  paraBlockContent
+                     (  paraBlockText
+                        (  linearContent Salient space before  )
+                        (  linearContent ,  )
+                        (  linearContent Quarrel space after  )
+                        (  linearContent .  )  )  )  )  )  )  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  exitSalient \n <SP> ;;\n  )
+      (  enterSalient ;;  )
+      (  exitSalient \n <SP> ;;\n  )
+      (  enterSalient ;;;  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  exitSalient \n <SP> ;;\n  )
+      (  enterSalient ;  )
+      (  exitSalient \n  )
+      (  enterSalient ;;;  )
+      (  exitSalient \n  )
+      (  enterSalient ;;;  )
+      (  exitSalient \n  )
+      (  enterSalient ;;  )
+      (  exitSalient \n <SP> ;;\n  )
+      (  enterSalient ;  )
+      (  exitSalient \n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;\n <SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP><SP> ;\n  )  )
+   (  eof <EOF>  )  )

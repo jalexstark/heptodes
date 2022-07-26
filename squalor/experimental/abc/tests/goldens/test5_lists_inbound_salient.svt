@@ -1,0 +1,332 @@
+TREE:
+(  salientTop
+   (  entitySeq \n
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Unordered list  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 3  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem :1  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :2  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :3  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent List break by text  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem :a  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :b  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :c  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Put LIST BREAK token here  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem :A  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :B  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :C  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent List break  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem :i  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :ii  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :iii  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent List break  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem :X  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :VC  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem :II  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent List item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Nested list check  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockPlusMore
+                                    (  paraBlockText
+                                       (  linearContent <SP> List item  )  )
+                                    (  inBetween \n  )
+                                    (  attachedList
+                                       (  eitherList
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent List item 1  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent List item 2  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent List item 3  )
+                                                   (  linearContent .  )  )  )  )  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockPlusMore
+                                    (  paraBlockText
+                                       (  linearContent <SP> List item  )  )
+                                    (  inBetween \n  )
+                                    (  attachedList
+                                       (  eitherList
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent List item 1  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent List item 2  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent List item 3  )
+                                                   (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent List content pattern  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockPlusMore
+                                       (  paraBlockText
+                                          (  linearContent <SP> List item  )  )
+                                       (  inBetween \n  )
+                                       (  attachedList
+                                          (  eitherList
+                                             (  listItem
+                                                (  paraBlockItem | :1  )
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent List item 1  )
+                                                      (  linearContent .  )  )  )  )
+                                             (  inBetween \n  )
+                                             (  listItem
+                                                (  paraBlockItem | :2  )
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent List item 2  )
+                                                      (  linearContent .  )  )  )  )
+                                             (  inBetween \n  )
+                                             (  listItem
+                                                (  paraBlockItem | :3  )
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent List item 3  )
+                                                      (  linearContent .  )  )  )  )  )  )  )  )  )
+                              (  blockSep \n\n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP> Text after list  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )  )
+   (  eof <EOF>  )  )

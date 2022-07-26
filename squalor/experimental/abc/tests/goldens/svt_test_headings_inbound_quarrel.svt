@@ -1,0 +1,24 @@
+TREE:
+(  quarrelTop
+   (  gClass class
+      (  identifier Coord  )
+      (  openStmt |  )
+      (  classPiece fun
+         (  identifier Characterizer  )
+         POPEN  
+           PCLOSE
+         ->
+         (  identifier result_val  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier int  )  )  )
+         (  statementSeq
+            (  openStmt |  )
+            (  statement
+               (  identifier result_val  )
+               :=
+               (  expression
+                  (  constant 42  )  )  )
+            (  closeStmt |  )  )  )
+      (  closeStmt |  )  )
+   <EOF>  )

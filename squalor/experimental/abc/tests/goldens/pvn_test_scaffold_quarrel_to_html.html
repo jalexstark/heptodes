@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="salient" />
+  <link href="https://fonts.googleapis.com/css?family=Gentium+Basic:400,400i,700|IBM+Plex+Mono:400,400i,600,600i|IBM+Plex:400,400i,600,600i&display=swap&subset=latin-ext" rel="stylesheet">
+<link rel="stylesheet" href="salient-basic.css">
+  <title>MISSING TITLE</title>
+  <style>
+  </style>
+</head>
+<body>
+<header>
+<h1 class="title">MISSING TITLE</h1>
+</header>
+moduleScaffold
+<p>
+ Triplesemi comments always start in column zero
+</p>
+
+<p>
+ Triplesemi comment separated from preceding by blank line
+</p>
+
+<p>
+ At the toplevel doublesemi comments also start in column zero and will break a precedingtriplesemi comment
+</p>
+classCoord|funCharacterizer()->result_val:int|result_val:=42
+<p>
+ This is a single line comment
+</p>
+|  
+funAcrossLines()||->result_val:intresult_val:=42
+<p>
+ This is a multipleline comment that is onethat extends across more than one lineSalient parsing allows only continuationswithin the same comment type
+</p>
+
+<p>
+ Singlesemi comment separated from precedingby a blank line
+</p>
+|  
+funArea()->area:float|area:=x*y
+<p>
+ Codelevel comment before dedent
+</p>
+|  
+
+<p>
+ This is a procedure
+</p>
+procOuterProc()|f:=lambda()|p:=q|  
+|  
+
+<p>
+ This is a commentcolumn comment is broken bytransitioning to a doublesemi comment
+</p>
+
+<p>
+ A doublesemi comment that ends with a blank line
+</p>
+
+<p>
+ A doublesemi comment that is separated from its predecessor by a blank line
+</p>
+procExprProc()|f:=(lambda()|p:=q|  
+)|  
+procModify(zero_coord:bool)|
+<p>
+ After increase in indent
+</p>
+if(zero_coord)|x:=0
+<p>
+ Inbetween
+</p>
+y:=0|  
+else|t:float:=xx:=yy:=t|  
+|  
+x:floaty:float|  
+
+<p>
+This is Salient documentation in a block In the future we should provide for nesting of suchblocks within Quarrel code
+</p>
+<p>
+
+<ul class='detached-list list-compact bullet-unnumbered'><li class='item-simple'>   Planar graphsassumed to be DAGs are graphs that can be drawing without    edge crossings
+</li><li class='item-simple'>   Every stplanar graph has one source node and one sink node All nodes can    be reached from the source and are able to reach the sink In other words    there is only one graph and the source node is the only one without parents    and the sink node is the only one without children EXTRA CHARACTERS
+</li><li class='item-simple'>   Often either a source or sink node is not needed This is the case for    trees which have a rootthe source but no sink Patinon can extrapolate a    source andor sink node The graph must be laid out so that all nodes that    are without a parent can be connected to the source and all nodes without a    child can be connected to the sink
+</li>
+</ul>
+</p>
+
+<p>
+ Extended triplesemi comment spanning a set of lines with a sampling of real Salient formattingfeatures used
+</p>
+<p>
+
+<ul class='detached-list list-compact bullet-unnumbered'><li class='item-simple'>   Planar graphsassumed to be DAGs are graphs that can be drawing without    edge crossings
+</li><li class='item-simple'>   Every stplanar graph has one source node and one sink node All nodes can    be reached from the source and are able to reach the sink In other words    there is only one graph and the source node is the only one without parents    and the sink node is the only one without children EXTRA CHARACTERS
+</li><li class='item-simple'>   Often either a source or sink node is not needed This is the case for    trees which have a rootthe source but no sink Patinon can extrapolate a    source andor sink node The graph must be laid out so that all nodes that    are without a parent can be connected to the source and all nodes without a    child can be connected to the sink
+</li>
+</ul>
+</p>
+procAnother(zero_coord:bool)|if(zero_coord)|
+<p>
+ Extended singlesemi comment spanning a set of lines with a sampling of real Salient formattingfeatures used
+</p>
+<p>
+
+<ul class='detached-list list-compact bullet-unnumbered'><li class='item-simple'>   Planar graphsassumed to be DAGs are graphs that can be drawing without    edge crossings
+</li><li class='item-simple'>   Every stplanar graph has one source node and one sink node All nodes can    be reached from the source and are able to reach the sink In other words    there is only one graph and the source node is the only one without parents    and the sink node is the only one without children EXTRA CHARACTERS
+</li><li class='item-simple'>   Often either a source or sink node is not needed This is the case for    trees which have a rootthe source but no sink Patinon can extrapolate a    source andor sink node The graph must be laid out so that all nodes that    are without a parent can be connected to the source and all nodes without a    child can be connected to the sink
+</li>
+</ul>
+</p>
+x:=0
+<p>
+ Extended doublesemi comment spanning a set of lines with a sampling of real Salient formattingfeatures used
+</p>
+<p>
+
+<ul class='detached-list list-compact bullet-unnumbered'><li class='item-simple'>   Planar graphsassumed to be DAGs are graphs that can be drawing without    edge crossings
+</li><li class='item-simple'>   Every stplanar graph has one source node and one sink node All nodes can    be reached from the source and are able to reach the sink In other words    there is only one graph and the source node is the only one without parents    and the sink node is the only one without children EXTRA CHARACTERS
+</li><li class='item-simple'>   Often either a source or sink node is not needed This is the case for    trees which have a rootthe source but no sink Patinon can extrapolate a    source andor sink node The graph must be laid out so that all nodes that    are without a parent can be connected to the source and all nodes without a    child can be connected to the sink
+</li>
+</ul>
+</p>
+y:=0|  
+else|t:float:=x
+<p>
+ Quarrel space before Salient space after
+</p>
+x:=y
+<p>
+Salient space before Quarrel space after
+</p>
+y:=t|  
+|  
+
+<p>
+ Quarrel space before Salient space after
+</p>
+funAreaA()->area:float|area:=x*y|  
+
+<p>
+Salient space before Quarrel space after
+</p>
+funAreaB()->area:float|
+area:=x*y
+|  
+
+funAreaC()->area:float|
+area:=x*y
+|  
+
+
+funAreaD()->area:float|
+area:=x*y
+|  
+</body>
+</html>

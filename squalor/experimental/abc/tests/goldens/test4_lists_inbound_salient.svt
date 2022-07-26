@@ -1,0 +1,353 @@
+TREE:
+(  salientTop
+   (  entitySeq \n
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockPlusMore
+                                    (  detachedList
+                                       (  eitherList
+                                          (  listItem
+                                             (  paraBlockItem <SP> @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> At top of file a doubly  )
+                                                   (  linearContent -  )
+                                                   (  linearContent nested list  )
+                                                   (  linearContent .  )
+                                                   (  linearContent Lorem ipsum dolor sit amet  )
+                                                   (  linearContent ,  )
+                                                   (  inBetween \n  )
+                                                   (  linearContent consectetur adipiscing elit  )
+                                                   (  linearContent ,  )
+                                                   (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                                   (  linearContent .  )
+                                                   (  linearContent Ut enim ad minim veniam  )
+                                                   (  linearContent ,  )
+                                                   (  linearContent quis  )
+                                                   (  inBetween \n  )
+                                                   (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                                   (  linearContent .  )
+                                                   (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                                   (  inBetween \n  )
+                                                   (  linearContent fugiat nulla pariatur  )
+                                                   (  linearContent .  )
+                                                   (  linearContent Excepteur  )
+                                                   (  inBetween \n  )
+                                                   (  linearContent sint occaecat cupidatat non proident  )
+                                                   (  linearContent ,  )
+                                                   (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  blockSep \n\n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  listItemParaPiece
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent A 2nd item in the nested list  )
+                                                      (  linearContent .  )  )  )  )
+                                             (  blockSep \n\n  )
+                                             (  logicalIndent <SP><SP> | |  )
+                                             (  listItemParaPiece
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent A continuation paragraph  )
+                                                      (  linearContent .  )  )  )  )  )
+                                          (  blockSep \n\n\n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  listItemParaPiece
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent A 3rd item in the nested list  )
+                                                      (  linearContent .  )  )  )  )
+                                             (  inBetween \n  )
+                                             (  logicalIndent <SP> | |  )
+                                             (  listItemParaPiece
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent A continuation paragraph  )
+                                                      (  linearContent .  )  )  )  )  )  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem <SP> @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent No blank line preceding  )
+                                    (  linearContent ,  )
+                                    (  linearContent but nonetheless a valid top  )
+                                    (  linearContent -  )
+                                    (  linearContent level item  )
+                                    (  linearContent .  )
+                                    (  linearContent <SP> Lorem ipsum dolor sit amet  )
+                                    (  linearContent ,  )
+                                    (  inBetween \n  )
+                                    (  linearContent consectetur adipiscing elit  )
+                                    (  linearContent ,  )
+                                    (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent New list follows  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Lorem ipsum dolor sit amet  )
+                                    (  linearContent ,  )
+                                    (  inBetween \n  )
+                                    (  linearContent consectetur adipiscing elit  )
+                                    (  linearContent ,  )
+                                    (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                    (  linearContent .  )
+                                    (  linearContent Ut enim ad minim veniam  )
+                                    (  linearContent ,  )
+                                    (  linearContent quis  )
+                                    (  inBetween \n  )
+                                    (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                    (  linearContent .  )
+                                    (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                    (  inBetween \n  )
+                                    (  linearContent fugiat nulla pariatur  )
+                                    (  linearContent .  )
+                                    (  linearContent Excepteur  )
+                                    (  inBetween \n  )
+                                    (  linearContent sint occaecat cupidatat non proident  )
+                                    (  linearContent ,  )
+                                    (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Lorem ipsum dolor sit amet  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n  )
+                                       (  linearContent consectetur adipiscing elit  )
+                                       (  linearContent ,  )
+                                       (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                       (  linearContent .  )
+                                       (  linearContent Ut enim ad minim veniam  )
+                                       (  linearContent ,  )
+                                       (  linearContent quis  )
+                                       (  inBetween \n  )
+                                       (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                       (  linearContent .  )
+                                       (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                       (  inBetween \n  )
+                                       (  linearContent fugiat nulla pariatur  )
+                                       (  linearContent .  )
+                                       (  linearContent Excepteur  )
+                                       (  inBetween \n  )
+                                       (  linearContent sint occaecat cupidatat non proident  )
+                                       (  linearContent ,  )
+                                       (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Lorem ipsum dolor sit amet  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n  )
+                                       (  linearContent consectetur adipiscing elit  )
+                                       (  linearContent ,  )
+                                       (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                       (  linearContent .  )
+                                       (  linearContent Ut enim ad minim veniam  )
+                                       (  linearContent ,  )
+                                       (  linearContent quis  )
+                                       (  inBetween \n  )
+                                       (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                       (  linearContent .  )
+                                       (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                       (  inBetween \n  )
+                                       (  linearContent fugiat nulla pariatur  )
+                                       (  linearContent .  )
+                                       (  linearContent Excepteur  )
+                                       (  inBetween \n  )
+                                       (  linearContent sint occaecat cupidatat non proident  )
+                                       (  linearContent ,  )
+                                       (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Lorem ipsum dolor sit amet  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n  )
+                                       (  linearContent consectetur adipiscing elit  )
+                                       (  linearContent ,  )
+                                       (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                       (  linearContent .  )
+                                       (  linearContent Ut enim ad minim veniam  )
+                                       (  linearContent ,  )
+                                       (  linearContent quis  )
+                                       (  inBetween \n  )
+                                       (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                       (  linearContent .  )
+                                       (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                       (  inBetween \n  )
+                                       (  linearContent fugiat nulla pariatur  )
+                                       (  linearContent .  )
+                                       (  linearContent Excepteur  )
+                                       (  inBetween \n  )
+                                       (  linearContent sint occaecat cupidatat non proident  )
+                                       (  linearContent ,  )
+                                       (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                       (  linearContent .  )  )  )  )
+                              (  blockSep \n\n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Lorem ipsum dolor sit amet  )
+                                       (  linearContent ,  )
+                                       (  inBetween \n  )
+                                       (  linearContent consectetur adipiscing elit  )
+                                       (  linearContent ,  )
+                                       (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                       (  linearContent .  )
+                                       (  linearContent Ut enim ad minim veniam  )
+                                       (  linearContent ,  )
+                                       (  linearContent quis  )
+                                       (  inBetween \n  )
+                                       (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                       (  linearContent .  )
+                                       (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                       (  inBetween \n  )
+                                       (  linearContent fugiat nulla pariatur  )
+                                       (  linearContent .  )
+                                       (  linearContent Excepteur  )
+                                       (  inBetween \n  )
+                                       (  linearContent sint occaecat cupidatat non proident  )
+                                       (  linearContent ,  )
+                                       (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Lorem ipsum dolor sit amet  )
+                                    (  linearContent ,  )
+                                    (  inBetween \n  )
+                                    (  linearContent consectetur adipiscing elit  )
+                                    (  linearContent ,  )
+                                    (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                    (  linearContent .  )
+                                    (  linearContent Ut enim ad minim veniam  )
+                                    (  linearContent ,  )
+                                    (  linearContent quis  )
+                                    (  inBetween \n  )
+                                    (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                    (  linearContent .  )
+                                    (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                    (  inBetween \n  )
+                                    (  linearContent fugiat nulla pariatur  )
+                                    (  linearContent .  )
+                                    (  linearContent Excepteur  )
+                                    (  inBetween \n  )
+                                    (  linearContent sint occaecat cupidatat non proident  )
+                                    (  linearContent ,  )
+                                    (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent New list follows  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Lorem ipsum dolor sit amet  )
+                                    (  linearContent ,  )
+                                    (  inBetween \n  )
+                                    (  linearContent consectetur adipiscing elit  )
+                                    (  linearContent ,  )
+                                    (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                    (  linearContent .  )
+                                    (  linearContent Ut enim ad minim veniam  )
+                                    (  linearContent ,  )
+                                    (  linearContent quis  )
+                                    (  inBetween \n  )
+                                    (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                    (  linearContent .  )
+                                    (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                    (  inBetween \n  )
+                                    (  linearContent fugiat nulla pariatur  )
+                                    (  linearContent .  )
+                                    (  linearContent Excepteur  )
+                                    (  inBetween \n  )
+                                    (  linearContent sint occaecat cupidatat non proident  )
+                                    (  linearContent ,  )
+                                    (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Lorem ipsum dolor sit amet  )
+                                    (  linearContent ,  )
+                                    (  inBetween \n  )
+                                    (  linearContent consectetur adipiscing elit  )
+                                    (  linearContent ,  )
+                                    (  linearContent sed do eiusmod tempor incididunt ut labore et dolore magna aliqua  )
+                                    (  linearContent .  )
+                                    (  linearContent Ut enim ad minim veniam  )
+                                    (  linearContent ,  )
+                                    (  linearContent quis  )
+                                    (  inBetween \n  )
+                                    (  linearContent nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat  )
+                                    (  linearContent .  )
+                                    (  linearContent Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu  )
+                                    (  inBetween \n  )
+                                    (  linearContent fugiat nulla pariatur  )
+                                    (  linearContent .  )
+                                    (  linearContent Excepteur  )
+                                    (  inBetween \n  )
+                                    (  linearContent sint occaecat cupidatat non proident  )
+                                    (  linearContent ,  )
+                                    (  linearContent sunt in culpa qui officiadeserunt mollit anim id est laborum  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      \n  )
+   (  eof <EOF>  )  )

@@ -1,0 +1,13 @@
+TREE:
+(  salientTop
+   (  entitySeq
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent The first rain in Spain falls mainly in the plain  )
+                     (  linearContent .  )  )  )  )  )  )
+      \n  )
+   (  eof <EOF>  )  )

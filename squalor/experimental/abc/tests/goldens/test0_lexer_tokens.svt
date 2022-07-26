@@ -1,0 +1,5 @@
+          MULTI_NEWLINE:  1 /  0: ................. "\n\n" :.....SALIENT / DEFAULT channel :(No token anomaly)
+   EXTRA_ORDINARY_CHAIN:  3 /  0:  "The first rain in Spain falls mainly in the plain" :.....SALIENT / DEFAULT channel :(No token anomaly)
+        SINGLY_ORDINARY:  3 / 49: .................... "." :.....SALIENT / DEFAULT channel :(No token anomaly)
+         SINGLE_NEWLINE:  3 / 50: ................... "\n" :.....SALIENT / DEFAULT channel :(No token anomaly)
+                    EOF:  4 /  0: ................ "<EOF>" :.....SALIENT / DEFAULT channel :(No token anomaly)

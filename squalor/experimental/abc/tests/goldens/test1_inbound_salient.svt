@@ -1,0 +1,69 @@
+TREE:
+(  salientTop
+   (  entitySeq
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  paraBlockText
+                        (  linearContent The first rain  )  )
+                     (  inBetween \n  )
+                     (  attachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Attached item start  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent in Spain falls  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Detached item start  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n \n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  paraBlockText
+                        (  linearContent mainly in the  )  )
+                     (  inBetween  )
+                     (  attachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  inBetween  )
+                                    (  linearContent
+                                       POPEN  
+                                         )
+                                    (  linearContent misplaced attached item  )
+                                    (  linearContent  PCLOSE  )
+                                    (  linearContent plain  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  codeInSalient
+         (  enterCode ``` \n  )
+         (  exitCode ```  )  )
+      (  blankLine \n\n  )  )
+   (  eof <EOF>  )  )

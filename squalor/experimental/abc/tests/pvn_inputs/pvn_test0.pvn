@@ -1,0 +1,43 @@
+
+module InQuarrel
+
+#\\\
+
+This is in Salient.
+
+
+\\\
+
+class Coord |
+   fun Characterizer() -> result_val :int |
+      result_val := 42
+|  |
+
+   proc Modify(zero_coord :bool) |
+      if (zero_coord) |
+         x := 0
+         y := 0
+      | else |
+         t :float := x
+         x := y
+         y := t
+   |  |
+
+
+   fun Characterizer() -> result_val :int |
+      result_val := 42
+   |
+
+   fun AcrossLines() |
+   |-> result_val :int
+      result_val := 42
+   |
+   
+   fun WithComment() -> result_val :int |
+      result_val := 42
+   |
+
+   fun WithMultiLineComment() -> result_val :int |
+      result_val := 42
+   |
+   

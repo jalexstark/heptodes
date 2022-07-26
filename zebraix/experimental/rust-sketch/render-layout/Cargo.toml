@@ -1,0 +1,13 @@
+[package]
+name = "render-layout"
+version = "0.1.0"
+authors = ["Alex Stark <alex@withheld.org>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[dependencies.jaywalk-base]
+version =  "0.1.0"
+path = "../jaywalk-base"

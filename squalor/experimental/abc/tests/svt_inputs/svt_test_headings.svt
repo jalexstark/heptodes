@@ -1,0 +1,62 @@
+#title Test of headings
+
+#toc { toc_depth=4 }
+
+#= Section heading
+
+#== Subsection heading
+
+Normal text paragraph.
+
+#== Subsection heading, another, that is absurdly long and so which gets split
+   across lines  {#explicit_subsection_anchor unused_qualifier=nothing further=unused }
+
+Normal text paragraph.
+
+#= Section heading, another
+
+Text just after a section heading. Text just after a section heading. Text just
+after a section heading. Text just after a section heading.
+
+#== Subsection heading, text before
+
+#=== Subsubsection heading
+
+#==== Level 4 heading
+
+#===== Level 5 heading
+
+#====== Level 6 heading
+
+Text that should be just a little smaller.
+
+#= Section heading
+
+Repetition of heading should be handled with uniquification of anchor
+
+#=== Skipped subsection
+
+#== Confused subsection
+
+```
+class Coord |
+   fun Characterizer() -> result_val :int |
+      result_val := 42                                                  ; This is a single line comment.
+|  |
+```
+
+The building blocks for Patinon's graphs are *transitively irreducible st-planar
+graphs and the source and sink nodes can be extrapolated*. Let us unpack that,
+initially just briefly.
+
+@   Planar graphs (assumed to be DAGs) are graphs that can be drawing without
+    edge crossings.
+@   Every st-planar graph has one source node and one sink node. All nodes can
+    be reached from the source and are able to reach the sink. In other words,
+    there is only one graph and the source node is the only one without parents
+    and the sink node is the only one without children. EXTRA CHARACTERS.
+@   Often either a source or sink node is not needed. This is the case for
+    trees, which have a root (the source) but no sink. Patinon can extrapolate a
+    source and/or sink node. The graph must be laid out so that all nodes that
+    are without a parent can be connected to the source, and all nodes without a
+    child can be connected to the sink.

@@ -1,0 +1,830 @@
+TREE:
+(  salientTop
+   (  entitySeq \n
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Detached lists  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent A simple list  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Longer list  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent <SP><SP> Planar graphs  )
+                                    (  inBetween  )
+                                    (  linearContent
+                                       POPEN  
+                                         )
+                                    (  linearContent assumed to be DAGs  )
+                                    (  linearContent  PCLOSE  )
+                                    (  linearContent are graphs that can be drawing without  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> edge crossings  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent <SP><SP> Every st  )
+                                    (  linearContent -  )
+                                    (  linearContent planar graph has one source node and one sink node  )
+                                    (  linearContent .  )
+                                    (  linearContent All nodes can  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> be reached from the source and are able to reach the sink  )
+                                    (  linearContent .  )
+                                    (  linearContent In other words  )
+                                    (  linearContent ,  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> there is only one graph and the source node is the only one without parents  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> and the sink node is the only one without children  )
+                                    (  linearContent .  )
+                                    (  linearContent EXTRA CHARACTERS  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent <SP><SP> Often either a source or sink node is not needed  )
+                                    (  linearContent .  )
+                                    (  linearContent This is the case for  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> trees  )
+                                    (  linearContent ,  )
+                                    (  linearContent which have a root  )
+                                    (  inBetween  )
+                                    (  linearContent
+                                       POPEN  
+                                         )
+                                    (  linearContent the source  )
+                                    (  linearContent  PCLOSE  )
+                                    (  linearContent but no sink  )
+                                    (  linearContent .  )
+                                    (  linearContent Patinon can extrapolate a  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> source and  )
+                                    (  linearContent /  )
+                                    (  linearContent or sink node  )
+                                    (  linearContent .  )
+                                    (  linearContent The graph must be laid out so that all nodes that  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> are without a parent can be connected to the source  )
+                                    (  linearContent ,  )
+                                    (  linearContent and all nodes without a  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> child can be connected to the sink  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent A paragraph list  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent List  )
+                     (  linearContent ,  )
+                     (  linearContent paragraph items in compact form  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent List  )
+                     (  linearContent ,  )
+                     (  linearContent paragraph items with blank lines  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  blockSep \n\n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  blockSep \n\n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Paragraph list  )
+                     (  linearContent ,  )
+                     (  linearContent paragraph items in compact form  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Paragraph list  )
+                     (  linearContent ,  )
+                     (  linearContent paragraph items with blank lines  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  blockSep \n\n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  blockSep \n\n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Double list  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockPlusMore
+                                    (  detachedList
+                                       (  eitherList
+                                          (  listItem
+                                             (  paraBlockItem <SP> @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 1  )
+                                                   (  linearContent .  )
+                                                   (  linearContent A  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 1  )
+                                                   (  linearContent .  )
+                                                   (  linearContent B  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 1  )
+                                                   (  linearContent .  )
+                                                   (  linearContent C  )
+                                                   (  linearContent .  )  )  )  )  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent <SP> Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockPlusMore
+                                    (  detachedList
+                                       (  eitherList
+                                          (  listItem
+                                             (  paraBlockItem <SP> @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 3  )
+                                                   (  linearContent .  )
+                                                   (  linearContent A  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 3  )
+                                                   (  linearContent .  )
+                                                   (  linearContent B  )
+                                                   (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Double list  )
+                     (  linearContent ,  )
+                     (  linearContent paragraph items  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  detachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockPlusMore
+                                    (  detachedList
+                                       (  eitherList
+                                          (  listItem
+                                             (  paraBlockItem <SP> @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 1  )
+                                                   (  linearContent .  )
+                                                   (  linearContent A  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  listItemParaPiece
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent <SP> Item 1  )
+                                                      (  linearContent .  )
+                                                      (  linearContent B  )
+                                                      (  linearContent ,  )
+                                                      (  linearContent paragraph 1  )
+                                                      (  linearContent .  )  )  )  )
+                                             (  inBetween \n  )
+                                             (  logicalIndent | |  )
+                                             (  listItemParaPiece
+                                                (  paraBlockContent
+                                                   (  paraBlockText
+                                                      (  linearContent <SP> Item 1  )
+                                                      (  linearContent .  )
+                                                      (  linearContent B  )
+                                                      (  linearContent ,  )
+                                                      (  linearContent paragraph 2  )
+                                                      (  linearContent .  )  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 1  )
+                                                   (  linearContent .  )
+                                                   (  linearContent C  )
+                                                   (  linearContent .  )  )  )  )  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP> Item 2  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent <SP> Item 2  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockPlusMore
+                                    (  detachedList
+                                       (  eitherList
+                                          (  listItem
+                                             (  paraBlockItem <SP> @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 3  )
+                                                   (  linearContent .  )
+                                                   (  linearContent A  )
+                                                   (  linearContent .  )  )  )  )
+                                          (  inBetween \n  )
+                                          (  listItem
+                                             (  paraBlockItem | @  )
+                                             (  paraBlockContent
+                                                (  paraBlockText
+                                                   (  linearContent <SP> Item 3  )
+                                                   (  linearContent .  )
+                                                   (  linearContent B  )
+                                                   (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Attached lists  )
+                     (  linearContent .  )  )  )  )  )  )
+      (  blankLine \n\n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent A simple list  )  )  )  )
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  paraBlockText
+                        (  linearContent .  )  )
+                     (  inBetween \n  )
+                     (  attachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent Longer list  )  )  )  )
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  paraBlockText
+                        (  linearContent .  )  )
+                     (  inBetween \n  )
+                     (  attachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent <SP><SP> Planar graphs  )
+                                    (  inBetween  )
+                                    (  linearContent
+                                       POPEN  
+                                         )
+                                    (  linearContent assumed to be DAGs  )
+                                    (  linearContent  PCLOSE  )
+                                    (  linearContent are graphs that can be drawing without  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> edge crossings  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent <SP><SP> Every st  )
+                                    (  linearContent -  )
+                                    (  linearContent planar graph has one source node and one sink node  )
+                                    (  linearContent .  )
+                                    (  linearContent All nodes can  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> be reached from the source and are able to reach the sink  )
+                                    (  linearContent .  )
+                                    (  linearContent In other words  )
+                                    (  linearContent ,  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> there is only one graph and the source node is the only one without parents  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> and the sink node is the only one without children  )
+                                    (  linearContent .  )
+                                    (  linearContent EXTRA CHARACTERS  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent <SP><SP> Often either a source or sink node is not needed  )
+                                    (  linearContent .  )
+                                    (  linearContent This is the case for  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> trees  )
+                                    (  linearContent ,  )
+                                    (  linearContent which have a root  )
+                                    (  inBetween  )
+                                    (  linearContent
+                                       POPEN  
+                                         )
+                                    (  linearContent the source  )
+                                    (  linearContent  PCLOSE  )
+                                    (  linearContent but no sink  )
+                                    (  linearContent .  )
+                                    (  linearContent Patinon can extrapolate a  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> source and  )
+                                    (  linearContent /  )
+                                    (  linearContent or sink node  )
+                                    (  linearContent .  )
+                                    (  linearContent The graph must be laid out so that all nodes that  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> are without a parent can be connected to the source  )
+                                    (  linearContent ,  )
+                                    (  linearContent and all nodes without a  )
+                                    (  inBetween \n  )
+                                    (  linearContent <SP><SP><SP> child can be connected to the sink  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent A paragraph list  )  )  )  )
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  paraBlockText
+                        (  linearContent .  )  )
+                     (  inBetween \n  )
+                     (  attachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 1  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  blockSep \n\n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 3  )
+                                    (  linearContent .  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )
+      (  topEntity
+         (  para
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockText
+                     (  linearContent List  )
+                     (  linearContent ,  )
+                     (  linearContent paragraph items in compact form  )  )  )  )
+            (  paraBlock
+               (  paraBlockContent
+                  (  paraBlockPlusMore
+                     (  paraBlockText
+                        (  linearContent .  )  )
+                     (  inBetween \n  )
+                     (  attachedList
+                        (  eitherList
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 1  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  paraBlockContent
+                                 (  paraBlockText
+                                    (  linearContent Item 2  )
+                                    (  linearContent .  )  )  )  )
+                           (  inBetween \n  )
+                           (  listItem
+                              (  paraBlockItem @  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 1  )
+                                       (  linearContent .  )  )  )  )
+                              (  inBetween \n  )
+                              (  logicalIndent |  )
+                              (  listItemParaPiece
+                                 (  paraBlockContent
+                                    (  paraBlockText
+                                       (  linearContent Item 3  )
+                                       (  linearContent ,  )
+                                       (  linearContent paragraph 2  )
+                                       (  linearContent .  )  )  )  )  )  )  )  )  )  )  )  )
+      (  blankLine \n\n  )  )
+   (  eof <EOF>  )  )

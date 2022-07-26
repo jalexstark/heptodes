@@ -1,0 +1,301 @@
+TREE:
+(  quarrelTop
+   (  module module
+      (  identifier Scaffold  )  )
+   (  gClass class
+      (  identifier Coord  )
+      (  openStmt |  )
+      (  classPiece fun
+         (  identifier Characterizer  )
+         POPEN  
+           PCLOSE
+         ->
+         (  identifier result_val  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier int  )  )  )
+         (  statementSeq
+            (  openStmt |  )
+            (  statement
+               (  identifier result_val  )
+               :=
+               (  expression
+                  (  constant 42  )  )  )
+            (  closeStmt |  )  )  )
+      (  classPiece fun
+         (  identifier AcrossLines  )
+         POPEN  
+           PCLOSE
+         (  statementSeq
+            (  openStmt |  )
+            (  contractSeq
+               (  contractClause
+                  (  contractPrefix |->  )
+                  (  identifier result_val  )
+                  (  qualifiers
+                     (  singleQualifier :
+                        (  identifier int  )  )  )  )  )
+            (  statement
+               (  identifier result_val  )
+               :=
+               (  expression
+                  (  constant 42  )  )  )
+            (  closeStmt |  )  )  )
+      (  classPiece fun
+         (  identifier Area  )
+         POPEN  
+           PCLOSE
+         ->
+         (  identifier area  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier float  )  )  )
+         (  statementSeq
+            (  openStmt |  )
+            (  statement
+               (  identifier area  )
+               :=
+               (  expression
+                  (  expression
+                     (  identifier x  )  )
+                  *
+                  (  expression
+                     (  identifier y  )  )  )  )
+            (  closeStmt |  )  )  )
+      (  classPiece proc
+         (  identifier OuterProc  )
+         POPEN  
+           PCLOSE
+         (  statementSeq
+            (  openStmt |  )
+            (  statement
+               (  identifier f  )
+               :=
+               (  expression lambda
+                  POPEN  
+                    PCLOSE
+                  (  statementSeq
+                     (  openStmt |  )
+                     (  statement
+                        (  identifier p  )
+                        :=
+                        (  expression
+                           (  identifier q  )  )  )
+                     (  closeStmt |  )  )  )  )
+            (  closeStmt |  )  )  )
+      (  classPiece proc
+         (  identifier ExprProc  )
+         POPEN  
+           PCLOSE
+         (  statementSeq
+            (  openStmt |  )
+            (  statement
+               (  identifier f  )
+               :=
+               (  expression
+                  POPEN  (  expression lambda
+                     POPEN  
+                       PCLOSE
+                     (  statementSeq
+                        (  openStmt |  )
+                        (  statement
+                           (  identifier p  )
+                           :=
+                           (  expression
+                              (  identifier q  )  )  )
+                        (  closeStmt |  )  )  )  PCLOSE  )  )
+            (  closeStmt |  )  )  )
+      (  classPiece proc
+         (  identifier Modify  )
+         POPEN  (  identifierList
+            (  identifier zero_coord  )
+            (  qualifiers
+               (  singleQualifier :
+                  (  identifier bool  )  )  )  )  PCLOSE
+         (  statementSeq
+            (  openStmt |  )
+            (  statement if
+               (  expression
+                  POPEN  (  expression
+                     (  identifier zero_coord  )  )  PCLOSE  )
+               (  statementSeqCont
+                  (  openStmt |  )
+                  (  statement
+                     (  identifier x  )
+                     :=
+                     (  expression
+                        (  constant 0  )  )  )
+                  (  statement
+                     (  identifier y  )
+                     :=
+                     (  expression
+                        (  constant 0  )  )  )
+                  (  spliceStmt |  )  )
+               else
+               (  statementSeq
+                  (  openStmt |  )
+                  (  statement
+                     (  identifier t  )
+                     (  qualifiers
+                        (  singleQualifier :
+                           (  identifier float  )  )  )
+                     :=
+                     (  expression
+                        (  identifier x  )  )  )
+                  (  statement
+                     (  identifier x  )
+                     :=
+                     (  expression
+                        (  identifier y  )  )  )
+                  (  statement
+                     (  identifier y  )
+                     :=
+                     (  expression
+                        (  identifier t  )  )  )
+                  (  closeStmt |  )  )  )
+            (  closeStmt |  )  )  )
+      (  classPiece
+         (  identifier x  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier float  )  )  )  )
+      (  classPiece
+         (  identifier y  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier float  )  )  )  )
+      (  closeStmt |  )  )
+   (  funProc proc
+      (  identifier Another  )
+      POPEN  (  identifierList
+         (  identifier zero_coord  )
+         (  qualifiers
+            (  singleQualifier :
+               (  identifier bool  )  )  )  )  PCLOSE
+      (  statementSeq
+         (  openStmt |  )
+         (  statement if
+            (  expression
+               POPEN  (  expression
+                  (  identifier zero_coord  )  )  PCLOSE  )
+            (  statementSeqCont
+               (  openStmt |  )
+               (  statement
+                  (  identifier x  )
+                  :=
+                  (  expression
+                     (  constant 0  )  )  )
+               (  statement
+                  (  identifier y  )
+                  :=
+                  (  expression
+                     (  constant 0  )  )  )
+               (  spliceStmt |  )  )
+            else
+            (  statementSeq
+               (  openStmt |  )
+               (  statement
+                  (  identifier t  )
+                  (  qualifiers
+                     (  singleQualifier :
+                        (  identifier float  )  )  )
+                  :=
+                  (  expression
+                     (  identifier x  )  )  )
+               (  statement
+                  (  identifier x  )
+                  :=
+                  (  expression
+                     (  identifier y  )  )  )
+               (  statement
+                  (  identifier y  )
+                  :=
+                  (  expression
+                     (  identifier t  )  )  )
+               (  closeStmt |  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier AreaA  )
+      POPEN  
+        PCLOSE
+      ->
+      (  identifier area  )
+      (  qualifiers
+         (  singleQualifier :
+            (  identifier float  )  )  )
+      (  statementSeq
+         (  openStmt |  )
+         (  statement
+            (  identifier area  )
+            :=
+            (  expression
+               (  expression
+                  (  identifier x  )  )
+               *
+               (  expression
+                  (  identifier y  )  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier AreaB  )
+      POPEN  
+        PCLOSE
+      ->
+      (  identifier area  )
+      (  qualifiers
+         (  singleQualifier :
+            (  identifier float  )  )  )
+      (  statementSeq
+         (  openStmt |  )
+         (  statement
+            (  identifier area  )
+            :=
+            (  expression
+               (  expression
+                  (  identifier x  )  )
+               *
+               (  expression
+                  (  identifier y  )  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier AreaC  )
+      POPEN  
+        PCLOSE
+      ->
+      (  identifier area  )
+      (  qualifiers
+         (  singleQualifier :
+            (  identifier float  )  )  )
+      (  statementSeq
+         (  openStmt |  )
+         (  statement
+            (  identifier area  )
+            :=
+            (  expression
+               (  expression
+                  (  identifier x  )  )
+               *
+               (  expression
+                  (  identifier y  )  )  )  )
+         (  closeStmt |  )  )  )
+   (  funProc fun
+      (  identifier AreaD  )
+      POPEN  
+        PCLOSE
+      ->
+      (  identifier area  )
+      (  qualifiers
+         (  singleQualifier :
+            (  identifier float  )  )  )
+      (  statementSeq
+         (  openStmt |  )
+         (  statement
+            (  identifier area  )
+            :=
+            (  expression
+               (  expression
+                  (  identifier x  )  )
+               *
+               (  expression
+                  (  identifier y  )  )  )  )
+         (  closeStmt |  )  )  )
+   <EOF>  )

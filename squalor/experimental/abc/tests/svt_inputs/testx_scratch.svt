@@ -1,0 +1,33 @@
+List content pattern.
+
+@  List item
+|  Text before list.
+
+|  :1 List item 1.
+|  :2 List item 2.
+|  :3 List item 3.
+
+Breaks between nested lists.
+
+@  List item
+|  :1 List item 1.
+|  :2 List item 2.
+|  :3 List item 3.
+
+|  Nested list break by text.
+
+|  :1 List item 1.
+|  :2 List item 2.
+|  :3 List item 3.
+
+|  Put LIST BREAK token here.
+
+|  :1 Break by token. List item 1.
+|  :2 List item 2.
+|  :3 List item 3.
+
+|  :a Auto-break. List item 1.
+|  :b List item 2.
+|  :c List item 3.
+
+

@@ -1,0 +1,173 @@
+module Scaffold
+
+;;; Triple-semi comments always start in column zero.
+
+;;; Triple-semi comment separated from preceding by blank line.
+;; At the top-level, double-semi comments also start in column zero, and will break a preceding
+;; triple-semi comment.
+class Coord |
+   fun Characterizer() -> result_val :int |
+      result_val := 42                                                 ; This is a single line comment.
+   |
+
+   fun AcrossLines() |
+   |-> result_val :int
+      result_val := 42                                                 ; This is a multiple-line comment, that is one
+                                                                       ; that extends across more than one line.
+                                                                       ; Salient parsing allows only continuations
+                                                                       ; within the same comment type.
+                                                                       
+                                                                       ; Single-semi comment separated from preceding
+                                                                       ; by a blank line.
+   |
+   fun Area() -> area :float |
+      area := x * y
+      ;; Code-level comment before dedent.
+   |
+
+   ;; This is a procedure.
+   proc OuterProc() |
+      f := lambda() |
+         p := q
+   |  |                                                                ; This is a comment-column comment is broken by
+                                                                       ; transitioning to a double-semi comment.
+   ;; A double-semi comment that ends with a blank line.
+   
+   ;; A double-semi comment that is separated from its predecessor by a blank line.
+   proc ExprProc() |
+      f := (
+            lambda() |
+               p := q
+            |
+      )
+   |
+
+   proc Modify(zero_coord :bool) |
+      ;; After increase in indent.
+      if (zero_coord) |
+         x := 0
+         ;; In-between.
+         y := 0
+      | else |
+         t :float := x
+         x := y
+         y := t
+   |  |
+
+   x :float
+   y :float
+|
+#\\\
+This is Salient documentation in a block. In the future we should provide for nesting of such
+blocks within Quarrel code.
+
+@   Planar graphs (assumed to be DAGs) are graphs that can be drawing without
+    edge crossings.
+@   Every st-planar graph has one source node and one sink node. All nodes can
+    be reached from the source and are able to reach the sink. In other words,
+    there is only one graph and the source node is the only one without parents
+    and the sink node is the only one without children. EXTRA CHARACTERS.
+@   Often either a source or sink node is not needed. This is the case for
+    trees, which have a root (the source) but no sink. Patinon can extrapolate a
+    source and/or sink node. The graph must be laid out so that all nodes that
+    are without a parent can be connected to the source, and all nodes without a
+    child can be connected to the sink.
+\\\
+
+
+;;; Extended triple-semi comment, spanning a set of lines, with a sampling of real Salient formatting
+;;; features used.
+;;;
+;;; @   Planar graphs (assumed to be DAGs) are graphs that can be drawing without
+;;;     edge crossings.
+;;; @   Every st-planar graph has one source node and one sink node. All nodes can
+;;;     be reached from the source and are able to reach the sink. In other words,
+;;;     there is only one graph and the source node is the only one without parents
+;;;     and the sink node is the only one without children. EXTRA CHARACTERS.
+;;; @   Often either a source or sink node is not needed. This is the case for
+;;;     trees, which have a root (the source) but no sink. Patinon can extrapolate a
+;;;     source and/or sink node. The graph must be laid out so that all nodes that
+;;;     are without a parent can be connected to the source, and all nodes without a
+;;;     child can be connected to the sink.
+proc Another(zero_coord :bool) |
+   if (zero_coord) |                                                   ; Extended single-semi comment, spanning a set of lines, with a sampling of real Salient formatting
+                                                                       ; features used.
+                                                                       ;
+                                                                       ; @   Planar graphs (assumed to be DAGs) are graphs that can be drawing without
+                                                                       ;     edge crossings.
+                                                                       ; @   Every st-planar graph has one source node and one sink node. All nodes can
+                                                                       ;     be reached from the source and are able to reach the sink. In other words,
+                                                                       ;     there is only one graph and the source node is the only one without parents
+                                                                       ;     and the sink node is the only one without children. EXTRA CHARACTERS.
+                                                                       ; @   Often either a source or sink node is not needed. This is the case for
+                                                                       ;     trees, which have a root (the source) but no sink. Patinon can extrapolate a
+                                                                       ;     source and/or sink node. The graph must be laid out so that all nodes that
+                                                                       ;     are without a parent can be connected to the source, and all nodes without a
+                                                                       ;     child can be connected to the sink.
+      x := 0
+      ;; Extended double-semi comment, spanning a set of lines, with a sampling of real Salient formatting
+      ;; features used.
+      ;;
+      ;; @   Planar graphs (assumed to be DAGs) are graphs that can be drawing without
+      ;;     edge crossings.
+      ;; @   Every st-planar graph has one source node and one sink node. All nodes can
+      ;;     be reached from the source and are able to reach the sink. In other words,
+      ;;     there is only one graph and the source node is the only one without parents
+      ;;     and the sink node is the only one without children. EXTRA CHARACTERS.
+      ;; @   Often either a source or sink node is not needed. This is the case for
+      ;;     trees, which have a root (the source) but no sink. Patinon can extrapolate a
+      ;;     source and/or sink node. The graph must be laid out so that all nodes that
+      ;;     are without a parent can be connected to the source, and all nodes without a
+      ;;     child can be connected to the sink.
+      y := 0
+   | else |
+         t :float := x
+
+         ;; Quarrel space before, Salient space after.
+         ;;
+         x := y
+         ;;
+         ;; Salient space before, Quarrel space after.
+
+         y := t
+|  |
+
+;;; Quarrel space before, Salient space after.
+;;;
+fun AreaA() -> area :float |
+   area := x * y
+|
+;;;
+;;; Salient space before, Quarrel space after.
+
+fun AreaB() -> area :float |
+
+   ;;
+   ;;
+   
+   area := x * y
+   
+   ;;
+   ;;
+   
+|
+
+;;;
+
+fun AreaC() -> area :float |
+   ;;
+   ;;
+
+   area := x * y                                                       ;
+|
+;;;
+
+;;;
+fun AreaD() -> area :float |
+
+   ;;
+   ;;
+   area := x * y                                                       ;
+                                                                       ;
+                                                                       ;
+|

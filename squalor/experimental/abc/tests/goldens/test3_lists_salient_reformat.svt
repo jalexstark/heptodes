@@ -1,0 +1,107 @@
+Detached lists.
+
+A simple list.
+
+@   Item 1.
+@   Item 2.
+@   Item 3.
+
+Longer list.
+
+@   Planar graphs(assumed to be DAGs) are graphs that can be drawing without  edge crossings.
+@   Every st-planar graph has one source node and one sink node. All nodes can  be reached from
+   the source and are able to reach the sink. In other words, there is only one graph and the
+   source node is the only one without parents  and the sink node is the only one without
+   children. EXTRA CHARACTERS.
+@   Often either a source or sink node is not needed. This is the case for  trees, which have a
+   root(the source) but no sink. Patinon can extrapolate a  source and/or sink node. The graph
+   must be laid out so that all nodes that  are without a parent can be connected to the source,
+   and all nodes without a  child can be connected to the sink.
+
+A paragraph list.
+
+@   Item 1.
+
+@   Item 2.
+
+@   Item 3.
+
+List, paragraph items in compact form.
+
+@   Item 1, paragraph 1.|   Item 1, paragraph 2.
+@   Item 2.
+@   Item 3, paragraph 1.|   Item 3, paragraph 2.
+
+List, paragraph items with blank lines.
+
+@   Item 1, paragraph 1.|   Item 1, paragraph 2.
+@   Item 2.
+@   Item 3, paragraph 1.|   Item 3, paragraph 2.
+
+Paragraph list, paragraph items in compact form.
+
+@   Item 1, paragraph 1.|   Item 1, paragraph 2.
+
+@   Item 2.
+
+@   Item 3, paragraph 1.|   Item 3, paragraph 2.
+
+Paragraph list, paragraph items with blank lines.
+
+@   Item 1, paragraph 1.|   Item 1, paragraph 2.
+
+@   Item 2.
+
+@   Item 3, paragraph 1.|   Item 3, paragraph 2.
+
+Double list.
+
+@
+   @   Item 1.A.
+   |  @   Item 1.B.
+   |  @   Item 1.C.
+@   Item 2.
+@
+   @   Item 3.A.
+   |  @   Item 3.B.
+
+Double list, paragraph items.
+
+@
+   @   Item 1.A.
+   |  @   Item 1.B, paragraph 1.|  |   Item 1.B, paragraph 2.
+   |  @   Item 1.C.
+@   Item 2, paragraph 1.|   Item 2, paragraph 2.
+@
+   @   Item 3.A.
+   |  @   Item 3.B.
+
+Attached lists.
+
+A simple list.
+@   Item 1.
+@   Item 2.
+@   Item 3.
+
+Longer list.
+@   Planar graphs(assumed to be DAGs) are graphs that can be drawing without  edge crossings.
+@   Every st-planar graph has one source node and one sink node. All nodes can  be reached from
+   the source and are able to reach the sink. In other words, there is only one graph and the
+   source node is the only one without parents  and the sink node is the only one without
+   children. EXTRA CHARACTERS.
+@   Often either a source or sink node is not needed. This is the case for  trees, which have a
+   root(the source) but no sink. Patinon can extrapolate a  source and/or sink node. The graph
+   must be laid out so that all nodes that  are without a parent can be connected to the source,
+   and all nodes without a  child can be connected to the sink.
+
+A paragraph list.
+@   Item 1.
+
+@   Item 2.
+
+@   Item 3.
+
+List, paragraph items in compact form.
+@   Item 1, paragraph 1.|   Item 1, paragraph 2.
+@   Item 2.
+@   Item 3, paragraph 1.|   Item 3, paragraph 2.
