@@ -36,6 +36,7 @@ as in figure captions.
 
 ![XXXXXXXXXXXXXX\label{figF}.](figs/RatQuad-F.svg)
 
+![XXXXXXXXXXXXXX\label{figG}.](figs/RatQuad-G.svg)
 
 
 --------------------------------------------------------------------------------
