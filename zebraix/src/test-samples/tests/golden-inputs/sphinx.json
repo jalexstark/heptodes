@@ -1,0 +1,22 @@
+{
+  "graph": {
+  "nodes": [
+  {
+    "primary": 0,
+    "obverse": 0,
+    "text": "Four legs"
+  },
+  {
+    "primary": 1,
+    "obverse": 1,
+    "text": "Two legs"
+  },
+  {
+    "primary": 2,
+    "obverse": 2,
+    "text": "Three legs"
+  }
+]
+  },
+  "render": {}
+}

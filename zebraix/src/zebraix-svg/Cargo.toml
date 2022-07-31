@@ -1,0 +1,20 @@
+[package]
+name = "zebraix-svg"
+version = "0.1.0"
+authors = ["Alex Stark <alex@withheld.org>"]
+edition = "2021"
+
+[dependencies]
+pangocairo = "0.15"
+getopts = "0.2"
+
+[dependencies.cairo-rs]
+version =  "0.15.0"
+features = ["svg"]
+
+[dependencies.pango]
+version =  "0.15.0"
+
+[dependencies.render-svg]
+version =  "0.1.0"
+path = "../render-svg"

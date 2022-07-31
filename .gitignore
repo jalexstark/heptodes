@@ -1,5 +1,7 @@
 **/*~
 **/*.log
+**/target
+**/Cargo.lock
 zebraix/doc/design/JaywalkBuilder.html
 zebraix/doc/design/JaywalkBuilder.pdf
 zebraix/doc/design/JaywalkConcepts.html
