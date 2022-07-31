@@ -55,6 +55,25 @@ Full circle / indeterminate        $-180^\circ,180^\circ$              $\infty$ 
 
 Table: CCCC brevity.\label{tabH}
 
+![XXXXXXXXXXXXXX\label{figI}.](figs/RatQuad-I.svg)
+
+![XXXXXXXXXXXXXX\label{figJ}.](figs/RatQuad-J.svg)
+
+![XXXXXXXXXXXXXX\label{figK}.](figs/RatQuad-K.svg)
+
+
+------------------------------------------------------------------------------------------------------
+Vertegram face style             $\tau=$                                 $\tau=$
+-------------------------------  ----------------------------            ----------------------------
+Linear-tangent                   $u$                                     $\tan(\phi)$
+
+Circular-tan-half                $\tan(\tfrac12\tan^{-1}(u))$            $\tan(\phi/2)$
+
+Sin-tan-half                     $\tan(\tfrac12\sin^{-1}(u))$            $\tan(\tfrac12\sin^{-1}(u\tan(\phi)))$
+------------------------------------------------------------------------------------------------------
+
+Table: CCCC brevity.\label{tabL}
+
 
 # Equations
 
