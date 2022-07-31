@@ -8,3 +8,16 @@ zebraix/doc/design/JaywalkConcepts.html
 zebraix/doc/design/JaywalkConcepts.pdf
 zebraix/doc/design/RatQuad.html
 zebraix/doc/design/RatQuad.pdf
+
+*~
+*.aux
+*.log
+*.blg
+*.toc
+*.out
+*.bbl
+
+patinon/experimental/doc/archive/StickySituations.loc
+patinon/experimental/doc/archive/StickySituations.mw
+patinon/experimental/doc/archive/RoughMaterial.loc
+patinon/experimental/doc/archive/RoughMaterial.mw

@@ -1,0 +1,1 @@
+digraph SubWindUp {rankdir=BT; node [fontname = "Helvetica"]; margin=0; subgraph cluster1 {Freed->Allocated->Configured;style="dashed";margin=10;}; subgraph cluster2 {"Resources\nallocated" ->"Communications\nsetup"->"Server live";style="dashed";margin=10;}; Configured->"Resources\nallocated" Configured->Failure;}

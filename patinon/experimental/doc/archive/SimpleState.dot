@@ -1,0 +1,1 @@
+digraph SimpleState {rankdir=BT; node [fontname = "Helvetica"]; margin=0; Allocated->Initialized;}
