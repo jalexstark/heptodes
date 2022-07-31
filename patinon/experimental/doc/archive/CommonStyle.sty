@@ -1,0 +1,240 @@
+
+\usepackage{graphics}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\usepackage[pdf]{graphviz}
+\usepackage{morewrites}  % Because of bug in graphviz package.
+
+\usepackage[scaled=.95]{gentium}
+%\usepackage[scaled=0.97]{gentium}
+\usepackage{textcomp}
+\usepackage[T1]{fontenc}
+\usepackage{cabin}
+%\usepackage[varqu,varl]{inconsolata}
+%\usepackage[scaled=1.05]{zlmtt} % latin modern typewriter
+%\usepackage[zerostyle=d]{newtxtt} %% Various versions of zeros available. See documentation for details
+%\renewcommand*\ttdefault{txtt}
+\renewcommand*\ttdefault{lmtt}
+
+\usepackage{amsmath,amsthm}
+\usepackage[libertine,bigdelims,vvarbb]{newtxmath}
+\usepackage[cal=boondoxo]{mathalfa}
+
+
+\usepackage{booktabs}
+\usepackage{tabularx} % also loads 'array' package
+\newcolumntype{C}{>{\centering\arraybackslash}X} % centered version of 'X' columns
+
+% \usepackage{dcolumn}
+
+\usepackage{xspace}% NB load after any language packages.
+
+
+\usepackage{color}
+\usepackage[colorlinks,extension=pdf,bookmarksnumbered,%
+bookmarksopen,bookmarksopenlevel=1]{hyperref}
+
+
+\usepackage{fancyvrb}
+\usepackage{mdframed}
+
+\usepackage{newfloat}
+\usepackage{caption}
+
+\definecolor{sidered}{rgb}{0.5,0,0.1}
+\definecolor{sideblue}{rgb}{0.0,0.1,0.5}
+
+
+\newmdenv[
+  topline=false,
+  bottomline=false,
+  rightline=false,
+  linecolor=sidered,
+  linewidth=1pt,
+  skipabove=\topsep,
+  skipbelow=\topsep
+]{offside}
+
+\newmdenv[
+  topline=false,
+  bottomline=false,
+  rightline=false,
+  linecolor=sideblue,
+  linewidth=1pt,
+  skipabove=4pt,
+  skipbelow=4pt,
+  innertopmargin=2pt,
+  innerbottommargin=2pt
+]{offsideBlue}
+
+\definecolor{codered}{rgb}{0.45,0.05,0}
+\definecolor{codemag}{rgb}{0.45,0,0.45}
+\definecolor{codegreen}{rgb}{0,0.30,0.05}
+\definecolor{codeblue}{rgb}{0,0.,0.4}
+\definecolor{codetan}{rgb}{0.5,0.4,0}
+\definecolor{codebrown}{rgb}{0.3,0.25,0}
+\definecolor{codebrick}{rgb}{0.45,0.15,0}
+\definecolor{codebluegray}{rgb}{0.1,0.1,0.5}
+
+% \newcommand\ckw[1]{\textcolor{codetan}{\bfseries#1}}
+% \newcommand\ctype[1]{\textcolor{codegreen}{#1}}
+% \newcommand\clab[1]{\textcolor{codeblue}{\slshape{#1}}}
+% \newcommand\ccomment[1]{\textcolor{codered}{#1}}
+% \newcommand\cellipsis[1]{\textcolor{codered}{\slshape{<#1...>}}}
+% \newcommand\cop[1]{\textcolor{codebrown}{#1}}
+\newcommand\ckw[1]{\textcolor{codered}{#1}}
+\newcommand\ctype[1]{\textcolor{codemag}{#1}}
+\newcommand\clab[1]{\textcolor{codegreen}{\slshape{#1}}}
+\newcommand\ccomment[1]{\textcolor{codebluegray}{#1}}
+\newcommand\cellipsis[1]{\textcolor{codebluegray}{\slshape{<#1...>}}}
+\newcommand\cop[1]{\textcolor{codebrick}{#1}}
+
+\newcommand{\cbracket}[1]{[#1]}
+\newcommand{\cdedent}{\cop{|}}
+\newcommand{\csitop}{\cop{|== }}
+\let\csituation\clab
+\newcommand\ccaps[1]{\textcolor{codebrown}{\scshape{\small #1}}}
+\newcommand{\intextclab}{\SaveVerb[aftersave={%
+    \clab{\UseVerb{Vitem}}}]{Vitem}}
+\newcommand{\cend}{\cop{/}}
+\newcommand{\cbrack}[1]{[#1]}
+% \newcommand{\cgoto}{\cop{->\$}}
+\newcommand{\cgoto}{\cop{-> }}
+\DefineShortVerb{\|}
+
+\renewcommand{\theFancyVerbLine}{%
+\textcolor{codered}{\tiny\arabic{FancyVerbLine}}}
+% \makebox[2cm]{\hspace*{\fill}\textcolor{codered}{\tiny
+% \arabic{FancyVerbLine}}}}
+
+\DefineVerbatimEnvironment{CVerbatim}{Verbatim}
+{%
+    frame=leftline,framerule=1pt,rulecolor=\color{sideblue},
+    gobble=8,baselinestretch=0.8,
+    numbers=right,numbersep=1.5pt,
+    commandchars=\\\[\]}
+
+\DefineVerbatimEnvironment{PVerbatim}{Verbatim}
+{%
+  %frame=leftline,framerule=1pt,rulecolor=\color{sideblue},
+    gobble=2,baselinestretch=0.9,
+    numbers=right,numbersep=1.5pt,
+    commandchars=\\\[\]}
+
+\definecolor{hyperred}{rgb}{0.5,0,0}
+\definecolor{hypergreen}{rgb}{0,0.5,0}
+\definecolor{hypermagenta}{rgb}{0.4,0,0.4}
+\definecolor{hypercyan}{rgb}{0,0.3,0.3}
+
+\hypersetup{linkcolor=hyperred}
+\hypersetup{citecolor=hypergreen}
+\hypersetup{filecolor=hypermagenta}
+\hypersetup{ urlcolor=hypercyan}
+\hypersetup{menucolor=hyperred}
+
+% \newlistof{codex}{loc}{List of Code Examples}
+\DeclareFloatingEnvironment[
+fileext=loc,
+listname={Code Examples},
+name=Code example,
+placement=tp,
+]{codex}
+
+\DeclareCaptionFormat{codexformat}{#1#2#3\hrulefill}
+\captionsetup[codex]{style=base,format=codexformat,singlelinecheck=false}
+\def\topcaption{\hrulefill\vspace{-1.2ex}\caption}
+\def\bottomcaption{\vspace{-2ex}\caption}
+
+% Fix pdflatex interaction problem.
+\let\equation\gather
+\let\endequation\endgather
+
+\newcommand{\ts}{\text{.}}
+\newcommand{\tc}{\text{,}}
+\newcommand{\tsc}{\text{;}}
+
+%\usepackage{microtype}
+
+
+% What did this fix?
+
+% \makeatletter
+
+% \def\acltype{toc}
+% % Based on hyperref.sty, add labelling to section macros.
+% \let\oldaddcontentsline\addcontentsline
+% \def\addcontentsline#1#2#3{% toc extension, type, tag
+%   \oldaddcontentsline{#1}{#2}{#3}%
+%   \def\tmp{#1}%
+%   \ifx\acltype\tmp
+%   \label{\@currentHref}%
+%   %\hyperdef{secs}{\@currentHref}{\strut}%
+%   \fi
+% }
+
+% % Based on hyperref.sty, use label hyperlink in TOC instead of bookmark-link.
+% \def\altcontentsline#1#2#3#4{%
+%   \ifx\\#4\\%
+%     \csname l@#1\endcsname{#2}{#3}%
+%   \else
+%     \ifcase\Hy@linktoc % none
+%       \csname l@#1\endcsname{#2}{#3}%
+%     \or % section
+%       \csname l@#1\endcsname{%
+%         \hyperref[\tocfile-#4]{#2}%
+%         % \hyperref{\tocfile.pdf}{secs}{#4}{#2}%
+%         %\hyper@linkstart{link}{\tocfile-#4}{#2}\hyper@linkend
+%       }{#3}%
+%     \or % page
+%       \csname l@#1\endcsname{{#2}}{%
+%         \hyper@linkstart{link}{Y#4}{#3}\hyper@linkend
+%       }%
+%     \else % all
+%       \csname l@#1\endcsname{%
+%         \hyper@linkstart{link}{Z#4}{#2}\hyper@linkend
+%       }{%
+%         \hyper@linkstart{link}{W#4}{#3}\hyper@linkend
+%       }%
+%     \fi
+%   \fi
+% }%
+% \makeatother
+
+% \newtheorem{princ}{Principle}
+% \newtheorem{thm}{Theorem}[section]
+% \newtheorem{lemma}[thm]{Lemma}
+% \newtheorem{cor}[thm]{Corollary}
+% \newtheorem{sproof}[thm]{Proof}
+
+% \theoremstyle{remark}
+% \newtheorem*{rem}{Remark}
+% \newtheorem{example}[thm]{Example}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}
+
+\newcommand{\Utop}{\textsc{Utopia27}\xspace}
+\newcommand{\UtopiaOld}{\textsc{Utopia84}\xspace}
+
+\newcommand{\eqnref}[1]{eq.\ \ref{eq:#1}}
+\newcommand{\eqnsref}[2]{eqs.\ \ref{eq:#1} and \ref{eq:#2}}
+\newcommand{\eqntref}[3]{eqs.\ \ref{eq:#1}, \ref{eq:#2} and \ref{eq:#3}}
+\newcommand{\Eqnref}[1]{Eq.\ \ref{eq:#1}}
+\newcommand{\peqnref}[1]{(eq.\ \ref{eq:#1})}
+
+\newcommand{\figref}[1]{fig.\ \ref{fig:#1}}
+\newcommand{\sfigref}[2]{fig.\ \ref{fig:#1}(#2)}
+\newcommand{\Figref}[1]{Fig.\ \ref{fig:#1}}
+\newcommand{\pfigref}[1]{(fig.\ \ref{fig:#1})}
+\newcommand{\psfigref}[2]{(fig.\ \ref{fig:#1}(#2))}
+
+\newcommand{\tabref}[1]{table\ \ref{tab:#1}}
+\newcommand{\Tabref}[1]{Table\ \ref{tab:#1}}
+
+% In pdfTex 1.40.15 use
+% \pdfsuppresswarningpagegroup=1
+
+\newcommand{\situation}[2][situation]{$\langle\text{#1}_{#2}\rangle$}
+\newcommand{\ob}[1]{\overline{#1}}%

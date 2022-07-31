@@ -1,0 +1,1877 @@
+\documentclass[10pt]{amsart}
+
+\ifdefined\refimport
+  \usepackage[paperwidth=209mm,paperheight=10.9in,nohead,textwidth=7in,textheight=9in]{geometry}
+\else
+  \usepackage[paperwidth=209mm,paperheight=10.9in]{geometry}
+\fi
+
+\usepackage{CommonStyle}
+
+\hypersetup{%
+  pdftitle={Rough Material for Situations},
+  pdfauthor={\textcopyright\ J.~Alex Stark},
+  pdfsubject={Rough material for article on situations and typestate.}%
+}
+
+\usepackage[notref]{showkeys}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title[Rough Material]{%
+  Rough Material for Sticky Situations}
+\author{J.~Alex Stark}
+\date{2016}
+\maketitle
+
+\tableofcontents
+\listofcodex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\nocite{*}
+
+% =================================================================
+\section{Rough material}
+
+% -----------------------------------------------------------------
+\subsection{Topics}
+
+\begin{itemize}
+\item Kinds of structures: config (Builder, add, build paradigm), data
+  bundle, object
+\item POD.
+%
+\item Enums and FSMs
+\item Graphs
+\item Impl
+\item Execution context vs injections
+\end{itemize}
+
+Labelling situations.  Wildcard situation names.  Continuing to the
+next handler.
+
+% -----------------------------------------------------------------
+\subsection{Mumble}
+
+
+
+If
+For
+Return
+Break
+Continue
+While
+Until
+
+Also distinguish \emph{semi-pure} functions.  These can have limited
+side effects, eg for logging or counting how often called.  Basically
+we don't care how often and when it gets called.
+
+
+
+Sometimes we want to merge situations, and encapsulate the typestate
+in data values.  We will need some mechanism for this.  It could be
+used to store the actual typestate in a container, or to complete the
+construction of an\emph{any} object.
+
+% -----------------------------------------------------------------
+\subsection{Utopianism itemized}
+
+
+\begin{itemize}
+\item \Utop tries to keep code lightweight.  By this, I mean that the
+  it does not place much extra burden on programmers compared with
+  C++\@.  It can do this because, for the most part, standard cases
+  apply.  Only the exceptions need be annotated explicitly.  For
+  example, customized typestate is only needed in a minority of cases:
+  \emph{const} and \emph{non-const} forms suffice for the great
+  majority of cases.
+% \item \Utop can keep typestate lightweight because of much of the data
+%   in a program is simple, with \emph{const} and \emph{non-const}
+%   forms.  In some cases data types benefit from having more states,
+%   but most of these follow patterns and declaring structures and types
+%   is not much more elaborate than in C++.
+\item \Utop makes a strong distinction between mutability and
+  immutability.  It reduces the reliance on the distinction between
+  values and references.  In line with C++, it permits control between
+  stack and heap allocation.
+\item \Utop provides improved handling of reachability and exclusivity
+  of ownership, and of transfer of ownership.  Situations aid in
+  keeping this simple and lightweight.  For instance, if a function
+  cannot fulfill its obligations in some circumstances, it can return
+  with a situation under which the calling code path diverges.
+\item \Utop uses richer typestate to control the handling of member
+  fields, eliminating the need for such things as null pointers used
+  as sentinel references.
+\end{itemize}
+
+
+
+
+% =================================================================
+\section{Typestate}
+
+
+% -----------------------------------------------------------------
+\subsection{Multi-level}
+
+\label{sec:multiLevel}%
+
+\begin{figure}[tbp]
+  \centering
+  \begin{tabularx}{0.9\textwidth}{CC}
+    \digraph[scale=0.65]{WindUp}{%
+      rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+      Freed->Allocated->Configured->"Resources\string\nallocated"
+      ->"Communications\string\nsetup"->"Server live";}
+    &
+    \digraph[scale=0.65]{SubWindUp}{%
+      rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+      subgraph cluster1 {Freed->Allocated->Configured;style="dashed";margin=10;};
+      subgraph cluster2 {"Resources\string\nallocated"
+      ->"Communications\string\nsetup"->"Server live";style="dashed";margin=10;};
+      Configured->"Resources\string\nallocated"
+      Configured->Failure;}
+    \\
+    (a) & (b)
+  \end{tabularx}
+  \caption{Multi-level typestate.  (a) A generalization of the simple
+    typestates of figref{SimpleTypestate} is to have a customized
+    main trunk, and (b) with a side branch.  \Utop supports this kind
+    of tree in a standardized form.  The states on the main trunk are
+    most often considered to be levels with increasing readiness.  The
+    concept of levels makes it easier to specify constraints on the
+    states.  For example, we can specify that the state is at least as
+    high as the allocation of resources, or no higher than configured.
+    Side branches, such as a problem in resource allocation, complicate
+    the picture a only a little.}
+  \label{fig:TypestateLevels}
+\end{figure}
+
+How do multiple levels of typestate of compound data relate to the
+typestate of its members?  Simple case: initialized structure's const
+members are in at least initialized state when it is promoted.  It is
+moot whether they are immutable in of themselves: accessor makes them
+const.
+
+
+% -----------------------------------------------------------------
+\subsection{Unwinding: Setup and tear down}
+
+\label{sec:unwind}%
+Also discuss this as an example where design decisions are adversely
+influenced.
+
+Often in a function, you may allocate resources and need to exit in
+multiple places.  Function, or construction, clean-up.  (We discuss
+function clean-up, but often mean construction, and construction need
+not necessarily be done in a constructor function.)  Unwinding versus
+not unwinding.  Programmers can simplify their code by putting the
+resource cleanup code at the end of the function all ``exit points''
+of the function would goto the cleanup label. This way, you don't have
+to write cleanup code at every ``exit point'' of the function.
+
+\begin{codex}
+\topcaption{Unwinding}
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[function] RunService(options):
+     \ckw[when] (ProcessOptions(options))\cop[:]
+        log.Error("Configuration problem.")
+        \cgoto\csituation[OptionsProblem]
+     \cend
+     \ckw[when] (AllocateResources(options))\cop[:]
+        log.Error("Allocation problem.")
+        \cgoto\csituation[AllocationProblem]
+     \cend
+     \ckw[when] (SetupCommunications(options))\cop[:]
+        log.Error("Problem opening communications channels.")
+        \cgoto\csituation[CommunicationsProblem]
+     \cend
+
+     \cellipsis[The real work]
+
+     \cellipsis[Unwind communications setup]
+     \ckw[continue]
+  \csitop\csituation[CommunicationsProblem]\cop[:]
+     \cellipsis[Unwind allocations]
+     \ckw[continue]
+  \csitop\csituation[AllocationProblem]\cop[:]
+     \cellipsis[Probably little unwinding needed for 1st stage]
+     \ckw[continue]
+  \csitop\csituation[OptionsProblem]\cop[:]
+  \cend
+\end{PVerbatim}
+%$
+\end{offsideBlue}
+\bottomcaption*{Describe it! Describe it! Describe it! Describe it! Describe
+  it! Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it!}
+\end{codex}
+
+In my opinion one can learn a lot about a computer language from style
+guides.  Books and articles concerned with effective usage also say
+much about how programming concepts work out in reality.  We look
+forward to the publication of \emph{Effective \Utop}, and \emph{57
+  Ways to Improve Your \Utop}.
+
+\ref{sec:linuxstyle}
+
+Should probably only allow chained or unchained situations, and not a
+mixture thereof.
+
+Unwinding in stages is not trivial, and this is reflected in the
+pseudo-code.  Note that the \Utop compiler checks the structure, since
+the setup and unwind processes change the typestate of the various
+data fields and variables.  For example, the section for unwinding
+allocations reverses the typestate changes made under resource
+allocation.  All execution paths that complete the allocations must
+pass through the section, and those that do not must skip it.
+
+
+% =================================================================
+\section{Introduction}
+
+
+% -----------------------------------------------------------------
+\subsection{Initial thoughts}
+
+After decades of computer programming it is hard to argue that there
+are any \emph{silver bullets} to be found in software development:
+Fred Brooks' assertion stands firm.  This is not for want of looking.
+Many languages and software development practices have been explored,
+many of them in small-scale experiments, some widely applied.
+Overall, one has to say that most genuine improvements have been
+incremental.  Nonetheless, I do not think that we should stop trying.
+Rather, significant improvements are within easy reach, and these may
+be found by looking hard at the most basic aspects of programming
+language design.  Moreover, while many good ideas may have emerged
+recently, we may need to revisit some that were proposed a long time
+ago, yet did not make it into the mainstream.  I also think it
+important that, as we do this, we try to avoid falling into familiar
+patterns of thought and argument.  (I will try to present some
+pertinent examples.)
+
+As I have thought about the challenges of programming, considered
+ideas and possibilities, and struggled to write this article, I have
+become convinced that the challenge that lies before us will not be
+met by finding a neat and coherent solution.  Our reality is messy.
+Might it be possible to take, say, C++ and add a little ``complexity''
+here and there such that the result is actually not more complex and
+yet more reliable, secure and maintainable?  I think we should try.
+(Aside: some of the complexity in existing programs is implicit, and
+in new languages this will be explicit.  As a result there will be a
+superficial increase in complexity.)
+
+\emph{Situations}, which we will define in detail later, recur as a
+theme throughout our discussion.  We will touch on many topics, but
+situations will be the glue holding everything together.  The name
+\emph{situation} was used by Knuth over forty years ago in describing
+a restricted branching control structure.  Knuth was not the only one
+to propose it, and there were others that were very similar.  However,
+I think that this word is very helpful.  Knuth realized that it was
+important to distinguish between events that occur at a point in time,
+and conditions that occur at a particular location in a program
+execution.  He noted that \emph{situation} is apt for the second case
+because it has the dual connotation of \emph{state of affairs} and
+\emph{place or locality}.
+
+While situations bring benefits on their own, the purpose of this
+article is to examine wider possibilities.  Actually, a strong
+motivation for writing is that I am frustrated that we still have code
+like the following (in pseudo-code).
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[function](\ctype[*inputStructure] input_data)\cop[:]
+     \ckw[if] (input_data == \clab[null])\cop[:]
+         \cellipsis[Handle null-input situation]       \ccomment[; This should never happen.]
+     \cend
+     \cellipsis[Code that is always executed]
+  \cend
+\end{PVerbatim}
+\end{offsideBlue}
+In other words, our code is typically riddled with checks for
+situations that should never happen and often even cannot.  The
+problem is not solved by removing pointers from a language, or
+managing memory automatically.  The function above is only ever called
+with parameters in a particular state or set of states, and so
+|input_data| can never be invalid.  But this is not codified in a
+contract.  The undesirable consequences of superfluous checks are
+many.  One is that testing is awkward.  How does one test something
+that cannot occur?  A further consequence is that decisions about the
+organization of code, such as splitting into sub-routines, is strongly
+influenced by the awkwardness of testing.
+
+Another language concept that we will explore is \emph{typestate},
+which we define as state information that augments data type
+information and that is associated with data at points in program
+execution.  Typestate helps us (and compilers, etc) understand how the
+state of data unfolds as the program executes.  In the above example,
+the function \emph{expects} that |input_data| is valid when it is
+called, and the caller is required to \emph{assure} that it has that
+typestate.  When requirements are placed across boundaries such as
+calling interfaces, we will refer to them as \emph{contracts}.
+However, we want to go further, and consider how it might be helpful
+to examine assurances and expectations across other boundaries.  For
+instance, one could draw a line around a code block such as an
+iteration, or draw a line between two sequential lines of code.  If
+code that follows a boundary uses a variable, it expects the variable
+to be defined, and the code that precedes the boundary must assure
+that it has been defined.
+
+Not only do situations provide a way of describing (some) branches in
+programs, they also provide a clean way for describing alternative
+movements through code boundaries.  For example, if the execution of a
+block of code encounters an unusual situation, it may exit early and
+with different typestate.  The execution with the unusual exit moves
+to a different point in the code.  I want to suggest an extension to
+Knuth's distinction between events and situations.  I think that
+situations should in most uses differentiate \emph{infrequent} code
+paths from \emph{frequent} paths.  They should not be used to
+differentiate the \emph{exceptional} from the \emph{normal}.  If a
+request to open a file fails due to lack of permission, this failure
+is not exceptional.  The program should deal with it as a normal,
+though infrequent, unfolding of execution.  A normal infrequent
+situation like this should not be handled with expensive handling, but
+with an inexpensive diversion.  Situations and typestate enable us to
+deal cleanly with the different data states that arise when execution
+unfolds like this.
+
+
+% % -----------------------------------------------------------------
+% \subsection{General comments}
+
+% It is my impression that the discipline of computer programming
+% is\linebreak[4] thought to incorporate ideas relatively quickly and
+% efficiently.  Moreover, those of us who practise it like to think that
+% we consider new ideas as ``innocent until proven guilty''.  It may
+% take a while to weed out poor ideas, but at least we give them a fair
+% hearing, and rarely reject good ones.  This may indeed be true.
+% However, one of the main arguments that we make here is that one
+% really good idea was missed.  We will reopen the case, review the
+% original evidence, add new findings, and suggest that the verdict
+% should be overturned, and the idea in question exonerated.
+
+% The idea was introduced over forty years ago.  It involves a fairly
+% simple control construct built around control-flow paths called
+% \emph{situations}.  (We will not summarize them at this point, since
+% simplification could mislead.)  We will see that situations have had
+% their supporters over the intervening years, and some style guides
+% recommend emulating something similar to them using existing control
+% mechanisms.  However, the full benefits of situations cannot be
+% realized without rehabilitating them and incorporating them into the
+% core design of programming languages.
+
+% Situations by themselves are useful but will not make much of a
+% difference to the practice of programming.  However, when combined
+% with other ideas, real and significant improvements are possible in
+% security and productivity, and perhaps even in the pleasure of
+% programming.  Before we proceed further we must acknowledge that
+% claims like this have been made countless times before, and in most
+% instances delivery did not match up to expectations.  We do not
+% believe that situations will bring about revolutionary increases in
+% productivity.  They are not \emph{silver bullets}.  Nonetheless, we
+% believe that modest improvements are achievable across the whole
+% process of programming such that the overall change could be
+% substantial.
+
+% Much of the difficulty in language design lies in the selection of
+% features.  That is to say, there is no shortage of good ideas, but
+% accepting too many of them results in a burdensome language.  What
+% follows are some suggestions of features and how they might be
+% combined.  We do not claim that we have created the perfect cocktail.
+% Another challenge is to make wise choices about requirements placed on
+% the programmer.  For example, one language will require explicit data
+% type conversions (casting) where another would not.  It is a burden to
+% require explicit numerical conversions everywhere, but expensive
+% satellites can end up being destroyed if unchecked mistakes are made.
+% Many readers will consider this obvious, but the point is that our
+% suggestions attempt to steer a particular course, and we do not claim
+% to have struck the best balance in every case.  Our general approach
+% will be to identify features that should bring significant benefit,
+% and endeavour to keep their embodiments lightweight.  We will use the
+% word \emph{lightweight} many times in reference to this principle.
+
+
+% -----------------------------------------------------------------
+\subsection{Utopianism}
+
+There are many different sub-disciplines in computer programming, and
+even the best of us do not always appreciate the challenges faced by
+another programmer working on a different kind of problem.  We can
+only speak from our own experience, direct or indirect.  Furthermore,
+no languages is even nearly optimal for every task.  What we will do
+as we proceed is to imagine what a language in the future might be
+like, a language that in broad terms replaces C++.  This narrows the
+field somewhat, at least eliminating the kinds of tasks to which, say,
+Python, shell scripting, SQL, and so on, are better suited.  It should
+work quite well for a web server, for image processing, for
+interfacing with drivers in a C library.  In his 1974 paper, Knuth
+imagined a language he called \UtopiaOld\@.  Since his follow-up
+letter to that paper is pivotal to our discussion, let us honour him
+by calling our imaginary language \Utop\@.  I hope that the irony and
+humour in this name will help us avoid taking ourselves too seriously.
+
+
+\begin{itemize}
+\item \Utop tries to keep code lightweight.  By this, I mean that the
+  it does not place much extra burden on programmers compared with
+  C++\@.  It can do this because, for the most part, standard cases
+  apply.  Only the exceptions need be annotated explicitly.  For
+  example, customized typestate is only needed in a minority of cases:
+  \emph{const} and \emph{non-const} forms suffice for the great
+  majority of cases.
+% \item \Utop can keep typestate lightweight because of much of the data
+%   in a program is simple, with \emph{const} and \emph{non-const}
+%   forms.  In some cases data types benefit from having more states,
+%   but most of these follow patterns and declaring structures and types
+%   is not much more elaborate than in C++.
+\item \Utop performs simple deductions about types but does not try to
+  be especially clever, and certainly does not try to prove anything
+  much about a program.  There are many reasons for this.  (a)
+  Anything but simple deductions will slow down compilation.  (b) If
+  the rules are simple, a programmer can anticipate what \Utop can
+  figure out and what needs to be specified explicitly.  (c) A lot can
+  be done without being clever.
+\item \Utop makes a strong distinction between mutability and
+  immutability.  It reduces the reliance on the distinction between
+  values and references.  In line with C++, it permits control between
+  stack and heap allocation.
+\item \Utop provides improved handling of reachability and exclusivity
+  of ownership, and of transfer of ownership.  Situations aid in
+  keeping this simple and lightweight.  For instance, if a function
+  cannot fulfill its obligations in some circumstances, it can return
+  with a situation under which the calling code path diverges.
+\item \Utop uses richer typestate to control the handling of member
+  fields, eliminating the need for such things as null pointers used
+  as sentinel references.
+\end{itemize}
+
+
+
+% % -----------------------------------------------------------------
+% \subsection{Utopia}
+
+% What are the benefits of situations?  What other language features
+% might be usefully combined with them?
+% \begin{itemize}
+% \item Situations are a kind of labeled branch that always move
+%   downwards in terms of the written code and outward in terms of
+%   nesting.  Since \Utop has situations, it has eliminated the break,
+%   continue and return statements.  Break and continue statements were
+%   special cases of situations without labels.  Dropping the return
+%   statement is to some extent a choice in syntax design, but has the
+%   notable benefit that all exits from a have a labeled path, easing
+%   code exploration and tracing.
+% \item \Utop has richer typestate.  (This is an enhanced embodiment of
+%   states of types, under which the type of a variable is augmented
+%   with an understanding of its state at every point in the code in
+%   which it exists.)  C++ had three or four implicit typestates:
+%   unallocated, allocated, initialized and constant.  (A local integer
+%   is never unallocated.)  From the perspective of \Utop, RAII
+%   (resource acquisition is initialization) was always a fiction.
+%   Complex objects are initialized in stages, and in C++ this was
+%   implemented through pointers that were null, or some other sentinel
+%   values.  For example, the main part of a program might parse the
+%   configuration (including command-line flags), then open files, then
+%   connect to databases, then allocate internal resources, and later be
+%   considered fully initialized.  In \Utop, these are multiple stages
+%   in the principal typestate chain, and it has a simple mechanism for
+%   declaring them.
+% \item \Utop brings clarity to distinction between the infrequent and
+%   frequent, by means of situations, and considers this orthogonal to
+%   the distinction between the exceptional and the normal.  It
+%   introduces the mechanism of the alternative infrequent return path.
+%   It combines this with branching of typestate.
+% \item \Utop handles typestate in a lightweight fashion.  It makes use
+%   of the fact that simple typestate is fine for most variables and
+%   structure members.  The power of richer typestate can be unlocked
+%   with relatively few qualifications in the code.
+% \item \Utop provides improved handling of data mutability, of
+%   reachability and exclusivity of ownership, and of transfer of
+%   ownership.  Situations aid in keeping this simple and lightweight.
+%   For instance, if a function cannot fulfill its obligations in some
+%   circumstances, it can return with a situation under which the
+%   calling code path diverges.
+% \item \Utop incorporates contracts: entry and exit requirements for
+%   functions (and so on).  Constraints are placed on typestate, and on
+%   the range of integer values.  This is quite flexible since, for
+%   example, the typestate can in turn constrain the typestate of a
+%   member field.  \Utop can infer the constraints at any particular
+%   location in program execution, but it does not attempt comprehensive
+%   inference.  Rather, it uses simple rules to deal with the majority
+%   of cases.  Occasionally the programmer needs to claim a constraint
+%   explicitly.
+% \item \Utop reduces the reliance on the distinction between values and
+%   references.  Richer typestate allows member fields to be considered
+%   unreachable, eliminating the need for null pointers as a sentinel
+%   references.  Large immutable objects never should be, and in many
+%   cases never were, copied even if passed by value.  \Utop's improved
+%   concept of ownership and transfer of ownership eliminates copying
+%   except when data is clearly forked.
+% \end{itemize}
+% The overall message is that situations make it easier to introduce
+% lightweight contracts and richer typestate into a language because
+% they provide a clean mechanism for forking code paths.
+
+
+% -----------------------------------------------------------------
+\subsection{Additional notes}
+
+\Utop is designed to provide improvements in productivity and
+security.  As mentioned above, I think it impossible to make general
+claims in computer programming, since there are far too many areas of
+specialization.  Nonetheless, we will try to avoid obvious pitfalls.
+Also, \Utop has large collaborative projects in mind.  In particular,
+this means that it tries to encourage good code organization and
+supports code exploration tools (such as Doxygen) in assisting
+developers who are unfamiliar with a code base.
+
+One should always be wary of clever and fine-sounding words.  I think
+this especially true of software development.  Experience counts.
+Ideas have to be tried out in real and substantial projects across the
+whole range of target specializations.  Thus, any thing put forward
+here should be seen as suggestive.  Moreover, nothing here is really
+new.  I hope that the combination of ideas, incomplete and imperfect
+though it is, will help to further the movement toward practical and
+effective language design.
+
+We use a pseudo-syntax in this article, with `|:|' indicating the
+beginning of a block, `|/|' ending it.  Also, `\texttt{\cdedent}'
+indicates a division at the block level, such as an else sub-block
+within a conditional block.  Line comments begin with `|;|', in the
+style of Lisp.  I realize that \Utop is likely to adopt brace syntax,
+because that is the most familiar.  However, for this article I wanted
+to use something a little more like an `algorithm' style.
+
+
+
+% =================================================================
+\section{Situations}
+
+% \begin{codex}
+% \topcaption{%
+%   \label{codex:continue}%
+%   Continuing to the next iteration.}
+% \begin{offsideBlue}
+% \begin{PVerbatim}
+%   \ckw[loop] item \ckw[through] list_of_items\cop[:]
+%      \ckw[if] (skipThis(item))\cop[:]
+%         \cgoto\csituation[ItemNotRelevant]
+%      \cend
+%      \cellipsis[Process item]
+%   \csitop\csituation[ItemNotRelevant]\cop[:]                      \ccomment[; Empty handler.]
+%   \cend
+% \end{PVerbatim}
+% %$
+% \end{offsideBlue}
+% \bottomcaption*{In traditional languages the \texttt{\ckw{continue}}
+%   keyword is used to skip remaining processing of the current
+%   iteration and proceed to the next.  Situations support labelled
+%   skips instead.  Different skip situations can have different labels,
+%   and handling code can be executed before proceeding.}
+% \end{codex}
+
+% -----------------------------------------------------------------
+\subsection{Break and continue}
+
+Situations are quite simple.  They are labelled exit paths that may
+only move outwards in scope and downwards in the written code.  They
+can do the job of the \texttt{\ckw{break}} and \texttt{\ckw{continue}}
+keywords in familiar programming languages; let us begin with these
+uses.  Code example ref{codex:continue} iterates through a set of
+elements.  The code skips processing of any of the elements for which
+a condition is met.  We could also say that, if a specified situation
+is encountered it is dealt with by transferring outwards to special
+handling code.
+%
+Situations require the programmer to provide their names and arrival
+points.  In contrast with \texttt{\ckw{continue}} control flow, this
+means that a piece of documentation is associated with each situation,
+that there can be multiple situations, and that the iteration being
+interrupted is specified.  For instance, one can jump out of nested
+iterations.
+
+
+% \begin{codex}
+% \topcaption{%
+%   \label{codex:break}%
+%   Breaking an iteration.}
+% \begin{offsideBlue}
+% \begin{PVerbatim}
+%   \ckw[block]\cop[:]
+%      \ckw[loop] i \ckw[through] \cbrack[0\cop[:]k]\cop[:]
+%         \ckw[if] (finishNow(itemArray\cbrack[i]))\cop[:]
+%            \cgoto\csituation[ProcessingDoneEarly]
+%         \cend
+%         \cellipsis[Process item]
+%      \cend
+%   \csitop\csituation[ProcessingDoneEarly]\cop[:]
+%      \cellipsis[Handle situation]
+%   \cend
+% \end{PVerbatim}
+% %$
+% \end{offsideBlue}
+% \bottomcaption*{In traditional languages the \texttt{\ckw{break}}
+%   statement is used quite often to leave an iteration from a place
+%   other than the loop termination check.  Implemented using
+%   situations, the code would be placed within a block structure, which
+%   might be a function or a conditional.  I believe that, in the great
+%   majority of cases, situations could be used to write more elegant
+%   code than using the \texttt{\ckw{break}} statement.  For example,
+%   one advantage of situations is that we can easily use common code
+%   between multiple departure paths.}
+% \end{codex}
+
+
+Uses of the \texttt{\ckw{continue}} keyword are relatively few,
+whereas uses of \texttt{\ckw{break}} are more common.  An illustration
+is given in code example ref{codex:break}, in which an array of
+elements is traversed, and processing of some elements is terminated
+early for some reason.  In order that situation code be clear and
+readable, it is required that the handler be at the end of an
+enclosing scope.  In the example this is slightly awkward, because we
+have to place the code in an artificial block structure.  In reality
+the block structure would be an enclosing function, or something like
+that.  In its purest form the \texttt{\ckw{break}} is simpler than an
+implementation using situations.  However, having looked at a lot of
+examples, I think that in practice situations would allow for more
+elegant code.  This is because the reasons for leaving an iterator are
+typically not simple, and it is an advantage to be able to provide
+particular handling code.
+
+It is perhaps clear why we chose a symbol (`\texttt{\cdedent}') to
+indicate a division point in our pseudo-code.  In traditional
+languages a small set of keywords (\texttt{\ckw{else}},
+\texttt{\ckw{case}}, and so on) indicate such a break.  In \Utop these
+are more common.  I think that, at least in pseudo-code, this symbol
+helps to show the code structure.  Furthermore, the \emph{only}
+unexceptional way that a control structure can be exited is via a
+situation.  Since they are only allowed to move downwards and
+outwards, when one sees an arrival point, one can look back within the
+scope to find the departure point and how the situation was
+established.
+
+% Since the   \texttt{\ckw{break}} and \texttt{\ckw{continue}} keywords
+% are not needed, \Utop does not have them.
+
+
+% -----------------------------------------------------------------
+\subsection{Limitations of traditional control flow}
+
+
+The control flow structures of traditional programming languages serve
+most needs of programming quite effectively.  However, there are quite
+a few cases that cannot be expressed well.  We will consider some
+examples briefly now, and expand on some of them later.
+\begin{description}
+\item[Exiting nested loops] It is awkward to exit more than one level
+  from a nested loop.
+\item[Code duplication]  When multiple conditions need to be
+  considered separately and there is code to be executed that is
+  common to them, it is often easiest to duplicate the code.  A
+  typical way to avoid this is to break the common code out into a
+  function.
+\item[Invented Boolean variables] One means of working around
+  deficiencies in control structures is to use a Boolean variable.
+  This might be set to false before a section of code, and is set to
+  true only when a particular situation arises.  An example of a
+  comment on this practice is \cite[section 2.2, \emph{Deeply Nested
+    IF-THEN-ELSE Considered Harmful}]{WilliamsDO84}: ``My personal
+  summing-up of the theme of these papers is the following: at the
+  point where the programmer has to `invent' a boolean variable merely
+  in order to map the problem onto the available control structures,
+  then this `invented' variable is as dangerous and confusing as the
+  poorly regarded GOTO statement.''
+\item[Invented functions] Another means of working around deficiencies
+  in control structures is to wrap functions in functions.  This is
+  even less desirable than inventing Boolean variables.
+\item[Setup and tear-down] The main work of some functions needs to be
+  preceded by a succession of setup steps and followed by a reversed
+  succession of tear-down steps.  Perhaps resources need to be
+  allocated and freed, or perhaps something needs to be configured.
+  Some of the setup steps might fail, in which case we typically
+  return prematurely from the function.  With traditional control
+  structures unwinding incomplete work is not straightforward.  We
+  will describe this kind of scenario in more detail in section
+  \ref{sec:unwind}
+\item[Handling infrequent but normal situations] Traditional control
+  structures do not provide a way to handle infrequent situations.
+  They have to be treated as exceptional.
+\end{description}
+
+Deficiencies such as these lead to code that is hard to understand.
+Moreover, programmers' decisions about code organization is too often
+influenced or even determined by the limitations of a language instead
+of its provisions.  In discussions of languages I have often read
+denigrating comments along the lines of ``you may encounter
+difficulties if you have painted yourself into a corner''.  This is
+nonsense.  Also, techniques for circumventing language deficiencies
+are sometimes described as programming idioms.  Plenty of idioms are
+good, but just because we have become accustomed to doing something a
+particular way does not mean that it is the best way.  about this.
+
+
+% -----------------------------------------------------------------
+\subsection{Unexceptional}
+
+Situations in \Utop can be placed in most locations.  A situation has
+one or more departure points and one arrival point.  They all have the
+same label and the arrival point must come later in the code and
+further out in scope than all departure points.
+
+When situations were discussed forty years ago the formulations
+typically required that all situations be declared in a list at the
+beginning of the block structure, at the same level as the arrival
+points.  I think it better that this not be a requirement, since it
+would impede acceptance of situations.  Brevity is much preferred, and
+code exploration tools (and automatic documentation tools) could
+annotate control structures with a list of their situations.
+
+Situations, with minor variations, were proposed by quite a few
+writers in the early 1970s.  Among them is Knuth, who made various
+interesting suggestions in his 1974 article on structured programming
+\cite{KnuthDE74}.  Even more enlightening is the note \cite{KnuthDE75}
+that Knuth and Zahn wrote in clarification.  We quote this in entirety
+here.  (We have changed the line breaking in the syntax example to be
+more like that in the original article.  The columns were quite narrow
+in \emph{ACM Forum}.)
+
+%\newcommand{\situation}[2][situation]{$\langle\text{#1}_{#2}\rangle$}
+\begin{quotation}
+\begin{offside}
+\textbf{Ill-Chosen Use of ``Event''}
+
+The recently proposed event-driven case statement \cite{ZahnCT74} has
+been describ\-ed \cite{ZahnCT74,KnuthDE74} in terms of ``event-
+indicators'' and ``event-statements.''  A so-called event-statement
+asserts that an indicated event has occurred and the appropriate
+context is thereby immediately terminated.
+
+Further reflection has suggested that our word ``event'' was
+ill-chosen.  An event, in common English usage, is a happening or
+occurrence associated with a passage of time (as the performance of an
+assignment statement). As such, ``event'' is essentially synonymous
+with ``action'' as used by Dijkstra \cite{DijkstraEW72}. The discovery
+at a particular place in a program execution that certain variables
+are in a specified state is better described by the word
+\emph{situation} which has the dual connotation \cite{ACDict} of
+``state of affairs'' and ``place or locality.''
+
+We would, therefore, like to propose that this control statement be
+called the ``situation case statement'' with situation-indicators
+denoted by identifiers \situation{k}, and perhaps with the following
+syntax.\vspace{1ex}
+\noindent
+\begin{tabbing}
+\textbf{until} \situation{1} \textbf{or} \situation{2} \ldots{}
+\textbf{or} \situation{n}:\\
+\hspace*{2.5em}\=\situation[statement]{0}\\
+\textbf{then case}\\
+\>\textbf{begin} \=\situation{1}:\situation[statement]{1};\\
+\>\>\vdots\\
+\>\>\situation{n}:\situation[statement]{n};\\
+\>\textbf{end}
+\end{tabbing}
+
+\def\hyph{-\penalty0\hskip0pt\relax}%
+
+Within \situation[statement]{0} a situation statement denoted by the
+appropriate sit\-uation\hyph indicator causes \situation[statement]{0} to be
+immediately terminated and the appropriate case selection to be
+performed. More generally, parameters can usefully be introduced into
+the situation statements and into the corresponding parts of the case
+clause; see \cite{KnuthDE74}.
+
+It is interesting to note that the word ``event'' seems to also be
+improperly used in many discussions of concurrent processes and their
+mutual synchronization. Processes must usually defer their activity
+until particular conditions or situations arise.  Some clarity might
+be gained by consistently using the words condition, situation, and
+event, as follows:
+\vspace{1ex}%
+\renewcommand{\descriptionlabel}[1]{%
+  \hspace*{-0.5\labelsep}#1\strut\hspace{-\labelsep}\strut}
+\begin{description}
+\item[condition]\strut{} $\equiv$ a state of affairs involving program variables
+\item[situation]\strut{} $\equiv$ a condition occurring at a particular
+  location in a program execution
+\item[event]\strut{} $\equiv$ the occurrence of some action usually altering
+  the state of program variables.
+\end{description}
+\vspace{1ex}%
+\begin{itemize}
+  \item[\strut]Donald E. Knuth
+  \item[\strut]Charles T. Zahn Jr.
+  \item[\strut]Stanford University
+  \item[\strut]Stanford, CA 94305
+\end{itemize}
+\end{offside}
+\end{quotation}
+We embrace this almost in entirety.  As noted above, we think that
+situations should be implemented without the need to declare all new
+situations at the beginning of a block.  Let us define situations, as
+entities rather than as a control structure mechanism.
+\begin{defn}[Situation]
+  A circumstance occurring at a particular location in a program
+  execution.  A circumstance is typically a condition, which is a
+  state of affairs involving program variables, reflected either in
+  their values or in their state.
+\end{defn}
+
+This does not say how situations should be used, and I want to propose
+one extra criterion.  It came out of reading debates and comment
+threads concerning exceptions, and how return values can inform
+callers of abnormal outcomes.  (These are the sorts of threads that
+grow out of discussions about the Go Language, for instance.)
+Naturally, I have wondered how situations might be used in the
+examples described in such debates.  I have come to think that we need
+to make a clearer distinction between what is infrequent and what is
+exceptional.  For example, some criticisms of exceptions may be
+incorrectly framed.  Exceptions may (or may not) be good in handling
+exceptional cases, but they are not the best way to handle normal
+cases, and moreover situations may do so better.
+
+I think that the ways in which situations are used should vary with
+the distance of the throw (how far the arrival point is from the
+departure points).  Some are short, such as when acting like a
+\texttt{\ckw{break}} in an iteration.  I think it not necessary that
+such execution paths be infrequent: the probability of the situation
+being triggered with each condition can be even.  However, when the
+throw is longer I think that good practice is that the situation be
+infrequent.  In either case, it may help the compiler if situations
+are infrequent since the imbalance in diversion frequency can be used
+in optimization.
+
+
+
+% =================================================================
+\section{Typestate}
+
+% \begin{figure}[tbp]
+%   \centering
+%   \hspace*{-2em}%
+%   \begin{tabularx}{0.9\textwidth}{CCCC}
+%     \digraph[scale=0.6]{SimpleState}{%
+%       rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+%       Allocated->Initialized;}
+%     &
+%     \digraph[scale=0.6]{ReferenceState}{%
+%       rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+%       Freed->Allocated->Initialized;}
+%     &
+%     \digraph[scale=0.6]{ConstState}{%
+%       rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+%       Freed->Allocated->Initialized->Immutable;}
+%     &
+%     \hspace*{-2em}%
+%     \digraph[scale=0.6]{FailBranch}{%
+%       rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+%       Freed->Allocated->Initialized->Immutable; Allocated->Failure;}
+%     \hspace*{-2em}%
+%     \\
+%     (a) & (b) & (c) & (d)
+%   \end{tabularx}%
+%   \hspace*{-2em}
+%   \caption{Simple typestate.  (a) Variables, whether simple or
+%     compound, are generally allocated within their scope and so only
+%     need to be initialized.  (b) Basic mutable reference variables
+%     have three states: freed (or unallocated), allocated and
+%     initialized (or set).  Languages such as C++ try to hide the
+%     allocated state so that data is apparently either freed or
+%     initialized.  Value members do not have the freed state.  (c)
+%     Constant data has an additional immutable state.  Data is in that
+%     typestate between initialization and the beginning of destruction.
+%     (d) Most modifications of this would be in the form of branching;
+%     \Utop makes it very easy to add these.}
+%   \label{fig:SimpleTypestate}
+% \end{figure}
+
+
+% -----------------------------------------------------------------
+\subsection{Typestate}
+
+
+Readers who were programming twenty years ago may remember when
+compilers did not analyse the chains of definitions and uses.  Now we
+assume a compiler will tell us if we fail to set a variable before we
+use it.  There was a period in which style guides would instruct
+programmers to initialize all variables explicitly when they were
+declared, just as a precaution.  Even today, the formal definitions of
+many languages say that default constructors will be applied.  (While
+often allowing compilers to skip unneeded construction.)  It is this
+kind of analysis that is made easier and improved by typestate in
+combination with situations.
+
+Typestate augments the familiar \emph{type information}.  Type
+information controls how data is stored, how it is manipulated, and
+how it is interpreted.  Typing can be hierarchical; it can be
+\emph{static} and \emph{dynamic}.  And so on.  Typestate, on the other
+hand, expresses how the state of data \emph{changes} through
+\emph{execution} paths.  It facilitates communication between the
+programmer and compiler as to whether data is initialized, accessible
+or owned at a point in program code.  It might track constraints such
+as the range of an integer variable.  Let us define it formally.
+\begin{defn}[Typestate]
+  Typestate is state information that augments data type information.
+  It is associated with variables, being instances of a particular
+  type, at points in program execution.  It is used to determine at
+  compile time what operations can be applied, and to eliminate
+  validity checks and range checks.
+\end{defn}
+
+Figref{SimpleTypestate} illustrates the typestate of variables with
+traditional classification.  Mutable value data only needs two states:
+\emph{allocated} and \emph{initialized}.  After initialization it may
+be modified, but that does not change its state.  A reference variable
+at first does not point to allocated data.  Constant data has an extra
+\emph{immutable} state.  Compound data structures operate recursively.
+They are initialized if and only if all members are initialized.  If
+treated as constant during a part of a program, then accessed members
+are also in the constant typestate.
+
+One might well wonder if typestate is rather complicated.
+Furthermore, many programmers might say that ``C++ serves the great
+majority of cases quite well''.  I think that this claim can help us
+in harnessing the benefits of typestate without creating undue
+burdens.  The trick for \Utop is to simplify the basic cases of
+variables, whether value or reference, mutable or immutable
+(``const'').  Only when it is advantageous to go beyond the basic
+cases should one have to qualify the code more fully and explicitly.
+
+Side branches, such as failure branches figref{SimpleTypestate}{d}
+add a little complexity.  This is a good example of how complexity can
+be introduced gradually, on necessity, and with verbosity of code
+minimized for the most common uses.  In \Utop member fields are
+assumed to be initialized only in the structure's initialized state.
+Fields marked for the error state are assumed to be initialized only
+in the error state.  (This is not only convenient but means that
+assumptions are handled uniformly across branches.)  Any members that
+are to be initialized in both branches require more verbose
+annotation.
+
+% -----------------------------------------------------------------
+\subsection{In between}
+
+What happens when one part of a compound structure has been
+initialized and another not?  While a structure is in the process of
+being initialized, \Utop allows it to be between two states.
+(Defining explicit in-between states would add overall complexity.)  A
+potential difficulty is that code might be interrupted at such a
+point.  Correct behaviour is ensured because initialization of
+compound data requires sufficient ownership.  An interrupting routine
+should not typically be accessing the same structure.  In contrast, if
+it is \emph{not} catastrophic to leave a structure partially
+initialized, then extra states should be defined.  We discuss this in
+section \ref{sec:multiLevel}
+
+In order for \Utop to handle between-states, the edges are directed.
+In the direction of the edge constraints may only be added.  There are
+often multiple constraints.  For example, when a compound structure
+moves from allocated to initialized, its members can be initialized in
+any order.  The typestate changes of the member fields are represented
+as a set of independent additional constraints on the parent
+structure.  Apart from clarity, simplicity and speed, this rule of
+direction and addition of constraints greatly helps with error
+messages.  If a structure ends up in an incomplete state the compiler
+can say something like: ``your data structure was allocated at line
+$x$ and needs to be initialized at line $y$, but member field |z| is
+not yet initialized''.  The restriction on the edges in the typestate
+graph ensure that the set of constraints that can be violated is
+reasonably simple and can be explained in words.
+
+There is a slight subtlety in here.  In the allocated state, a
+compound's members are typically all required to be in an allocated
+state.  Thus, when the structure is in transition from allocated to
+initialized, it is not so much a case of additional constraints being
+added to the members as their constraints being changed.  Nonetheless,
+the natural interpretation of these states is that one is higher, or
+more complete, than another.  Therefore \Utop imposes direction on
+every typestate transition.  To maintain a lightweight language, we
+need to be able to assign constrain-ed-ness automatically to all
+relevant entities.  The main rule that \Utop uses for this is to
+assume that any enumeration has an implicit ordering according to the
+order in which the enumerations are first defined.  (This can, of
+course, be customized.)
+
+% -----------------------------------------------------------------
+\subsection{Multi-level}
+
+% \label{sec:multiLevel}%
+
+% \begin{figure}[tbp]
+%   \centering
+%   \begin{tabularx}{0.9\textwidth}{CC}
+%     \digraph[scale=0.65]{WindUp}{%
+%       rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+%       Freed->Allocated->Configured->"Resources\string\nallocated"
+%       ->"Communications\string\nsetup"->"Server live";}
+%     &
+%     \digraph[scale=0.65]{SubWindUp}{%
+%       rankdir=BT; node [fontname = "Helvetica"]; margin=0;
+%       subgraph cluster1 {Freed->Allocated->Configured;style="dashed";margin=10;};
+%       subgraph cluster2 {"Resources\string\nallocated"
+%       ->"Communications\string\nsetup"->"Server live";style="dashed";margin=10;};
+%       Configured->"Resources\string\nallocated"
+%       Configured->Error;}
+%     \\
+%     (a) & (b)
+%   \end{tabularx}
+%   \caption{Multi-level typestate.  (a) A generalization of the simple
+%     typestates of \figref{SimpleTypestate} is to have a customized
+%     main trunk, and (b) with a side branch.  \Utop supports this kind
+%     of tree in a standardized form.  The states on the main trunk are
+%     most often considered to be levels with increasing readiness.  The
+%     concept of levels makes it easier to specify constraints on the
+%     states.  For example, we can specify that the state is at least as
+%     high as the allocation of resources, or no higher than configured.
+%     Side branches, such as an error in resource allocation, complicate
+%     the picture a only a little.}
+%   \label{fig:TypestateLevels}
+% \end{figure}
+
+How do multiple levels of typestate of compound data relate to the
+typestate of its members?  Simple case: initialized structure's const
+members are in at least initialized state when it is promoted.  It is
+moot whether they are immutable in of themselves: accessor makes them
+const.
+
+
+% -----------------------------------------------------------------
+\subsection{Unwinding: Setup and tear down}
+
+% \label{sec:unwind}%
+Also discuss this as an example where design decisions are adversely
+influenced.
+
+Often in a function, you may allocate resources and need to exit in
+multiple places.  Function, or construction, clean-up.  (We discuss
+function clean-up, but often mean construction, and construction need
+not necessarily be done in a constructor function.)  Unwinding versus
+not unwinding.  Programmers can simplify their code by putting the
+resource cleanup code at the end of the function all ``exit points''
+of the function would goto the cleanup label. This way, you don't have
+to write cleanup code at every ``exit point'' of the function.
+
+% \begin{codex}
+% \topcaption{Unwinding}
+% \begin{offsideBlue}
+% \begin{PVerbatim}
+%   \ckw[function] RunService(options):
+%      \ckw[when] (ProcessOptions(options))\cop[:]
+%         log.Error("Configuration problem.")
+%         \cgoto\csituation[OptionsProblem]
+%      \cend
+%      \ckw[when] (AllocateResources(options))\cop[:]
+%         log.Error("Allocation problem.")
+%         \cgoto\csituation[AllocationProblem]
+%      \cend
+%      \ckw[when] (SetupCommunications(options))\cop[:]
+%         log.Error("Problem opening communications channels.")
+%         \cgoto\csituation[CommunicationsProblem]
+%      \cend
+
+%      \cellipsis[The real work]
+
+%      \cellipsis[Unwind communications setup]
+%      \ckw[continue]
+%   \csitop\csituation[CommunicationsProblem]\cop[:]
+%      \cellipsis[Unwind allocations]
+%      \ckw[continue]
+%   \csitop\csituation[AllocationProblem]\cop[:]
+%      \cellipsis[Probably little unwinding needed for 1st stage]
+%      \ckw[continue]
+%   \csitop\csituation[OptionsProblem]\cop[:]
+%   \cend
+% \end{PVerbatim}
+% %$
+% \end{offsideBlue}
+% \bottomcaption*{Describe it! Describe it! Describe it! Describe it! Describe
+%   it! Describe it! Describe it! Describe it! Describe it! Describe it!
+%   Describe it! Describe it! Describe it! Describe it! Describe it!
+%   Describe it! Describe it!}
+% \end{codex}
+
+In my opinion one can learn a lot about a computer language from style
+guides.  Books and articles concerned with effective usage also say
+much about how programming concepts work out in reality.  We look
+forward to the publication of \emph{Effective \Utop}, and \emph{57
+  Ways to Improve Your \Utop}.
+
+\ref{sec:linuxstyle}
+
+Should probably only allow chained or unchained situations, and not a
+mixture thereof.
+
+Unwinding in stages is not trivial, and this is reflected in the
+pseudo-code.  Note that the \Utop compiler checks the structure, since
+the setup and unwind processes change the typestate of the various
+data fields and variables.  For example, the section for unwinding
+allocations reverses the typestate changes made under resource
+allocation.  All execution paths that complete the allocations must
+pass through the section, and those that do not must skip it.
+
+
+% =================================================================
+\section{Revision marker}
+
+
+% =================================================================
+\section{Contracts and Constraints}
+
+% -----------------------------------------------------------------
+\subsection{Constraints}
+
+
+
+\begin{itemize}
+\item Initialized completely, or not at all.
+\item Initialized in an intermediate state, and whether a member
+  reference leads to data of a specific typestate.
+\item Range data, especially of integers.
+\item Exclusivity of ownership.
+\item Disjointness.
+\end{itemize}
+
+Main reason for more than basic levels is with compound data whose
+members may have different allocation and initialization patterns.
+
+
+Such states are not for FSM emulation.  Rather, they reflect data validity
+
+
+Levels of state.
+
+% -----------------------------------------------------------------
+\subsection{Lightweight contracts}
+
+One contract may be a subset / subcontract of another, with additional
+constraints.  Also allow intersections and subcontracts thereof.
+Maybe also provide a \emph{trust-me} declaration for overlaps that
+cannot be trivially expressed.
+
+% -----------------------------------------------------------------
+\subsection{No returns}
+
+Our choice in presentation of \Utop.
+
+% =================================================================
+\section{Not Yet Discussed}
+
+RAII.
+
+% =================================================================
+\section{Reach and Ownership}
+
+% -----------------------------------------------------------------
+\subsection{Richer object state: Member state}
+
+Multilevel.  Branches in state, eg file open or unable to open.
+Large objects initialized in stages.  Objects representing systems
+that are initialized through multiple stages.
+
+% -----------------------------------------------------------------
+\subsection{Richer object state: References}
+
+Ownership.  Exclusivity.  Uniqueness.  Sharing, passing.
+
+% =================================================================
+\section{Discussion}
+
+\begin{itemize}
+\item Infrequency
+\item Typestates, levels.  Initialization via levels and alternatives
+  via branching.
+\item Get rid of RAII.  Rethink initialization, ownership.
+\item Consider getting rid of break and continue and return.
+\item Situations, or something else.  Bifurcation of typestate paths.
+  Initializer function alternative contracts therefore alternative
+  return.
+\item Realistic contracts.  Fast arrays and safety.  No more ``this
+  cannot happen''.
+\item Need.  Lifetime productivity.  e.g. including code exploration.
+\item Need.  Much of existing languages are fine.  There are
+  significant weaknesses such as checking for the impossible.
+\item Need.  Some aspects are semi-formal, such as style guide or
+  effectiveness guides.  e.g. Passing ownership across function call.
+  Bring in to language.
+\item Need.  Differences in public interfaces, such as APIs and wire
+  protocols.  Bring annotations in to main language.
+\item Need.  Lightweight.  Common cases.  Slightly different approach.
+  Instead of assuming common case and permitting deviations, design
+  constructs for general range and elide in common case.
+\end{itemize}
+
+This paper does not present answers, just suggests avenues to
+explore.  Impact of current offerings not good.
+\begin{itemize}
+\item Security is weakened.  Why?  Awkwardness distracts.  Poor
+  organization confuses.  Testing is more difficult.
+\item Productivity is reduced.  Mental effort when expression is poor.
+  Full range of activities not supported well.
+\end{itemize}
+
+Examples of problems with existing languages.
+\begin{itemize}
+\item Awkwardness of existing control structures.
+\item Invented Boolean variables.
+\item Splitting off into functions when that is not best, but control
+  structure limitations demand.
+\item Unnecessary checks, eg null pointers.  Or language checks
+  anyway, and exceptions can be raised.  Weaker compile-time checking.
+\item Not splitting off into functions because spurious checks need
+  awkward or impossible testing.
+\item Severely limited states for types.  Loss of expression of
+  intent, clarity when changes are staged.
+\item Not organizing properly into functions when, say, initialization
+  is staged.
+\end{itemize}
+
+% -----------------------------------------------------------------
+\subsection{Principles}
+
+
+\begin{enumerate}
+\item \emph{You cannot make a virtue out of a vice in programming by
+    calling it an idiom.}
+\item \emph{In discussions about computing, it is easy to conflate.}
+  Example: exceptions and the infrequent.  Example: configuration
+  structures are different.  Furthermore, \emph{computing encompasses
+    very different application areas and each of us experience a small
+    minority}.
+\item \emph{Style guides and advice on effective use often tell us as
+    much as a language manual.}  Furthermore, \emph{good ideas in
+    computing should be rejected}.  The reason is that all programming
+  features, however beneficial, get used where they should not and in
+  ways they should not.
+\item \emph{We often fail to strive to deliver on basic needs.}  An
+  example is that of code organization.  We are taught that functions
+  are useful because they enable us to divide up code appropriately.
+  We have seen that this is does not work out in practice.
+\end{enumerate}
+
+% =================================================================
+\section{Not Revised}
+
+Principle: It is not good to make decisions on code organization, such
+as whether or not to place code in a separate function, based on
+awkwardness  of the result.  Example: putting in a function to avoid
+duplication, or not putting in a function to avoid difficulties
+testing in the absence of contracts.
+
+% -----------------------------------------------------------------
+\subsection{Style guides}
+
+
+% -----------------------------------------------------------------
+\subsection{Things about Utop to cover}
+
+\begin{itemize}
+\item In a small percentage of code the programmer has to provide
+  guidance, principally by assuring that some constraint is met.
+  These assurances are the things that in C++ one would want to
+  document and test.
+\item Large immutable objects never should be, and in many cases never
+  were, copied even if passed by value.  \Utop's improved concept of
+  ownership and transfer of ownership eliminates copying except when
+  data is clearly forked.
+\item Tracing code.  Simple measures can improve local-scale tracing.
+\item Good code organization.  Remove perverse disincentives, such as
+  testing disincentives, not checking contracts, not supporting
+  initialization in stages.
+\item Bad stuff, like switch statement.
+\end{itemize}
+
+% -----------------------------------------------------------------
+\subsection{A basic example}
+
+
+
+\begin{codex}
+  \topcaption{Alternative styles.  Leaving an iteration.}  Original in
+  pseudo-code:
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[block]\cop[:]
+     \ckw[loop] item \ckw[through] list_of_items\cop[:]
+        \ckw[if] (isWhatWeNeed(item))\cop[:]
+            neededItem \cop[:=] item
+            \cgoto\csituation[ItemFound]
+        \cend
+     \cend
+     \cellipsis[Handle not-found situation]
+
+  \csitop\csituation[ItemFound]\cop[:]
+     \cellipsis[Handle situation: (neededItem defined)]
+  \cend
+\end{PVerbatim}
+\end{offsideBlue}
+%$
+Perhaps heavy-handed
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[block]\cop[:]
+  \cop[|---$ ](\csituation[ItemFound], \csituation[ItemNotFound])
+     \ckw[loop] item \ckw[through] list_of_items\cop[:]
+        \ckw[if] (isWhatWeNeed(item))\cop[:]
+           neededItem \cop[:=] item
+           \cgoto\csituation[ItemFound]
+     \cend  \cend
+     \cgoto\csituation[ItemNotFound]
+
+  \csitop\csituation[ItemFound]\cop[:]
+     \cellipsis[Handle situation: (neededItem defined)]
+  \csitop\csituation[ItemNotFound]\cop[:]
+     \cellipsis[Handle situation]
+  \cend
+\end{PVerbatim}
+\end{offsideBlue}
+%$
+When procrastinating
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ctype[bool] found
+  \ctype[item] neededItem
+  \ckw[block]\cop[:]
+      \ckw[loop] item \ckw[through] list_of_items\cop[:]
+          \ckw[if] (isWhatWeNeed(item))\cop[:]
+              neededItem \cop[:=] item
+              \cgoto\csituation[ItemFound]
+          \cend
+      \cend
+      found \cop[:=] False
+
+  \csitop\csituation[ItemFound]\cop[:]
+      found \cop[:=] True
+  \cend
+  \cellipsis[Subsequent use of found]
+\end{PVerbatim}
+\end{offsideBlue}
+%$
+\bottomcaption*{A situation that is traditionally implemented using
+  the break statement.  There are many cases in which we need to leave
+  a loop when a condition is met.  Perhaps the termination situation
+  cannot be encapsulated in a single expression.  Perhaps there is a
+  reason to leave in addition to the usual termination condition.  One
+  advantage of situations is that we can easily use common code
+  between multiple situations.  (Note that the block structure used
+  here could be any block control structure, such as a function or
+  conditional.)}
+\end{codex}
+
+% -----------------------------------------------------------------
+\subsection{More variations}
+
+
+The typestate is different in the two situation handlers.  In one the
+|neededItem| is defined (fully initialized), whereas in the other is
+not valid.
+
+In order to be lightweight, no upfront declarations.  However, could
+list all situations.  This alternative loop considers finding an item
+to be a positive outcome.
+\begin{codex}
+\topcaption{Explicit situation list}
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[function] multiExitFunction()\cop[:]
+  \cop[|$$$](ItemFound, ItemNotFound)
+      \ckw[loop] item \ckw[through] list_of_items\cop[:]
+          \ckw[if] (isWhatWeNeed(item))\cop[:]
+              neededItem \cop[:=] item
+              \cgoto\csituation[ItemFound]
+          \cend
+      \cend
+      \cgoto\csituation[ItemNotFound]
+
+  \csitop\csituation[ItemFound]\cop[:]
+      \cellipsis[Handle situation: (neededItem defined)]
+  \csitop\csituation[ItemNotFound]\cop[:]
+      \cellipsis[Handle situation]
+  \cend
+\end{PVerbatim}
+\end{offsideBlue}
+\bottomcaption*{Describe it! Describe it! Describe it! Describe it! Describe
+  it! Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it!}
+\end{codex}
+% $
+
+
+
+% -----------------------------------------------------------------
+\subsection{Sequential conditions}
+
+These are tasks where there are a set of conditions to be checked, but
+where the data of one depends on results that can only be calculated
+when another is false.  The classic example in pointer languages is
+where a null pointer is checked, then the value pulled, and then a
+decision made on the value.
+\begin{codex}
+\topcaption{Sequential conditions}
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[block]\cop[:]
+      message \cop[:=] GetNextMessage()
+
+      \ckw[if] (\cop[!]CheckHeader(message))\cop[:]
+          \cgoto\csituation[MissingHeader]
+      \cend
+      header \cop[:=] message.header.Parse()
+      \ckw[if] (header.format \cop[!=] SuitableProtocol)\cop[:]
+          \cgoto\csituation[FormatUnsuitable]
+      \cend
+      encodingConvertor \cop[:=] message.encoding.GetConverter()
+      \ckw[if] (\cop[!]encodingConvertor.Compatible())\cop[:]
+          \cgoto\csituation[FormatUnsuitable]
+      \cend
+
+      messageLength \cop[:=] header.size          \ccomment[; Reuse header variable.]
+
+      \cellipsis[More checks and processing]
+      \cgoto\csituation[MessageProcessed]
+
+  \csitop\csituation[MissingHeader]\cop[:]
+      outcomeCounter(outcomes.MissingHeader).Increment()
+  \csitop\csituation[*.FormatUnsuitable]\cop[:]
+      outcomeCounter(outcomes.FormatUnsuitable).Increment()
+  \csitop\csituation[MessageProcessed]\cop[:]
+      outcomeCounter(outcomes.MessageProcessed).Increment()
+  \cend
+\end{PVerbatim}
+\end{offsideBlue}
+\bottomcaption*{Describe it! Describe it! Describe it! Describe it! Describe
+  it! Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it!}
+\end{codex}
+%$
+Reasons for breaking out rather than one big conditional:
+\begin{enumerate}
+\item Trace outcomes specifically via counters;
+\item Test of |header| (``suitable format'' in example) might require
+  more involved processing, and so require commands to proceed it; and
+\item The |header| variable might be used for subsequent tests or
+  processing, and so we would not want to parse it more than once.
+\end{enumerate}
+
+\begin{quotation}
+  \textbf{Idea:} Have slightly different syntax for situation handlers
+  that land their from multiple departure points.  \emph{Likely style
+    guide:} Either have many all-single situations, or two (success /
+  failure) merged situations.
+\end{quotation}
+
+% -----------------------------------------------------------------
+\subsection{Nested conditionals}
+
+Could be balanced, not frequent-infrequent.
+
+\begin{codex}
+\topcaption{Nested conditionals}
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[block]\cop[:]
+  \cop[==](ItemFound, ItemNotFound)
+      \ckw[loop] item \ckw[through] list_of_items\cop[:]
+      ...
+\end{PVerbatim}
+\end{offsideBlue}
+\bottomcaption*{Example: \texttt{GraphSubgraph::setElementSelected}.
+Describe it! Describe it! Describe it! Describe it! Describe
+  it! Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it!}
+\end{codex}
+
+% -----------------------------------------------------------------
+\subsection{Iterator}
+
+
+\begin{codex}
+\topcaption{Iterator with complications}
+\begin{offsideBlue}
+\begin{PVerbatim}
+  \ckw[block]\cop[:]
+      iterator \cop[:=] ...
+      \ckw[loop]\cop[:]
+          \ckw[if] (skipThis(item))\cop[:]
+              \cgoto\csituation[ItemToSkip]
+          \cend
+          \cellipsis[Process item]
+      \csitop\csituation[ItemToSkip]\cop[:]                       \ccomment[; Empty handler.]
+      \cend
+  \cend
+\end{PVerbatim}
+%$
+\end{offsideBlue}
+\bottomcaption*{Describe it! Describe it! Describe it! Describe it! Describe
+  it! Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it!}
+\end{codex}
+
+% -----------------------------------------------------------------
+\subsection{Worked example}
+
+\begin{codex}
+\topcaption{Worked example}
+\begin{offsideBlue}
+\begin{PVerbatim}
+  bool KGVSimplePrintingCommand::print()
+  {
+    \cellipsis[Initial setup]
+    <declare painter, collatedLoops, loopsPerPage,
+             pagesToPrint, fromPage>
+
+    if (dlg->exec() != QDialog::Accepted) {
+      return true;
+    }
+
+    if (!painter.begin(&printer))
+    {
+      return false;
+    }
+
+    <initialize collatedLoops, loopsPerPage, pagesToPrint,
+                fromPage>
+
+    bool firstPage = true;
+    for (uint copy = 0; copy < collatedLoops; copy++)
+    {
+      uint pageNumber = fromPage;
+      QList<int>::ConstIterator pagesIt = pagesToPrint.constBegin();
+      for(;(int)pageNumber == fromPage || !m_previewEngine->eof(); ++pageNumber)
+      {
+        if (pagesIt == pagesToPrint.constEnd()) //no more pages to print
+          break;
+        if ((int)pageNumber < *pagesIt)
+        { //skip pages without printing (needed for computation)
+          m_previewEngine->paintPage(pageNumber, painter, false);
+          continue;
+        }
+        if (*pagesIt < (int)pageNumber) { //sanity
+          ++pagesIt;
+          continue;
+        }
+        for (uint onePageCounter = 0; onePageCounter < loopsPerPage; onePageCounter++) {
+          if (!firstPage)
+            printer.newPage();
+          else
+            firstPage = false;
+          m_previewEngine->paintPage(pageNumber, painter);
+        }
+        ++pagesIt;
+      }
+    }
+
+    if (!painter.end()) {
+      return false;
+    }
+
+    return true;
+  }
+\end{PVerbatim}
+\end{offsideBlue}
+\bottomcaption*{Describe it! Describe it! Describe it! Describe it! Describe
+  it! Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it! Describe it! Describe it! Describe it!
+  Describe it! Describe it!}
+\end{codex}
+
+
+
+% =================================================================
+\section{Definitions}
+
+
+% -----------------------------------------------------------------
+\subsection{Typestate}
+
+static-dynamic state.
+
+For every typestate (set), an enumeration is automatically defined.
+
+All these object could have versions with the state as a member or
+meta-object member field.  Perhaps some form of boxing.  Any boxing
+mechanism would need to be able to specify the typestate that would
+encapsulated within, since we permit multiple typestates.  Maybe
+should say \emph{reified}.
+
+Not good enough to erase type information for generics.  Not all lists
+are alike.
+
+Aside: Compile-time constants in Dart with equal constructor arguments
+result in same canonical instance.  This implies keeping copies at
+compile time.
+
+Typestates as arranged in levels.  Unalloc = 0/1, alloc = 1/1, init =
+2/1, final = 3/1, const (compile-time) = 4/1.  Error states run as
+branches with parallel levels.  In staged initialization, some members
+may be final on entry, others alloc, but the level of the item is
+determined by how much is initialized (2 or above).  Similarly,
+partial allocation would be designated by proportion that is allocated
+or above, even though possibly some (dimension?) fields might be
+initialized in the allocated state.
+
+
+% =================================================================
+\section{A Language of the Future?}
+
+\Utop!
+
+Our choice of syntax.
+
+
+We do not promise simplicity, or even brevity.  Rather, we strive for
+clarity.  And to avoid:
+\begin{itemize}
+\item Trivial contract checks;
+\item Contrived indications of intent (e.g. C++ pointers vs references);
+\end{itemize}
+
+We do not even hope for:
+\begin{itemize}
+\item Near optimal balance of brevity with program checking;
+\item Comprehensive contracts;
+\item Comprehensive safety (at least without penalties);
+\item Magic, namely promises of optimal compilation for simple code.
+\end{itemize}
+
+
+Returns: We take a ``fill-in'' design in our examples.  This is not
+the most familiar.  It is likely that \Utop would employ the more
+established syntax.  However, we have so far found it easier to trace
+type state with the fill-in method.
+
+Most of the early variations on situations require that the situations
+in a block be listed at the beginning.  Each situation appears at
+least three times: in the list at the beginning, where the situation
+arises in the body and then at the end where the situation is dealt
+with.  It seems however, that there is a strong utility placed on
+minimizing  code and avoiding repetition.  Thus we have dropped the
+list of situations at the beginning of the block.  The main
+consequence of this is that the set of situations must be extracted by
+reading the labels, most easily as they are dealt with.  This implies
+a stylistic preference for keeping the handlers short so that they can
+be viewed together.  This is probably good style anyway
+
+% =================================================================
+\section{In More Depth}
+
+% -----------------------------------------------------------------
+\subsection{Slicing and dicing}
+
+There may be some benefit from making the distinction between ``one
+way of doing things'' versus ``lots of ways of doing things'',
+sometimes with a middle ground of ``one idiomatic way of doing
+something''.  However, I think this potentially unhelpful.
+Furthermore, while in mathematics or physics \emph{Grand Unification}
+might be desirable and helpful (that is, finding unifying patterns or
+theories), it is often not in programming.  While it may be true that
+one iterator might be able generate the results of all others, there
+is a difference in intention (mechanistic), communication (design) and
+execution between ``do this $5$ times'', ``loop $i$ through $0$ to
+$9$'', ``loop through the elements of array $x$'', and ``apply this
+iterator that is not done until it is done''.
+
+Asynchronous nodes in a graph: send off and wait for responses,
+genuinely parallel work (needing threads, or whatever), a for-each.
+
+
+% -----------------------------------------------------------------
+\subsection{Slicing and dicing}
+
+At this point we will consider some questions of code organization.
+This might seem like a diversion, but we think that situations, along
+with richer states and contracts, can improve how we divide, arrange
+and present code.  As we approach this topic, our main focus will be
+on the use of functions to divide code up into manageable pieces.  We
+will also pay some attention to the presentation of code, which
+involves not only the content but also the ordering of code.  There
+are many other issues, such as the design of APIs or of classes, but
+we will only touch upon these.
+
+The best presentation of code depends on its intended use and how it
+is to be maintained.
+
+  XXXXXXXXXX
+
+
+
+
+The problem is that, to add a new field to the structure it proved
+necessary to create a new constructor just for my small edge case.
+The usual solution is ``have named parameters with defaults'', but I
+think this unsatisfactory.  I had just been using Java with builder
+idioms, and my thought was that we are conflating different kinds of
+data structures.  There is a separate genre of structure for
+configuration.  Some fields may be defined, others not.  Fields may be
+added.  What is considered valid may be changed, normally by adding
+new valid fields and combinations.  Each field may be initialized or
+not, and the builder needs to know this, rather than set defaults.  A
+builder constructs a structure of a different type from this type.
+(Although there could be an almost 1-1 match.)
+
+In \Utop a configuration data structure has only pre-defined
+constructors and setters.  Valid combinations of field definitions and
+values are established via typestate.
+
+Insight: An enum automatically has value typestates defined.  Thus an
+enum in a configuration structure can be coupled in the typestate
+definition with requirements such as which fields must be explicitly
+defined.
+
+
+
+
+
+
+
+
+YYYYYYYYYY
+
+
+
+Notes: Slicing and dicing: moving code.  Current state: limited
+control flows mean that use of functions is forced to avoid
+duplication, whereas in other cases use of functions is made awkward
+through lack of contracts and their enforcement.
+
+
+
+We will now argue that
+
+
+
+  The task of organizing a
+program is often framed in terms of the division of code into
+functions.  The main criterion is the size of functions, and it is
+said that splitting longer functions into smaller ones makes the code
+more readable and maintainable.  While this can be applied too
+simplistically, such as by limiting the number of lines of code, it
+can also be used effectively
+
+This has not always been the case.  One reason Knuth developed the
+concept of \emph{literate programming} was to present code clearly
+when functions were not being used extensively.
+
+The extent to which division into functions can be used to present
+code in the most desirable order is often limited by the language.
+
+
+% -----------------------------------------------------------------
+\subsection{Local control flow}
+
+Exceptions as exceptional.  The following is not novel.  Perusing
+comments in online forums makes it clear that some if not many
+perceive there to be a problem with using exceptions for routine
+situations.  This is not a question of use of words.  It is sometimes
+argued that it is hypocritical to assess (judge?) some uses of
+programming languages as mistaken when the alternative is just as bad
+but hidden in cleverness.
+
+Finally and defer?  Is Java's |finally| really a good mechanism for
+this?
+
+Uses not considered, because orthogonal, or whatever.  Low-level
+improvements.  While it might be dreamed that a high-level language
+should also be able to express low-level optimizations, we consider
+that to be the realm of extended language features.  It should not
+determine the core of the language.
+
+Layered object states.  Ability to initialize in stages, eg for
+complex objects.  Or different initialization.  Static-dynamic typing
+using situations.  Ability to split up functions appropriately: not
+bound by inability to interrupt initialization in the middle.
+Lightweight contracts facilitate free code organization.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+% =================================================================
+\section{In Style}
+
+% -----------------------------------------------------------------
+\subsection{Linux style guide}
+\label{sec:linuxstyle}%
+
+The following is an extended quotation from the long-standing Linux
+kernel coding style guide \cite{LinuxStyle42}.
+\begin{quotation}
+\begin{offside}
+  \begin{CVerbatim}
+        \ctype[int] fun(\ctype[int] a)
+        {
+                \ctype[int] result = 0;
+                \ctype[char] *buffer;
+
+                buffer = kmalloc(\ccaps[SIZE], \ccaps[GFP_KERNEL]);
+                \ckw[if] (!buffer)
+                        \ckw[return] -\ccaps[ENOMEM];
+
+                \ckw[if] (condition1) {
+                        \ckw[while] (loop1) {
+                                ...
+                        }
+                        result = 1;
+                        \ckw[goto] \clab[out_buffer];
+                }
+                ...
+        \clab[out_buffer:]
+                kfree(buffer);
+                \ckw[return] result;
+        }
+\end{CVerbatim}
+\noindent
+A common type of bug to be aware of is ``one err bugs'' which look
+like this:
+\begin{CVerbatim}
+        \clab[err:]
+                kfree(foo->bar);
+                kfree(foo);
+                \ckw[return] ret;
+\end{CVerbatim}
+The bug in this code is that on some exit paths |foo| is NULL.
+Normally the fix for this is to split it up into two error labels
+``\intextclab|err_bar:|'' and ``\intextclab|err_foo:|''.
+%
+\end{offside}
+\end{quotation}
+
+% =================================================================
+\section{Implementation}
+
+% -----------------------------------------------------------------
+\subsection{Enumerations}
+
+% -----------------------------------------------------------------
+\subsection{Boxing clever}
+
+Boxing.  Sentinel values.  Optional types.
+
+% -----------------------------------------------------------------
+\subsection{Situations and functions}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{amsplain}
+
+%\vfill\pagebreak
+\addtocounter{section}{1}
+%\addcontentsline{toc}{section}{\protect\numberline{\arabic{section}}References}
+\bibliography{StickySituations}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
