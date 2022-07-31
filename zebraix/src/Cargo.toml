@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "zebraix-svg",
+    "jaywalk-base",
+    "render-svg",
+    "test-samples",
+]

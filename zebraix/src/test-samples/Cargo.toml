@@ -1,0 +1,21 @@
+[package]
+name = "test-samples"
+version = "0.1.0"
+authors = ["Alex Stark <alex@withheld.org>"]
+edition = "2021"
+
+[[test]]
+name = "test-samples-runner"
+path = "src/test-runner.rs"
+
+[dependencies]
+regex = "1.5"
+jaywalk-base = {version= "0.1.0", path = "../jaywalk-base"}
+json5 = "0.4.1"
+
+[dependencies.render-svg]
+version =  "0.1.0"
+path = "../render-svg"
+
+[dev-dependencies]
+goldenfile = "1.1"
