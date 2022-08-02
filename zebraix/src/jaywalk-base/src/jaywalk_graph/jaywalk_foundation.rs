@@ -95,7 +95,7 @@ pub enum LineType {
 }
 
 // For now, just fixed patterns. In future a pattern vector could override.
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct LineStyle {
    // DANGER: Field default is tied to implementation of struct default.
    #[serde(default)]
