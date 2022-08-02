@@ -56,7 +56,7 @@ pub fn write_sample_to_file<W: Write + 'static>(
    pangocairo::show_layout(&context, &text_layout);
 
    surface.flush();
-   return surface.finish_output_stream();
+   surface.finish_output_stream()
 }
 
 #[cfg(test)]
@@ -106,5 +106,5 @@ pub fn write_spline_test_to_file<W: Write + 'static>(
    pangocairo::show_layout(&context, &text_layout);
 
    surface.flush();
-   return surface.finish_output_stream();
+   surface.finish_output_stream()
 }
