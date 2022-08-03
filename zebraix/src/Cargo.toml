@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "drawable",
     "zebraix-svg",
     "jaywalk-base",
     "render-svg",
