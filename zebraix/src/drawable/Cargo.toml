@@ -1,5 +1,5 @@
 [package]
-name = "jaywalk-drawable"
+name = "jaywalk_drawable"
 version = "0.1.0"
 authors = ["Alex Stark <alex@withheld.org>"]
 edition = "2018"
@@ -15,3 +15,6 @@ path = "src/drawable_graph/draw_tests.rs"
 
 # [dev-dependencies]
 # SVG or other differ here.
+
+[dev-dependencies]
+goldenfile = "1.1"
