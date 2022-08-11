@@ -138,7 +138,7 @@ fn filtered_graph_write_sample_to_file<W: Write>(mut out_stream: W, graph: &Draw
 }
 
 // Replace surface ID with generic ID, since this is changeable in tests.
-fn filtered_circle_write_sample_to_file<W: Write>(mut out_stream: W, graph: &Vec<DCircle>) {
+fn filtered_circle_write_sample_to_file<W: Write>(mut out_stream: W, graph: &[DCircle]) {
    // let intervening_writer = Vec::<u8>::new();
    // let line_reader = std::io::BufReader::new(&**intervening_writer);
 
