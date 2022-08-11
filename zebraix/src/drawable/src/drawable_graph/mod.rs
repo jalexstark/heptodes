@@ -36,6 +36,151 @@ use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use std::collections::HashMap;
 
+#[derive(Serialize, Deserialize)]
+pub enum FillChoice {
+   Over = 0,
+   PreferErase,
+   NoFill,
+}
+
+impl Default for FillChoice {
+   fn default() -> Self {
+      FillChoice::Over
+   }
+}
+
+// In Cairo, at least, the line cap is also used for dots (if round or
+// square) and for zero-length paths (if round).
+#[derive(Serialize, Deserialize)]
+pub enum CapDotChoice {
+   CapDotButt = 0,
+   CapDotRound,
+   CapDotSquare,
+}
+
+impl Default for CapDotChoice {
+   fn default() -> Self {
+      CapDotChoice::CapDotButt
+   }
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum JoinChoice {
+   JoinMiter = 0,
+   JoinRound,
+   JoinBevel,
+}
+
+impl Default for JoinChoice {
+   fn default() -> Self {
+      JoinChoice::JoinMiter
+   }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Dashes {
+   #[serde(default)]
+   pub dashes: Vec<f64>,
+   #[serde(default)]
+   pub offset: f64,
+}
+
+// impl Dashes {
+//    fn is_not_dash(&self) -> bool {
+//       return self.dashes.is_empty();
+//    }
+// }
+
+// Not yet incorporated from Cairo:
+//     set_miter_limit
+//     tolerance
+//     clipping / paint
+//     pattern fill / source
+//     page
+//     antialias
+//
+//     font_options
+//     font_matrix
+//     select_font / show_text ("toy" font Cairo)
+//     scaled_font (at least not API - may be used for extent calc, etc)
+//     font_extents
+//
+// glyph_path(&self, glyphs: &[Glyph])
+
+// CONTEXT:
+//    set_source_rgb
+//     set_line_width
+
+// FONT:
+// set_font_size(&self, size: f64)
+// set_font_face(&self, font_face: &FontFace)
+// show_glyphs(&self, glyphs: &[Glyph]) -> Result<(), Error>
+// show_text_glyphs(...) -> Result<(), Error>
+// text_extents(&self, text: &str) -> Result<TextExtents, Error>
+// glyph_extents(&self, glyphs: &[Glyph]) -> Result<TextExtents, Error>
+
+// PATH:
+// Ellipse arc, ellipse. Most common RQS.
+//    arc(&self, xc: f64, yc: f64, radius: f64, angle1: f64, angle2: f64)
+// Bézier cubic.
+//    curve_to(&self, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64, y3: f64)
+// Straight line.
+//    line_to(&self, x: f64, y: f64)
+// rectangle(&self, x: f64, y: f64, width: f64, height: f64)
+// text_path(&self, str_: &str)
+
+// path_extents(&self) -> Result<(f64, f64, f64, f64), Error>
+
+// TAGS:
+//
+// Not as yet supported, but could be enabled for (a) explicit links
+// and destinations, and (b) for automatic cross-linking in scenarios
+// where the embedding of the SVG is known, such as a diagram in an
+// auto-converted doc, such as Salient.
+//
+// tag_begin(&self, tag_name: &str, attributes: &str)
+// tag_end(&self, tag_name: &str)
+
+// Idea
+//
+// #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Ord, PartialOrd, Eq)]
+// pub struct WeightWithOptionGroup {
+//     #[serde()]
+//     #[serde(default)]
+//     pub group: Option<String>,
+//     #[serde(skip_serializing_if = "is_zero")]
+//     #[serde(default)]
+//     pub proportion: u32,
+// }
+
+// /// This is only used for serialize
+// #[allow(clippy::trivially_copy_pass_by_ref)]
+// fn is_zero(num: &u32) -> bool {
+//     *num == 0
+// }
+
+#[derive(Serialize, Deserialize)]
+pub struct DCircle {
+   #[serde(skip, default)] // Default is false.
+   pub populated: bool,
+   #[serde(default)]
+   pub aux_name: String,
+   #[serde(skip_serializing_if = "Option::is_none", default)]
+   pub fill_choice: Option<FillChoice>,
+   #[serde(skip_serializing_if = "Option::is_none", default)]
+   pub cap_dot_choice: Option<CapDotChoice>,
+   #[serde(skip_serializing_if = "Option::is_none", default)]
+   pub join_choice: Option<JoinChoice>,
+   #[serde(skip_serializing_if = "Option::is_none", default)]
+   pub dashes: Option<Dashes>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DrawableGraph {
+   #[serde(default)]
+   pub aux_name: String,
+}
+
 // Fields involving keys are generally not (de-)serialized, at least
 // for now.  If we later serialize we should renumber keys based on
 // primary and obverse ranks so that there is a canonical keying
