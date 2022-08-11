@@ -1,5 +1,5 @@
 
-BASENAMES=RatQuad JaywalkConcepts JaywalkBuilder
+BASENAMES=RatQuad JaywalkConcepts JaywalkBuilder DesignDrawableSvg
 
 HTMLTARGETS=$(addsuffix .html,$(BASENAMES))
 PDFTARGETS=$(addsuffix .pdf,$(BASENAMES))
