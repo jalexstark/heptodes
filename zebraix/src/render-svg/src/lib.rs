@@ -36,6 +36,8 @@ pub fn write_sample_to_file<W: Write + 'static>(
    context.arc(160.0, 120.0, 30.0, 0.0 * PI, 2.0 * PI);
    context.stroke().unwrap();
 
+   // Create a single context, instead of using create_layout.  This
+   // demonstrates avoiding lots of Pango contexts.
    let text_context = pangocairo::create_context(&context).unwrap();
    let text_layout = pango::Layout::new(&text_context);
 

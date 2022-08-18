@@ -29,9 +29,30 @@ date: 2022
 
 <!-- md-formatter on -->
 
-# Task
+# Overview of design
 
-## General purpose
+## Some distinctions
+
+Zebraix is designed with layered APIs. Zebraix has a distinct set of desiderata.
+There are some key essential requirements, and to these some generalizations and
+capabilities are added. This sounds a bit fluffy, but the details are in
+accompanying documents. While a lot of the design is developed from the core
+requirements, there is significant influence from SVG generation and
+specifically the Cairo and Pango APIs. There may also be some influence on
+choices in the expanded features, though similarities probably arose because
+there some common principles.
+
+The drawing side of Zebraix (as opposed to, say, the processing of Jaywalks) is
+oriented around one data structure, that is a DAG of *Drawable* nodes. Even the
+high-level data structure and associated API for generating are designed with
+this in mind. Drawables describe a single drawable entity or a sequence of
+segments that are chained to create an open or closed path. We find it helpful
+to consider three sets of features. (a) Drawable features that are fairly close
+to those in the Cairo API. (b) features that Cairo has that are either not
+supported, or that are substantially modified. (c) Features that are more
+"distinctively Zebraix".
+
+## Further notes
 
 Not yet incorporated from Cairo:
 
