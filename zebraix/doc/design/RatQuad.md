@@ -427,7 +427,7 @@ side lengths and relative location of $p_1$ and
 $p_2$\label{figE}.](figs/RatQuad-E.svg)
 
 In like manner to the semicircle we can create a symmetric circular arc RQS as
-illustrated\text{ (see figure \ref{figE}). Let$\delta$ be the tangent of half
+illustrated\text{ (see figure \ref{figE})}. Let$\delta$ be the tangent of half
 the arc angle. If we take the quarter circle RQS and replace $t$ with $\delta
 t$.
 
@@ -439,15 +439,14 @@ f_\delta(t) = \frac{%
 } \label{Eq44}
 $$
 
-While XXXXXXXXXXXX
-
-Equation \ref{Eq45}:Eq45.
+While this has some fussy details, it is what we expect in terms of $p_3$, and
+so on. Now let us consider the velocities at either end. These are those at the
+original locations in the quarter-circle RQS, but scaled by $\delta$ since we
+replaced by $\delta t$.
 
 $$
 f'_\delta(t) = r\delta f'_Q(\delta t)\label{Eq45}
 $$
-
-Equation \ref{Eq46}:Eq46.
 
 $$
 f'_Q(t) = 2\begin{bmatrix}
@@ -456,15 +455,11 @@ f'_Q(t) = 2\begin{bmatrix}
 \end{bmatrix} \label{Eq46}
 $$
 
-Equation \ref{Eq47}:Eq47.
-
 $$
 f'_\delta(0) = 2r\delta\begin{bmatrix}
 0\\1
 \end{bmatrix} \label{Eq47}
 $$
-
-Equation \ref{Eq48}:Eq48.
 
 $$
 f'_\delta(1) = \left(\frac{2r\delta}{1+\delta^2}\right)%
@@ -474,75 +469,408 @@ f'_\delta(1) = \left(\frac{2r\delta}{1+\delta^2}\right)%
 \end{bmatrix} \label{Eq48}
 $$
 
-Equation \ref{Eq49}:Eq49.
-
 $$
 \left| f'_\delta(1) \right| = \frac{2r\delta}{1+\delta^2} \label{Eq49}
 $$
 
-Equation \ref{Eq50}:Eq50.
+If $p_1$ and $p_2$ are our RQS control points located by $\lambda$ and $\mu$,
+then the product of the velocities can be matched.
 
 $$
 3\lambda\left|p_m-p_0\right|\,3\mu\left|p_m-p_3\right| =
 \left|f'_\delta(0)\right|\,\left|f'_\delta(1)\right| \label{Eq50}
 $$
 
-Equation \ref{Eq51}:Eq51.
-
 $$
 9\lambda\mu(r\delta)^2 = \frac{4(r\delta)^2}{1+\delta^2} \label{Eq51}
 $$
 
-Equation \ref{Eq52}:Eq52.
+Thus
 
 $$
 \lambda\mu = \frac{4}{9(1+\delta^2)} \label{Eq52}
 $$
 
-Equation \ref{Eq53}:Eq53.
+Since $\cos(\Omega) = -\cos(2\varphi) = -(1-\delta^2)/(1+\delta^2)$,
 
 $$
 \lambda\mu = \frac{2}{9}(1-\cos(\Omega)) \label{Eq53}
 $$
 
-Equation \ref{Eq54}:Eq54.
+However, $\lambda\mu = 1$ for the semi-circle case, so we would like a different
+characterization.
+
+## Most-circular elliptical arc
+
+![Illustration of circular arc RQS (top-left) and an RQS found by affine
+transformation (top-middle). The top-right drawing shows an alternative pair of
+locations for the control points based on the a-b-c formulae in the text. The
+bottom row shows a similar set of RQSs, but for a quarter
+ellipse\label{figF}.](figs/RatQuad-F.svg)
+
+Let
+
+$$
+a = \left|p_3-p_0\right| \label{Eq64}
+$$
+
+$$
+b = \left|p_m-p_0\right| \label{Eq65}
+$$
+
+$$
+c = \left|p_m-p_3\right| \label{Eq66}
+$$
+
+Suppose, as illustrated\text{ (see figure \ref{figF})}, we take a circular arc
+and apply an affine transformation that preserves the angle $\Omega$. Suppose
+further that we place $p_1$ and $p_2$ such that
 
 $$
 \left|p_1-p_0\right| = \frac13(a+b-c) \label{Eq54}
 $$
 
-Equation \ref{Eq55}:Eq55.
-
 $$
 \left|p_2-p_3\right| = \frac13(a-b+c) \label{Eq55}
 $$
 
-Equation \ref{Eq56}:Eq56.
+Then the product of the velocities is
 
 $$
 9\left|p_1-p_0\right|\,\left|p_2-p_3\right| =
 2bc-(b^2+c^2-a^2) \label{Eq56}
 $$
 
-Equation \ref{Eq57}:Eq57.
-
 $$
 9\left|p_1-p_0\right|\,\left|p_2-p_3\right| =
 2bc(1-\cos(\Omega)) \label{Eq57}
 $$
-
-Equation \ref{Eq58}:Eq58.
 
 $$
 9\left|p_1-p_0\right|\,\left|p_2-p_3\right| =
 2\lambda\mu bc \label{Eq58}
 $$
 
-# Figures and tables
+This looks as if we just got back where we started, but not quite. Suppose that
+we start with a circular arc RQS based on $p_1$ and $p_2$ from the above a-b-c
+formulae\text{ equations \ref{Eq54} and \ref{Eq55}}. Then we transform into an
+ellipse, preserving $\Omega$. Suppose we then create a fresh RQS using the same
+formulae \text{ equations \ref{Eq54} and \ref{Eq55}} based on $a$, $b$ and $c$
+for the transformed positions. The new RQS has the same path as the transformed
+one, albeit incorporating a bilinear transformation.
 
-![XXXXXXXXXXXXXX\label{figF}.](figs/RatQuad-F.svg)
+In the figure this illustrates how this works when $\Omega=90^\circ$. We can use
+the a-b-c formulae as one means to specify a quarter ellipse. Also note the
+symmetric case of $b=c$\text{, which corresponds to equation \ref{Eq52}}.
+Overall, the a-b-c formulae provide a convenient way to specify a "neutral
+ellipse" in that it has a low eccentricity for a given case.
 
-![XXXXXXXXXXXXXX\label{figG}.](figs/RatQuad-G.svg)
+# Topic: Practical method for finding polynomials
+
+The scheme for specifying an RQS in terms of control points $p_1$ and $p_2$ is
+often convenient, but we need to be able to convert to a canonical form. The
+form that we adopt is the one with $p_m$, $w_A$, $w_B$ and $w_C$, modified such
+that if $w_B$ is zero and $p_m$ infinitely far away the numerator term $w_Bp_m$
+can be found correctly.
+
+Our approach is to find a vector $d$ in the direction $p_0$ to $p_3$ and then
+find a vector $n$ by rotating $d$ through $90^\circ$ (anti-clockwise, by
+arbitrary choice).
+
+$$
+d = p_3-p_0 \label{Eq19}
+$$
+
+$$
+n\cdot d = 0 \label{Eq20}
+$$
+
+Let $$ a = p_1-p_0 = \lambda(p_m-p_0) \label{Eq21} $$
+
+$$
+b = p_2-p_3 = \lambda(p_m-p_3) \label{Eq22}
+$$
+
+Hence
+
+$$
+d = \frac{a}{\lambda} - \frac{b}{\mu} \label{Eq23}
+$$
+
+The dot products of $d$ with $d$ and $n$ have simple results.
+
+$$
+\frac{a\cdot n}{\lambda} - \frac{b\cdot n}{\mu} = 0 \label{Eq24}
+$$
+
+$$
+\frac{a\cdot d}{\lambda} - \frac{b\cdot d}{\mu} = \left| d\right|^2 \label{Eq25}
+$$
+
+Suppose that $\gamma$ satisfies
+
+$$
+\lambda = \frac{\gamma\left| d\right|^2}{b\cdot n} \label{Eq26}
+$$
+
+$$
+\lambda = \frac{\gamma\left| d\right|^2}{a\cdot n} \label{Eq27}
+$$
+
+then the first dot product is satisfied. For the second
+
+$$
+\gamma = \frac{(a\cdot d)(b\cdot n)-(b\cdot d)(a\cdot n)}{\left| d\right|^4} \label{Eq28}
+$$
+
+Hence we can find weights for the RQS to satisfy earlier conditions\text{ (ref.
+\
+equations \ref{Eq14} and \ref{Eq15})}.
+
+$$
+w_A = \frac{3(b\cdot n)}{2\left| d\right|^2} \label{Eq29}
+$$
+
+$$
+w_B = \left(\frac{3}{2}\right)^2\gamma \label{Eq30}
+$$
+
+$$
+w_C = \frac{3(a\cdot n)}{2\left| d\right|^2} \label{Eq31}
+$$
+
+## Numerical generality
+
+Two conditions must be met for a RQS to be valid.
+
+$$
+w_A \neq 0 \label{Eq32}
+$$
+
+$$
+w_C \neq 0 \label{Eq33}
+$$
+
+These are required so that the path begins at $p_0$ and reaches $p_3$. More
+tricky is the non-intersection cases. The case when $a$ and $b$ are parallel is
+difficult to resolve, and we choose to declare that invalid. In other words
+
+$$
+a\cdot n \neq 0 \label{Eq59}
+$$
+
+$$
+b\cdot n \neq 0 \label{Eq60}
+$$
+
+Even when these conditions are met there may be no intersecton because $a$ and
+$b$ can be parallel, meaning that $\gamma=0$ and $p_m$is effectively off at
+infinity. We can readily resolve this by writing $p_m$ in terms of $p_0$ or
+$p_3$ plus a displacement.
+
+$$
+p_n = w_Bp_m =
+\left(\frac32\right)^2\gamma\left(
+p_0 + \left(\frac{b\cdot n}{\gamma \left| d\right|^2}\right)(p_1-p_0)
+\right) \label{Eq61}
+$$
+
+$$
+p_n =
+\left(\frac32\right)^2\left(
+\gamma\, p_0 + \left(\frac{b\cdot n}{\left| d\right|^2}\right) a
+\right) \label{Eq62}
+$$
+
+$$
+p_n =
+\left(\frac32\right)^2\left(
+\gamma\, p_3 + \left(\frac{a\cdot n}{\left| d\right|^2}\right) b
+\right) \label{Eq63}
+$$
+
+We could find $w_Bp_m$ as a weighted sum of these expressions, and in fact one
+such weighting would effectively be like finding the intersection $p_m$
+explicitly, and therefore not work when $w_B=0$. Overall, we recommend just
+picking one and using it. If some sort of universal numerical consistency is
+desired, then a 50-50 combination is good.
+
+# Topic: Converting and matching
+
+## Use cases
+
+In this section we consider some conversion and matching methods that may be
+useful when rendering curves. For instance, an SVG output API might support
+elliptical arcs but not conic sections generally. Furthermore, in such a case we
+will need to find a matching parabola when the eccentricity of an ellipse is
+extreme such that the centre is well off the page.
+
+The design of Zebraix should account for the substitution of curves. For
+example, suppose that an arrow attaches somewhere along the path of a curve. We
+should delay extraction of the path location until late, and preferrably after
+conversion. That assumes that we prefer to move the arrow endpoint slightly and
+attach exactly to the curve, rather than keeping the endpoint while knowing that
+the curve may be very slightly off. Probably the best approach would be to do
+two passes, the first deciding on conversion structural changes, and the second
+refining or updating as needed. It should be noted that Zebraix constructs a DAG
+of drawn entities. Therefore it should not be necessary to do two passes. Note
+that the final drawing entities may have a rendering order ("layers") that does
+not need to correspond to any topological sort of the calculation graph.
+
+## Denominator balancing
+
+Let us revisit the bilinear transformation, which enables us to adjust the
+velocities at either end of an RQS while keeping the product of those velocities
+constant. If we apply a transformation with
+
+$$
+\sigma = \sqrt\frac{w_A}{w_C} \label{Eq67}
+$$
+
+then, after that transformation, the coefficients of $t{}^2$ and $(1-t){}^2$ in
+the denominator will be equal. In other words, $w_A=w_C$. We refer to this as
+*denominator balancing*. The velocities will be equal iff
+
+$$
+\left|p_m-p_3\right| = \left|p_m-p_0\right| \label{Eq68}
+$$
+
+### Scope of ellipse conversion
+
+Rendering libraries like Cairo may not directly support RQSs, so we convert to
+elliptical arcs. Hyperbolic conic sections may not be supported. For this
+reason, for the present, Zebraix restricts the type of RQS accordingly. One
+option is to divide such curves into pieces approximated by cubic splines.
+However, we want to be cautious about adding capabilities to Zebraix that might
+either complicate code or significantly increase the size of output files.
+
+When a RQS is close to a limitation, such as when a parabola is specified, it is
+possible that numerical realities cause the conditions to go over the boundary.
+Zebraix incorporates some tolerance for this, and will "snap" the RQS to a
+parabola.
+
+### Ellipse conversion method
+
+![Creating an elliptical arc by affine transformation of a circular arc. The
+centre is transformed to $p_a$, the point $(1,0)$ is transformed to $p_a+p_s$,
+and the point $(0,1)$ is transformed to
+$p_a+p_s$\label{figG}.](figs/RatQuad-G.svg)
+
+The overall flow of the conversion from RQS to ellipse arc is as follows.
+
+1.  First, balance the denominator of the RQS.
+2.  Normalize by the sign of $w_A$.
+3.  Shift the range of $t$ so that the RQS is over the range $[-1/2, 1/2]$.
+
+For these first $3$ steps let
+
+$$
+\rho = \frac{w_B}{\sqrt{w_Aw_C}} \label{Eq69}
+$$
+
+$$
+p_q = \rho p_m \label{Eq70}
+$$
+
+$$
+p_q = \left(\frac{1}{\sqrt{w_Aw_C}}\right) p_n \label{Eq71}
+$$
+
+$$
+p_q = \left(\frac23\right)\frac{\left|d\right|^2}{\sqrt{(a\cdot n)(b\cdot n)}} \label{Eq72}
+$$
+
+Then
+
+$$
+f_\rho(t) = \frac{%
+\Bigl(\frac12-t\Bigr)^2p_0 + 2\Bigl(\frac12-t\Bigr)\Bigl(\frac12+t\Bigr)p_q + \Bigl(\frac12+t\Bigr)^2p_3
+}{%
+\Bigl(\frac12-t\Bigr)^2 + 2\rho\Bigl(\frac12-t\Bigr)\Bigl(\frac12+t\Bigr) + \Bigl(\frac12+t\Bigr)^2
+} \label{Eq73}
+$$
+
+1.  (Step 4) Express the denominator in terms of $\alpha$ and $\beta$ such that
+
+$$
+\alpha = \frac12(1+\rho) \label{Eq74}
+$$
+
+$$
+\alpha\beta^2 = \frac12(1-\rho) \label{Eq75}
+$$
+
+$$
+f_\rho(t) = \frac{%
+\frac14\bigl(p_0+2p_q+p_3) + t\bigl(p_3-p_0\bigr) + t^2\bigl(p_o-2p_q+p_3\bigr)
+}{%
+\alpha(1+\beta^2t^2)
+} \label{Eq76}
+$$
+
+1.  (Step 5) Split the spline path into trigonometric parts. That is, let
+
+$$
+p_a = \frac1{8\alpha}\Bigl(p_0+2p_q+p_3\Bigr) + \frac1{2\alpha\beta^2}\Bigl(p_0-2p_q+p_3\Bigr) \label{Eq77}
+$$
+
+$$
+p_c = \frac1{8\alpha}\Bigl(p_0+2p_q+p_3\Bigr) - \frac1{2\alpha\beta^2}\Bigl(p_0-2p_q+p_3\Bigr) \label{Eq78}
+$$
+
+$$
+p_s(t) = \frac1{2\alpha\beta}\Bigl(p_3-p_0\Bigr) \label{Eq79}
+$$
+
+$$
+f_\rho(t) = p_a + \left(\frac{2\beta t}{1+\beta^2 t^2}\right)p_s + \left(\frac{1-\beta^2 t^2}{1+\beta^2 t^2}\right)p_c \label{Eq80}
+$$
+
+Since the range of $t$ here is $-1/2$ to $1/2$, and this is tan of the half
+angle, the angular range for the arc is
+
+$$
+\left[\, -2\tan^{-1}\left(\frac\beta2\right),\,\, 2\tan^{-1}\left(\frac\beta2\right)\, \right] \label{Eq81}
+$$
+
+Once we have this, we create, as shown\text{ (figure \ref{figG})}, a circular
+arc radius $1$with the required angle range. This is then transformed, moving
+the centre to $p_a$ and the mid-point to $p_a+p_c$. The point $(0,1)$ may or may
+not be part of the unit circle arc, and is in either case transformed to
+$p_a+p_s$.
+
+## Constraints and conversion to parabolas
+
+We start by restricting
+
+$$
+(a\cdot n)(b\cdot n) > 0 \label{Eq82}
+$$
+
+The rationale is that an elliptical arc can always be an ellipse cut by a
+straight line. The ellipse can be stretched into a circle without affecting the
+signs of $a\cdot n$ and $b\cdot n$, which are necessarily the same for a line
+cutting a circle.
+
+This means that
+
+$$
+\lambda\mu > 0 \label{Eq83}
+$$
+
+$$
+w_Aw_C > 0 \label{Eq84}
+$$
+
+In step 2 above we normalized the RQS to have $w_A>0$, so this implies $w_C>0$
+thereafter. If
+
+$$
+\frac{(a\cdot n)(b\cdot n)}{\left|d\right|^2} \label{Eq85}
+$$
+
+is smaller than a threshold, we reject. This is not identifiably of any
+particular type of conic section, a matter we will address shortly.
 
 <!-- md-formatter off (Document metadata) -->
 
@@ -560,15 +888,201 @@ Arc greater than semicircle                                            $(2,\inft
 Full circle / indeterminate        $-180^\circ,180^\circ$              $\infty$      $-1$           $0$
 --------------------------------------------------------------------------------
 
-Table: CCCC brevity.\label{tabH}
+Table: Ranges of $\beta$, $\rho$ and $\alpha$ for ranges of RQS with
+trigonometric curves.  An arc of small angle ($\epsilon$ here), and very large
+scaling becomes, in the limit, a parabola.  The range of $t$ is $[-1/2,1/2]$.
+Outside of these ranges the curve is a hyperbola.  Zebraix does not support
+these.\label{tabH}
 
 <!-- md-formatter on -->
 
-![XXXXXXXXXXXXXX\label{figI}.](figs/RatQuad-I.svg)
+Otherwise, that is if the value\text{ in equation \ref{Eq85}} is above the
+threshold, then $\rho$ is well-determined. We then need to consider $\alpha$ and
+$\beta$. It works best to consider which values lead to which ranges of arc
+angles. These are set out in the table\text{ (see table \ref{tabH})}. Zebraix
+only supports elliptical-arc and parabolic RQSs, and therefore
 
-![XXXXXXXXXXXXXX\label{figJ}.](figs/RatQuad-J.svg)
+$$
+-1 < \rho < 1 \label{Eq86}
+$$
 
-![XXXXXXXXXXXXXX\label{figK}.](figs/RatQuad-K.svg)
+for elliptical arcs. The condition for parabolas is that $\rho$ is close to $1$.
+
+To convert to parabolas we basically set $\rho=1$ and have $\beta=0$ in the
+denominator. By doing this the denominator of $f_\rho(t)$ loses the $t{}^2$
+term. We can implement this, in the original expression for $f(t)$, by setting
+$w_B$ according to
+
+$$
+w_B = \sqrt{w_Aw_C} \label{Eq87}
+$$
+
+That is,
+
+$$
+w_B = \left(\frac32\right) \frac{\sqrt{(a\cdot n)(b\cdot n)}}{\left|d\right|^2} \label{Eq88}
+$$
+
+The adjusted curve is a bilinear transformation of a parabola/
+
+a. When extracting points we use the adjusted RQS.
+
+b. When drawing the spline path, we convert to a cubic spline using $f_\rho(t)$.
+Let this be $f_\alpha(t)$ for $0\leq t\leq 1$.
+
+$$
+f_\alpha(t) = (1-t)^3p_0 + 3t(1-t)^2\left(\frac23p_q + \frac13p_0\right) + 3t^2(1-t)\left(\frac23p_q + \frac13p_3\right) + t^3p_3 \label{Eq89}
+$$
+
+If, on the other hand, $\rho$ is close to $-1$ we reject the RQS as invalid: it
+is hyperbolic, or too close to being so.
+
+## Intersection-angle form
+
+If an RQS is specified in intersection-angle form ($p_m$, $\Omega$, $\sigma$),
+we can convert to weighted form as follows.
+
+$$
+\lambda = \sigma\sqrt{\frac29\Bigl(1-\cos(\Omega)\Bigr)} = \frac{2w_B}{3w_A} \label{Eq90}
+$$
+
+$$
+\mu = \frac1\sigma\sqrt{\frac29\Bigl(1-\cos(\Omega)\Bigr)} = \frac{2w_B}{3w_C} \label{Eq91}
+$$
+
+Let
+
+$$
+w_A = \frac1\sigma \label{Eq92}
+$$
+
+$$
+w_B = \sqrt{\frac{1-\cos(\Omega)}{2}} = \rho \label{Eq93}
+$$
+
+$$
+w_C = \sigma \label{Eq94}
+$$
+
+The special case $\Omega=0$ corresponds to the semi-circle. In this case the
+elliptical arc is squished down to a line, with $p_q=0$. It is an arc that can
+be represented as a transformed circle. On the other hand, $\Omega$ near
+$180^\circ$ corresponds to a small arc angle, and thus one to be converted to a
+parabola.
+
+## Summary
+
+We typically cannot use RQSs directly in many key cases, including rendering to
+SVGs. Therefore we convert RQSs using 4 forms.
+
+1.  The form of RQS in which it is specified. This might be the control-points
+    form or the intersection-angle form.
+
+2.  The RQS converted to ($W_A$, $w_B$, $w_C$, $p_m$)-form: weights form.
+
+3.  Adjusted form. This is the weights form, but when appropriate with the
+    denominator adjusted to bilinear-parabola. If this adjustment is made, the
+    path may change slightly. In that use, the spline is not a parabolic spline,
+    but a parabola with bilinear transformation. Therefore points extracted from
+    the adjusted RQS will be close to those originally specifid.
+
+4.  Path form, either: (a) Elliptical arc in ($\beta$, $p_a$, $p_s$,
+    $p_c$)-form, or (b) Parabolic spline in $f_\alpha(t)$ form.
+
+In addition to the above, parabolas may be used in colinear cases. This must be
+via the intersection-angle specification.
+
+# Topic: Choice of specification schemes
+
+## Requirements
+
+We could not find a single scheme for specifying RQSs. Basically the difficulty
+is in the range of angles. We want to be able to specify semi-circles and to be
+able to specify colinear RQSs. We want to be able to specify cases near these
+with convenience and accuracy.
+
+It is also important that the specification of the curves be invariant on
+transformation. This means that we get the same RQS if (a) we find a curve path,
+or points along one, and then apply a transformation, or (b) we transform the
+specification and find the curve path.
+
+As a result we provide more than one specification scheme. We want to avoid
+proliferation of schemes, and want to aim for stability of the user interface.
+Multiple extensions or changes later will not necessarily complicate Zebraix's
+core code very much, but will increase testing and user documentation. Later
+deprecation would necessitate migration of drawing libraries.
+
+## Specification schemes
+
+Zebraix supports 2 specification schemes for RQSs.
+
+*   a. A *four point*, or *control-point*, scheme: ($p_0$, $p_1$, $p_2$, $p_3$).
+    *   (i) When a Bézier cubic spline is a parabola, the four points used for
+        an RQS also generate a parabola.
+    *   (ii) An intersection point is not required, so semi-circles can be
+        specified.
+    *   (iii) Intersection points that are colinear with the end points are not
+        supported.
+*   b. *Intersection-angle* scheme: ($p_0$, $p_m$, $p_3$, $\cos(\Omega)$,
+    $\sigma$).
+
+    *   (i) Intersection points may be colinear with their end points.
+    *   (ii) Semi-circles cannot be specified.
+
+    This scheme is the one based on $\Omega$, parameterized by $\cos(\Omega)$. A
+    bilinear transformation on $\sigma$ is incorporated, speeding up the
+    velocity by $\sigma$ at $p_0$ and slowing it down by $\sigma$ at $p_3$.
+
+In addition to RQSs, Zebraix supports cubic splines and straight lines. Straight
+lines can have bilinear transformation to adjust end-point velocities. Zebraix
+also supports complete circles and ellipses. It also provides a most-circular
+version of the intersection-angle scheme in which $\Omega$ is set automatically
+for the ease of rounding corners. (This must be calculable before
+transformation.)
+
+![RQSs with $\cos(\Omega)=0$ and $\sigma=1$ can be used conveniently for
+purposes such as the rounded corners of a parallelogram. The drawing shows such
+a parallelogram (top) along with a breakdown highlighting the corners. This
+illustrates how the mid-point with respect to $t$, that is $t=1/2$ within the
+range $[0,1]$, divides the corner RQS at its logical mid-point. This is where
+the parallelogram diagonal intersects the RQS\label{figI}.](figs/RatQuad-I.svg)
+
+## Convenience features of intersection-angle scheme
+
+A parallelogram is a transformed square. Therefore, we can conveniently specify
+rounded corners of a parallelogram with $\cos(\Omega)=0$, because the corners
+are similarly transformed quarter circles. This is illustrated\text{ (see figure
+\ref{figI})}.
+
+Another convenience is that the scheme maintains symmetry. That is to saym, if
+the RQS is symmetric and we choose $\sigma=1$, then our formulation retains that
+symmetry. For instance, it means that we can substitute $1-t$ for $t$ and
+exchange $p_0$ and $p_3$. This is possible because, in the symmetric case, the
+displacement of $p_m$ from the centre (or just $p_m$?) is proportional to
+$(p_0+p_3)$. This has two consequences that we note here.
+
+a. If we extract points from the RQS and if symmetry is retained, then the
+points are logically symmetric. If we round the corners of a square or rhombus,
+they are literally symmetric. (The parallelogram is logically a stretched
+version of the literal case.)
+
+b. The mid-point is at $t=1/2$. For example, in the parallelogram example this
+is the intersection of the diagonal and the RQS.
+
+# Topic: Point distribution, parameterization and attachment
+
+![Example vertegrams with angular attachment (left column) and parallel
+attachment (right column). All vertegrams should work with either spacing.
+Circular vertegrams lend themselves best to angular spacing and flat faces lend
+themselves most readily to parallel spacing. All vertegrams should have
+continuous attachments, all the way around, including sharp or rounded corners.
+Vertegrams have four sides, which are intended for parallel attachment.
+Vertegrams must support both styles of attachment, even if much better suited to
+one versus the other\label{figJ}.](figs/RatQuad-J.svg)
+
+![Attachment points, whether parallel or angular, are parameterized
+counter-clockwise from the mid-line of each
+side\label{figK}.](figs/RatQuad-K.svg)
 
 <!-- md-formatter off (Document metadata) -->
 
@@ -582,421 +1096,133 @@ Circular-tan-half                $\tan(\tfrac12\tan^{-1}(u))$            $\tan(\
 Sin-tan-half                     $\tan(\tfrac12\sin^{-1}(u))$            $\tan(\tfrac12\sin^{-1}(u\tan(\phi)))$
 ------------------------------------------------------------------------------------------------------
 
-Table: CCCC brevity.\label{tabL}
+Table: Conversion formulae that Zebraix uses internally to take parallel or
+angular attachment parameter values to those preferred by a vertegram face.
+Scaling factors may be incorporated.  Linear-tangent style converts from an
+angular vertegram approach ($\phi$) to parallel spacing.  A *circular-tan-half*
+style of face needs the linear or angular approach to be converted to a
+tan-half-angle.  Zebraix may also support face attachment like *sin-tan-half*,
+which in essence converts an angular vertegram approach to even parallel
+spacing\label{tabL}.
 
 <!-- md-formatter on -->
 
-# Equations
-
-Equation \ref{Eq19}:Eq19.
-
-$$
-d = p_3-p_0 \label{Eq19}
-$$
-
-Equation \ref{Eq20}:Eq20.
-
-$$
-n\cdot d = 0 \label{Eq20}
-$$
-
-Equation \ref{Eq21}:Eq21.
-
-$$
-a = p_1-p_0 = \lambda(p_m-p_0) \label{Eq21}
-$$
-
-Equation \ref{Eq22}:Eq22.
-
-$$
-b = p_2-p_3 = \lambda(p_m-p_3) \label{Eq22}
-$$
-
-Equation \ref{Eq23}:Eq23.
-
-$$
-d = \frac{a}{\lambda} - \frac{b}{\mu} \label{Eq23}
-$$
-
-Equation \ref{Eq24}:Eq24.
-
-$$
-\frac{a\cdot n}{\lambda} - \frac{b\cdot n}{\mu} = 0 \label{Eq24}
-$$
-
-Equation \ref{Eq25}:Eq25.
-
-$$
-\frac{a\cdot d}{\lambda} - \frac{b\cdot d}{\mu} = \left| d\right|^2 \label{Eq25}
-$$
-
-Equation \ref{Eq26}:Eq26.
-
-$$
-\lambda = \frac{\gamma\left| d\right|^2}{b\cdot n} \label{Eq26}
-$$
-
-Equation \ref{Eq27}:Eq27.
-
-$$
-\lambda = \frac{\gamma\left| d\right|^2}{a\cdot n} \label{Eq27}
-$$
-
-Equation \ref{Eq28}:Eq28.
-
-$$
-\gamma = \frac{(a\cdot d)(b\cdot n)-(b\cdot d)(a\cdot n)}{\left| d\right|^4} \label{Eq28}
-$$
-
-Equation \ref{Eq29}:Eq29.
-
-$$
-w_A = \frac{3(b\cdot n)}{2\left| d\right|^2} \label{Eq29}
-$$
-
-Equation \ref{Eq30}:Eq30.
-
-$$
-w_B = \left(\frac{3}{2}\right)^2\gamma \label{Eq30}
-$$
-
-Equation \ref{Eq31}:Eq31.
-
-$$
-w_C = \frac{3(a\cdot n)}{2\left| d\right|^2} \label{Eq31}
-$$
-
-Equation \ref{Eq32}:Eq32.
-
-$$
-w_A \neq 0 \label{Eq32}
-$$
-
-Equation \ref{Eq33}:Eq33.
-
-$$
-w_C \neq 0 \label{Eq33}
-$$
-
-Equation \ref{Eq59}:Eq59.
-
-$$
-a\cdot n \neq 0 \label{Eq59}
-$$
-
-Equation \ref{Eq60}:Eq60.
-
-$$
-b\cdot n \neq 0 \label{Eq60}
-$$
-
-Equation \ref{Eq61}:Eq61.
-
-$$
-p_n = w_Bp_m =
-\left(\frac32\right)^2\gamma\left(
-p_0 + \left(\frac{b\cdot n}{\gamma \left| d\right|^2}\right)(p_1-p_0)
-\right) \label{Eq61}
-$$
-
-Equation \ref{Eq62}:Eq62.
-
-$$
-p_n =
-\left(\frac32\right)^2\left(
-\gamma\, p_0 + \left(\frac{b\cdot n}{\left| d\right|^2}\right) a
-\right) \label{Eq62}
-$$
-
-Equation \ref{Eq63}:Eq63.
-
-$$
-p_n =
-\left(\frac32\right)^2\left(
-\gamma\, p_3 + \left(\frac{a\cdot n}{\left| d\right|^2}\right) b
-\right) \label{Eq63}
-$$
-
-Equation \ref{Eq64}:Eq64.
-
-$$
-a = \left|p_3-p_0\right| \label{Eq64}
-$$
-
-Equation \ref{Eq65}:Eq65.
-
-$$
-b = \left|p_m-p_0\right| \label{Eq65}
-$$
-
-Equation \ref{Eq66}:Eq66.
-
-$$
-c = \left|p_m-p_3\right| \label{Eq66}
-$$
-
-Equation \ref{Eq67}:Eq67.
-
-$$
-\sigma = \sqrt\frac{w_A}{w_C} \label{Eq67}
-$$
-
-Equation \ref{Eq68}:Eq68.
-
-$$
-\left|p_m-p_3\right| = \left|p_m-p_0\right| \label{Eq68}
-$$
-
-Equation \ref{Eq69}:Eq69.
-
-$$
-\rho = \frac{w_B}{\sqrt{w_Aw_C}} \label{Eq69}
-$$
-
-Equation \ref{Eq70}:Eq70.
-
-$$
-p_q = \rho p_m \label{Eq70}
-$$
-
-Equation \ref{Eq71}:Eq71.
-
-$$
-p_q = \left(\frac{1}{\sqrt{w_Aw_C}}\right) p_n \label{Eq71}
-$$
-
-Equation \ref{Eq72}:Eq72.
-
-$$
-p_q = \left(\frac23\right)\frac{\left|d\right|^2}{\sqrt{(a\cdot n)(b\cdot n)}} \label{Eq72}
-$$
-
-Equation \ref{Eq73}:Eq73.
-
-$$
-f_\rho(t) = \frac{%
-\Bigl(\frac12-t\Bigr)^2p_0 + 2\Bigl(\frac12-t\Bigr)\Bigl(\frac12+t\Bigr)p_q + \Bigl(\frac12+t\Bigr)^2p_3
-}{%
-\Bigl(\frac12-t\Bigr)^2 + 2\rho\Bigl(\frac12-t\Bigr)\Bigl(\frac12+t\Bigr) + \Bigl(\frac12+t\Bigr)^2
-} \label{Eq73}
-$$
-
-Equation \ref{Eq74}:Eq74.
-
-$$
-\alpha = \frac12(1+\rho) \label{Eq74}
-$$
-
-Equation \ref{Eq75}:Eq75.
-
-$$
-\alpha\beta^2 = \frac12(1-\rho) \label{Eq75}
-$$
-
-Equation \ref{Eq76}:Eq76.
-
-$$
-f_\rho(t) = \frac{%
-\frac14\bigl(p_0+2p_q+p_3) + t\bigl(p_3-p_0\bigr) + t^2\bigl(p_o-2p_q+p_3\bigr)
-}{%
-\alpha(1+\beta^2t^2)
-} \label{Eq76}
-$$
-
-Equation \ref{Eq77}:Eq77.
-
-$$
-p_a = \frac1{8\alpha}\Bigl(p_0+2p_q+p_3\Bigr) + \frac1{2\alpha\beta^2}\Bigl(p_0-2p_q+p_3\Bigr) \label{Eq77}
-$$
-
-Equation \ref{Eq78}:Eq78.
-
-$$
-p_c = \frac1{8\alpha}\Bigl(p_0+2p_q+p_3\Bigr) - \frac1{2\alpha\beta^2}\Bigl(p_0-2p_q+p_3\Bigr) \label{Eq78}
-$$
-
-Equation \ref{Eq79}:Eq79.
-
-$$
-p_s(t) = \frac1{2\alpha\beta}\Bigl(p_3-p_0\Bigr) \label{Eq79}
-$$
-
-Equation \ref{Eq80}:Eq80.
-
-$$
-f_\rho(t) = p_a + \left(\frac{2\beta t}{1+\beta^2 t^2}\right)p_s + \left(\frac{1-\beta^2 t^2}{1+\beta^2 t^2}\right)p_c \label{Eq80}
-$$
-
-Equation \ref{Eq81}:Eq81.
-
-$$
-\left[\, -2\tan^{-1}\left(\frac\beta2\right),\,\, 2\tan^{-1}\left(\frac\beta2\right)\, \right] \label{Eq81}
-$$
-
-Equation \ref{Eq82}:Eq82.
-
-$$
-(a\cdot n)(b\cdot n) > 0 \label{Eq82}
-$$
-
-Equation \ref{Eq83}:Eq83.
-
-$$
-\lambda\mu > 0 \label{Eq83}
-$$
-
-Equation \ref{Eq84}:Eq84.
-
-$$
-w_Aw_C > 0 \label{Eq84}
-$$
-
-Equation \ref{Eq85}:Eq85.
-
-$$
-\frac{(a\cdot n)(b\cdot n)}{\left|d\right|^2} \label{Eq85}
-$$
-
-Equation \ref{Eq86}:Eq86.
-
-$$
--1 < \rho < 1 \label{Eq86}
-$$
-
-Equation \ref{Eq87}:Eq87.
-
-$$
-w_B = \sqrt{w_Aw_C} \label{Eq87}
-$$
-
-Equation \ref{Eq88}:Eq88.
-
-$$
-w_B = \left(\frac32\right) \frac{\sqrt{(a\cdot n)(b\cdot n)}}{\left|d\right|^2} \label{Eq88}
-$$
-
-Equation \ref{Eq89}:Eq89.
-
-$$
-f_\alpha(t) = (1-t)^3p_0 + 3t(1-t)^2\left(\frac23p_q + \frac13p_0\right) + 3t^2(1-t)\left(\frac23p_q + \frac13p_3\right) + t^3p_3 \label{Eq89}
-$$
-
-Equation \ref{Eq90}:Eq90.
-
-$$
-\lambda = \sigma\sqrt{\frac29\Bigl(1-\cos(\Omega)\Bigr)} = \frac{2w_B}{3w_A} \label{Eq90}
-$$
-
-Equation \ref{Eq91}:Eq91.
-
-$$
-\mu = \frac1\sigma\sqrt{\frac29\Bigl(1-\cos(\Omega)\Bigr)} = \frac{2w_B}{3w_C} \label{Eq91}
-$$
-
-Equation \ref{Eq92}:Eq92.
-
-$$
-w_A = \frac1\sigma \label{Eq92}
-$$
-
-Equation \ref{Eq93}:Eq93.
-
-$$
-w_B = \sqrt{\frac{1-\cos(\Omega)}{2}} = \rho \label{Eq93}
-$$
-
-Equation \ref{Eq94}:Eq94.
-
-$$
-w_C = \sigma \label{Eq94}
-$$
-
-Equation \ref{Eq95}:Eq95.
-
-$$
-XXX \label{Eq95}
-$$
-
-Equation \ref{Eq96}:Eq96.
-
-$$
-XXX \label{Eq96}
-$$
-
-Equation \ref{Eq97}:Eq97.
-
-$$
-XXX \label{Eq97}
-$$
-
-Equation \ref{Eq98}:Eq98.
-
-$$
-XXX \label{Eq98}
-$$
-
-Equation \ref{Eq99}:Eq99.
-
-$$
-XXX \label{Eq99}
-$$
-
-Equation \ref{Eq100}:Eq100.
-
-$$
-XXX \label{Eq100}
-$$
-
-Equation \ref{Eq101}:Eq101.
-
-$$
-XXX \label{Eq101}
-$$
-
-Equation \ref{Eq102}:Eq102.
-
-$$
-XXX \label{Eq102}
-$$
-
-Equation \ref{Eq103}:Eq103.
-
-$$
-XXX \label{Eq103}
-$$
-
-Equation \ref{Eq104}:Eq104.
-
-$$
-XXX \label{Eq104}
-$$
-
-Equation \ref{Eq105}:Eq105.
-
-$$
-XXX \label{Eq105}
-$$
-
-Equation \ref{Eq106}:Eq106.
-
-$$
-XXX \label{Eq106}
-$$
-
-Equation \ref{Eq107}:Eq107.
-
-$$
-XXX \label{Eq107}
-$$
-
-Equation \ref{Eq108}:Eq108.
-
-$$
-XXX \label{Eq108}
-$$
-
-Equation \ref{Eq109}:Eq109.
-
-$$
-XXX \label{Eq109}
-$$
+Zebraix calls the basic vertex drawable entitly a *vertegram*. A vertegram takes
+the form of a circle, box, logic gate or network node, and has a flow direction.
+This may be somewhat arbitrary, such as for a circle. For a logic gate the
+direction is natural. We enumerate various features of vertegrams, each with
+implied design decisions. The illustration depict these\text( see figures
+\ref{figJ} and \ref{figK}).
+
+1.  Each vertex has four faces: *inbound*, *outbound*, *lefthand* and
+    *righthand*.
+
+2.  The direction can be especially arbitrary for, say, a storage drive, in
+    which case we use a left-right flow. Vertegrams may not rotate with the
+    flow. In contrast to this, logic gate would be rotated if in a top-to-bottom
+    flow.
+
+3.  There are two styles of attachment: *angular* and *parallel*. These reflect
+    the kind of connection pattenrs. In pure form, jalwalks are drawn as simple
+    graphs with straight edges and circular vertegrams. This is angular
+    attachment. A family tree or similar style of drawing have connections that
+    approach their vertegrams in parallel, sometimes with perpendicular side
+    inputs.
+
+4.  Vertegrams are typically designed with one attachment style in mind, and
+    Zebraix supports variations in vertegram specification to support this.
+
+5.  Vertegrams are required, even if they prefer parallel attachment, to provide
+    a continuous attachment "perimeter" divided into the four faces.
+
+6.  Each face has a connected spline sequence. For example, the input face of a
+    rounded rectangle would be 1/8 of a circle connected to a straight line
+    connected to 1/8 of a circle.
+
+7.  The drawing specification and attachment specification of a vertegram are
+    separate, but for convenience the attachment can reference coordinates, and
+    so on, extracted from the drawing.
+
+8.  There may be alternative attachment specifications, which are more forgiving
+    about discontinuities. For example, both the drawing and attachments may
+    change for a logic gate if there are a large number of inputs.
+
+9.  Locations are parameterized in the range $[-1/2, 1/2]$, with $0$ ordinarily
+    connecting at the centreline. This contrasts by offset with spline
+    components, which are parameterized in the more traditional $[0,1]$ range.
+
+10. Spline ranges can be subdivided. Offsets and scale factors are incorporated
+    as approriate. For example, the input face of a rounded rectangle can take
+    subdivisions, specifically half, of the top-left and bottom-left
+    quarter-circle rounded corners. Thus the attachment faces would not specify
+    their own splines, but select, subdivide, and chain those from the vertegram
+    drawing.
+
+11. The subdivision of the parameter can be used to avoid, or at least
+    discourage, attachment to specific splines. For example, we may wish to
+    discourage attachment to rounded corners. Parallel attachment is guaranteed
+    to be in the range 5%-95%, and strongly avoids outside of 10%-90% of the
+    range. If there are lots of inputs they may extend into the wider range.
+    Discouragement is specified through weights that reduce the parameter range
+    associated with a particular spline. This should not be too strong, as
+    otherwise angular attachment could be undesirably jumpy. This mechanism is
+    called *segment weighting*.
+
+12. Vertegrams have input-output and left-right centrelines, and vertegram
+    centres, here *anchor points*, are the intersections of these two lines.
+    Ordinarily the zero-parameter attachment locations on faces coincide with
+    the intersections of faces and centrelines. If vertegrams are aligned by
+    centreline they should look correct. For example, logic gates should be
+    correctly aligned avertically by left-right centrelines
+
+13. Zebraix does not actually attach angular connections with strict
+    correctness. Basically, in the untransformed graph the centre-to-centre
+    lines between vertices are measured against horizontal. This is then fixed.
+    So, for example, a rectangular vertegram will attach $45^\circ$ lines at its
+    corners. The resulting edge lines, when extrapolated, will not pass through
+    vertegram centres. The rationale for this is that Zebraix should be
+    "logically" or "semantically" consistent. We are less concerned with exact
+    geometry.
+
+14. Often we want even attachment for a spline that does not have even
+    displacement. In contrast to a parabola, which we can fix to have uniform
+    attachment, a circle would not by angle space evenly. Equivalently, a
+    straight edge would not attach evenly with respect to angle. The table\text{
+    (see table \ref {tabL})} shows some candidate conversions that Zebraix may
+    use in conjunction with splines in order to achieve even parallel or angular
+    attachment.
+
+# Other design choices and considerations
+
+## Stretch factors
+
+Zebraix has a mix of affine transformation factors.
+
+*   *Literal scale* is a special scaling factor applied at the end that is a
+    pure scale, auch as for different screen resolutions. This should only be
+    used rarely. Zebraix prefers to output vector graphics and let the final
+    renderer deal with resolutions and the like.
+
+*   *General scale factors* modify how the vertices are spaced, and how the
+    drawing is laid out. All features of the graph can have affine
+    transformations based on these. There are separate horizontal and vertical
+    stretches, which are combined with a global scale. A third factor is
+    created, an amalgamated global scale, which is the geometric mean of the
+    horizontal and vertical (or the square root of an affine determinant). The
+    rationale behind the extra factor is that, for example, a circular vertegram
+    can be isotropically scaled instead of being turned into an ellipse. We
+    still want to be able to stretch the layout more in one direction than
+    another. General drawing scale factors are rich enough that they scale
+    different aspects. The idea is that we want to be able to draw a jaywalk
+    with 20 nodes or 4 nodes on a page. The one with 20 nodes should not have
+    tiny vertegrams. There should be sizing coming from other factors, which
+    appears to general affine transformation as an offset.
+
+*   *Content scale factors* are specifically linked to line thickness and font
+    size. Initially we will keep to a single content scale factor, and scale
+    line thicknesses and font sizes from this, or vice versa. If we use a base
+    line thickness of 2pt, we want this to rise to 3pt when drawing in "heavy"
+    weight and 1.5pt when drawing in "light" weight. The font size might be 12pt
+    for medium weight, 14 for heavy, 10 for light. The idea here is that the
+    margin around text in a box should increase with the drawing weight. Arrow
+    sizes should be in an affine relation with the weight and/or line thickness.
