@@ -743,7 +743,8 @@ and C. The lower diagram also shows a vertex D that is in the pDFS subtree for C
 but in the oDFS subtree for B rather than A. Notice that the two hashed areas
 show where vertices in the oDFS subtree of A lie, and that in this case the
 range of pDFS indices is not continuous. That is, the pDFS indices of the oDFS
-descendants of A are interrupted by D\label{figV}.](figs/Concepts-V.svg)
+descendants of A are interrupted by
+D\label{figV}.](figs/Concepts-V.svg){ width=4.2in }
 
 The scenario is complicated further by vertices like D that are not descendants
 of A in the oDFS tree and so further split the set of vertices that are
