@@ -23,3 +23,16 @@ patinon/experimental/doc/archive/StickySituations.loc
 patinon/experimental/doc/archive/StickySituations.mw
 patinon/experimental/doc/archive/RoughMaterial.loc
 patinon/experimental/doc/archive/RoughMaterial.mw
+
+patinon/doc/design/Molecule.html
+patinon/doc/design/Molecule.md
+patinon/doc/design/Molecule.pdf
+patinon/doc/design/Molecule-intermediate.md
+
+*/doc/styling/header*
+*/doc/styling/defs*
+*/doc/*/crested.css
+
+squalor/doc/design/RhodiumEssence-intermediate.md
+squalor/doc/design/RhodiumEssence.html
+squalor/doc/design/RhodiumEssence.pdf
