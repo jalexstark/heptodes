@@ -5,8 +5,8 @@ authors = ["Alex Stark <alex@withheld.org>"]
 edition = "2021"
 
 [[test]]
-name = "z-graph-test-runner"
-path = "src/test-runner.rs"
+name = "z-graph-test-of-testing"
+path = "src/test-of-testing.rs"
 
 [dependencies]
 regex = "1.5"
