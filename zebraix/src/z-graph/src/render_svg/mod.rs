@@ -16,6 +16,8 @@ extern crate cairo;
 extern crate pango;
 extern crate pangocairo;
 
+use cairo::SvgUnit::Pt;
+// use cairo::enums::SvgUnit;
 use cairo::SvgSurface;
 use std::f64::consts::PI;
 use std::io::Write;
@@ -28,7 +30,8 @@ pub fn write_sample_to_file<W: Write + 'static>(
    let x_offset = 40.0; //       overall.canvas_x_offset
    let y_offset = 50.0; //       overall.canvas_y_offset
 
-   let surface = SvgSurface::for_stream(canvas_width, canvas_height, out_stream).unwrap();
+   let mut surface = SvgSurface::for_stream(canvas_width, canvas_height, out_stream).unwrap();
+   surface.set_document_unit(Pt);
    let context = cairo::Context::new(&surface).unwrap();
    context.translate(x_offset, y_offset);
 
@@ -38,7 +41,7 @@ pub fn write_sample_to_file<W: Write + 'static>(
 
    // Create a single context, instead of using create_layout.  This
    // demonstrates avoiding lots of Pango contexts.
-   let text_context = pangocairo::create_context(&context).unwrap();
+   let text_context = pangocairo::create_context(&context);
    let text_layout = pango::Layout::new(&text_context);
 
    let k_label_font_size = 14.0;
@@ -88,7 +91,7 @@ pub fn write_spline_test_to_file<W: Write + 'static>(
    context.arc(160.0, 120.0, 30.0, 0.0 * PI, 2.0 * PI);
    context.stroke().unwrap();
 
-   let text_context = pangocairo::create_context(&context).unwrap();
+   let text_context = pangocairo::create_context(&context);
    let text_layout = pango::Layout::new(&text_context);
 
    let k_label_font_size = 14.0;

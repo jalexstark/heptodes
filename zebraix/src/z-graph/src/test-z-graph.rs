@@ -66,66 +66,6 @@ fn test_json_sphinx() {
    run_json_test("sphinx.json", "sphinx_ranks.svg", &["--label_with_ranks"]);
 }
 
-// Check if two SVG files, with given path names, have meaningful difference.
-//
-// Importantly, this disregards differences in surface ID.
-//
-// This is currently only used by the relinquished demo. The
-// disadvantage with this one is that while it enables tests to pass,
-// there will be version control churn.
-fn custom_diff(old: &Path, new: &Path) {
-   let mut old_file = BufReader::new(File::open(old).unwrap());
-   let mut new_file = BufReader::new(File::open(new).unwrap());
-
-   loop {
-      let mut old_line = String::new();
-      let mut new_line = String::new();
-      let old_len = old_file.read_line(&mut old_line).unwrap();
-      let new_len = new_file.read_line(&mut new_line).unwrap();
-      if old_len == 0 {
-         if new_len == 0 {
-            // Both file reads ended at this point: no material difference.
-            return;
-         } else {
-            break; // Short old file.
-         };
-      } else if new_len == 0 {
-         break; // Short new file.
-      }
-      if old_line.starts_with(r#"<g id="surface"#) {
-         if new_line.starts_with(r#"<g id="surface"#) {
-            continue;
-         } else {
-            break; // Skippable old line mismatch with new.
-         }
-      } else if new_line.starts_with(r#"<g id="surface"#) {
-         break; // Skippable new line mismatch with old.
-      }
-
-      if new_line != old_line {
-         break;
-      }
-   }
-
-   // Need to panic.
-   goldenfile::differs::text_diff(old, new);
-   panic!("Unreachable panic: custom differ finds diff but not text differ.");
-}
-
-#[test]
-//
-// This test recovers the stream after use by Cairo. At present this is not necessarily useful.
-// The output of SVG Cairo cannot be inserted into, say, an html document without stripping the
-// XML header. Nonetheless this might be useful if the output were written to a buffer.
-fn test() {
-   let mut mint = Mint::new("test-files/golden-svgs");
-   let file = mint.new_goldenfile_with_differ("recapture_demo.svg", Box::new(custom_diff)).unwrap();
-
-   let mut file_relinquished =
-      write_sample_to_file(file).unwrap().downcast::<std::fs::File>().unwrap();
-   writeln!(file_relinquished, "These lines demonstrate recapture of file from Cairo.").unwrap();
-}
-
 // Replace surface ID with generic ID, since this is changeable in tests.
 fn filtered_write_sample_to_file<W: Write>(mut out_stream: W) {
    let intervening_writer = Vec::<u8>::new();

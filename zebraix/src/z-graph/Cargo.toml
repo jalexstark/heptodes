@@ -8,24 +8,23 @@ edition = "2021"
 name = "z-graph-test-of-testing"
 path = "src/test-of-testing.rs"
 
+[[test]]
+name = "z-graph-test-z-graph"
+path = "src/test-z-graph.rs"
+
 [dependencies]
 regex = "1.5"
-serde = { version = "1.0", features = ["derive"]}
-# z-base = {version= "0.1.0", path = "../z-base"}
-json5 = "0.4.1"
-serde_default = "0.1.0"
-pangocairo = "0.15"
-
-# [dependencies.z-render]
-# version =  "0.1.0"
-# path = "../z-render"
+serde = { version = "1.0", features = ["derive"] }
+json5 = "0.4"
+serde_default = "0.1"
+pangocairo = "0.16"
 
 [dev-dependencies]
 goldenfile = "1.1"
 
 [dependencies.cairo-rs]
-version =  "0.15.0"
-features = ["svg"]
+version =  "0.16.0"
+features = ["svg", "v1_16"]
 
 [dependencies.pango]
-version =  "0.15.0"
+version =  "0.16.0"
