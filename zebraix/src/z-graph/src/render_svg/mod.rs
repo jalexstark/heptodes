@@ -22,7 +22,8 @@ use cairo::SvgSurface;
 use std::f64::consts::PI;
 use std::io::Write;
 
-pub fn write_sample_to_file<W: Write + 'static>(
+// After dependency to test_utils is added, use type-def for the result box.
+pub fn write_sample_to_write<W: Write + 'static>(
    out_stream: W,
 ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
    let canvas_width = 320.0; //  overall.canvas_width,

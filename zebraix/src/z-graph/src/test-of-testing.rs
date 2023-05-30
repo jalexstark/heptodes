@@ -27,7 +27,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::Path;
 use z_graph::jaywalk_graph::ZebraixGraph;
-use z_graph::render_svg::write_sample_to_file;
+use z_graph::render_svg::write_sample_to_write;
 use z_graph::render_svg::write_spline_test_to_file;
 use z_graph::render_svg::SplineTest;
 
@@ -58,7 +58,7 @@ fn run_json_test(input_filename: &str, output_filename: &str, args: &[&str]) {
    let mut mint = Mint::new("test-files/golden-svgs");
    let out_file = mint.new_goldenfile(output_filename).unwrap();
 
-   filtered_write_sample_to_file(out_file);
+   filtered_write_sample_to_write(out_file);
 }
 
 #[test]
@@ -122,15 +122,15 @@ fn test() {
    let file = mint.new_goldenfile_with_differ("recapture_demo.svg", Box::new(custom_diff)).unwrap();
 
    let mut file_relinquished =
-      write_sample_to_file(file).unwrap().downcast::<std::fs::File>().unwrap();
+      write_sample_to_write(file).unwrap().downcast::<std::fs::File>().unwrap();
    writeln!(file_relinquished, "These lines demonstrate recapture of file from Cairo.").unwrap();
 }
 
 // Replace surface ID with generic ID, since this is changeable in tests.
-fn filtered_write_sample_to_file<W: Write>(mut out_stream: W) {
+fn filtered_write_sample_to_write<W: Write>(mut out_stream: W) {
    let intervening_writer = Vec::<u8>::new();
    let relinquished_writer =
-      write_sample_to_file(intervening_writer).unwrap().downcast::<Vec<u8>>().unwrap();
+      write_sample_to_write(intervening_writer).unwrap().downcast::<Vec<u8>>().unwrap();
 
    let line_reader = std::io::BufReader::new(&**relinquished_writer);
    for l in line_reader.lines() {
@@ -171,7 +171,7 @@ fn run_one_test(input_filename: &str, output_filename: &str, args: &[&str]) {
    let mut mint = Mint::new("test-files/golden-svgs");
    let out_file = mint.new_goldenfile(output_filename).unwrap();
 
-   filtered_write_sample_to_file(out_file);
+   filtered_write_sample_to_write(out_file);
 }
 
 #[test]
