@@ -18,9 +18,10 @@ serde = { version = "1.0", features = ["derive"] }
 json5 = "0.4"
 serde_default = "0.1"
 pangocairo = "0.16"
+goldenfile = "1.1"
 
 [dev-dependencies]
-goldenfile = "1.1"
+# goldenfile should be here, but Rust has bugs with test-only config.
 
 [dependencies.cairo-rs]
 version =  "0.16.0"

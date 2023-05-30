@@ -18,6 +18,10 @@
 pub mod jaywalk_graph;
 pub mod render_svg;
 
+// At time of coding, Rust has a bug that cannot cope with test-only emptiness.
+// #[cfg(test)]
+pub mod test_utils;
+
 // Struct
 //
 // jaywalk
