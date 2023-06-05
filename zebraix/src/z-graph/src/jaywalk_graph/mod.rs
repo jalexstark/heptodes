@@ -14,10 +14,12 @@
 
 pub mod jaywalk_foundation;
 pub mod jaywalk_traiting;
+pub mod zgraph_base;
 
 use crate::jaywalk_graph::jaywalk_traiting::absent_f64;
 use crate::jaywalk_graph::jaywalk_traiting::absent_int32;
 use crate::jaywalk_graph::jaywalk_traiting::add_ident_f64;
+
 use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
 use crate::jaywalk_graph::jaywalk_traiting::Anchorage;
 use crate::jaywalk_graph::jaywalk_traiting::ArrowType;

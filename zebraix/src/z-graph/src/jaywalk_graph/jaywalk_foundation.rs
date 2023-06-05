@@ -15,6 +15,11 @@
 use crate::jaywalk_graph::absent_f64;
 use serde::{Deserialize, Serialize};
 
+#[inline]
+pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
+   t == &T::default()
+}
+
 pub const INT32_MISSING_VAL: i32 = i32::MIN;
 pub const FLOAT_MISSING_VAL: f64 = f64::NAN;
 
