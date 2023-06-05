@@ -23,14 +23,13 @@
 extern crate goldenfile;
 
 use json5::from_str;
+use serde_json::to_string_pretty;
 
-use std::fs::File;
-use std::io::{Read}; // , BufReader
-                                     // use std::path::Path;
+use z_graph::jaywalk_graph::zgraph_base::ZGraphDef;
 use z_graph::jaywalk_graph::ZebraixGraph;
 use z_graph::render_svg::write_sample_to_write;
 
-
+use z_graph::test_utils::JsonGoldenTest;
 use z_graph::test_utils::SvgGoldenTest;
 
 fn run_json_test(input_filename: &str, output_filename: &str, args: &[&str]) {
@@ -43,9 +42,7 @@ fn run_json_test(input_filename: &str, output_filename: &str, args: &[&str]) {
 
    let input_full_path = format!("test-files/golden-inputs/{}", input_filename);
 
-   let mut in_text = String::new();
-   let mut inputfile = File::open(input_full_path).unwrap();
-   inputfile.read_to_string(&mut in_text).unwrap();
+   let in_text = std::fs::read_to_string(input_full_path).unwrap();
 
    let deserialized = from_str::<ZebraixGraph>(&in_text).unwrap();
 
@@ -99,4 +96,21 @@ fn run_one_test(input_filename: &str, output_filename: &str, args: &[&str]) {
 #[test]
 fn test_sphinx() {
    run_one_test("sphinx.pb.txt", "sphinx_ranks.svg", &["--label_with_ranks"]);
+}
+
+fn run_idem_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
+   let mut json_golden = JsonGoldenTest::new(mint_dir, input_filename, output_filename);
+
+   let in_text = json_golden.read_to_string();
+
+   let deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+
+   let serialized = to_string_pretty::<ZGraphDef>(&deserialized).unwrap();
+
+   json_golden.provide_result(&serialized);
+}
+
+#[test]
+fn test_idem_simple() {
+   run_idem_test("test-files/golden-inputs/", "simple_graph.json", "simple_graph.json");
 }

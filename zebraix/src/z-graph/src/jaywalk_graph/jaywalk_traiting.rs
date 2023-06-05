@@ -39,20 +39,29 @@ use crate::jaywalk_graph::jaywalk_foundation::FLOAT_MISSING_VAL;
 use crate::jaywalk_graph::jaywalk_foundation::INT32_MISSING_VAL;
 use crate::jaywalk_graph::jaywalk_foundation::MULTIPLICATIVE_ID_F64;
 
+#[inline]
 pub fn absent_int32() -> i32 {
    INT32_MISSING_VAL
 }
 
+#[inline]
 pub fn absent_f64() -> f64 {
    FLOAT_MISSING_VAL
 }
 
+#[inline]
 pub fn add_ident_f64() -> f64 {
    ADDITIVE_ID_F64
 }
 
+#[inline]
 pub fn mult_ident_f64() -> f64 {
    MULTIPLICATIVE_ID_F64
+}
+
+#[inline]
+pub fn is_mult_ident_f64(v: &f64) -> bool {
+   *v == MULTIPLICATIVE_ID_F64
 }
 
 impl Default for JKey {
