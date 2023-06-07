@@ -16,10 +16,10 @@ pub mod jaywalk_foundation;
 pub mod jaywalk_traiting;
 pub mod zgraph_base;
 
+// use crate::jaywalk_graph::jaywalk_foundation::EmptyVec;
 use crate::jaywalk_graph::jaywalk_traiting::absent_f64;
 use crate::jaywalk_graph::jaywalk_traiting::absent_int32;
 use crate::jaywalk_graph::jaywalk_traiting::add_ident_f64;
-
 use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
 use crate::jaywalk_graph::jaywalk_traiting::Anchorage;
 use crate::jaywalk_graph::jaywalk_traiting::ArrowType;
@@ -665,6 +665,15 @@ impl Default for ZebraixPolySegment {
       ZebraixPolySegment::Straight(<ZebraixStraight as Default>::default())
    }
 }
+
+// impl EmptyVec for Zebraix2DNamedAffine {
+//    type Item = Zebraix2DNamedAffine;
+
+//    fn empty_vec() -> &'static Vec<Zebraix2DNamedAffine> {
+//       static EMPTY_VEC: Vec<Zebraix2DNamedAffine> = Vec::<Zebraix2DNamedAffine>::new();
+//       &EMPTY_VEC
+//    }
+// }
 
 fn empty_vec() -> &'static Vec<Zebraix2DNamedAffine> {
    static EMPTY_VEC: Vec<Zebraix2DNamedAffine> = Vec::<Zebraix2DNamedAffine>::new();
