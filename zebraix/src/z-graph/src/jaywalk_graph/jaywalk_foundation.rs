@@ -20,6 +20,11 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
    t == &T::default()
 }
 
+// pub trait EmptyVec {
+//    type Item;
+//    fn empty_vec() -> &'static Vec<Self::Item>;
+// }
+
 pub const INT32_MISSING_VAL: i32 = i32::MIN;
 pub const FLOAT_MISSING_VAL: f64 = f64::NAN;
 
