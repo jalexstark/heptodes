@@ -134,7 +134,20 @@ impl<T> JVec<T> {
    pub fn is_empty(&self) -> bool {
       self.0.is_empty()
    }
+
+   // pub fn push(&mut self, value: T) {
+   //    self.0.push(value)
+   // }
 }
+
+// impl<T> IntoIterator for JVec<T> {
+//    type Item = T;
+//    type IntoIter = std::vec::IntoIter<T>;
+
+//    fn into_iter(self) -> Self::IntoIter {
+//       self.0.into_iter()
+//    }
+// }
 
 impl Default for Coord {
    fn default() -> Self {

@@ -30,3 +30,4 @@ features = ["svg", "v1_16"]
 
 [dependencies.pango]
 version =  "0.16.0"
+features = ["v1_44"]

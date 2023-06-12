@@ -25,6 +25,7 @@ extern crate goldenfile;
 use json5::from_str;
 use serde_json::to_string_pretty;
 
+use z_graph::jaywalk_graph::zgraph_base::ZGraph;
 use z_graph::jaywalk_graph::zgraph_base::ZGraphDef;
 use z_graph::jaywalk_graph::ZebraixGraph;
 use z_graph::render_svg::write_sample_to_write;
@@ -32,7 +33,36 @@ use z_graph::render_svg::write_sample_to_write;
 use z_graph::test_utils::JsonGoldenTest;
 use z_graph::test_utils::SvgGoldenTest;
 
-fn run_json_test(input_filename: &str, output_filename: &str, args: &[&str]) {
+fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
+   let input_full_path = format!("test-files/golden-inputs/{}", input_filename);
+   let svg_golden = SvgGoldenTest::new(mint_dir, output_filename);
+
+   let in_text = std::fs::read_to_string(input_full_path).unwrap();
+
+   let deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+
+   let mut z_graph = ZGraph::new();
+
+   z_graph.provide_graph_def(&deserialized).unwrap();
+
+   z_graph.transition_to_deffed().unwrap();
+   z_graph.setup_render_to_stream(svg_golden.get_raw_writeable()).unwrap();
+   z_graph.transition_to_constructed().unwrap();
+   z_graph.transition_to_calculated().unwrap();
+   z_graph.transition_to_inked().unwrap();
+   let raw_result = z_graph.finish_renderer().unwrap();
+   z_graph.transition_to_finished().unwrap();
+
+   svg_golden.handover_result(raw_result);
+}
+
+#[test]
+fn test_json_sphinx() {
+   run_json_test("test-files/golden-svgs", "simple_graph.json", "simple_graph.svg");
+}
+
+// Retire once ZGraph subsumes ZebraixGraph.
+fn run_json_test_old(input_filename: &str, output_filename: &str, args: &[&str]) {
    let mut string_args = Vec::new();
 
    string_args.reserve(args.len());
@@ -59,9 +89,10 @@ fn run_json_test(input_filename: &str, output_filename: &str, args: &[&str]) {
    svg_golden.handover_result(raw_result);
 }
 
+// Retire once ZGraph subsumes ZebraixGraph.
 #[test]
-fn test_json_sphinx() {
-   run_json_test("sphinx.json", "sphinx_ranks.svg", &["--label_with_ranks"]);
+fn test_json_sphinx_old() {
+   run_json_test_old("sphinx.json", "sphinx_ranks.svg", &["--label_with_ranks"]);
 }
 
 // Function to
