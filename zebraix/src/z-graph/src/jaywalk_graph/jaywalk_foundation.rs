@@ -32,6 +32,7 @@ pub const MULTIPLICATIVE_ID_F64: f64 = 1.0f64;
 pub const ADDITIVE_ID_F64: f64 = 0.0f64;
 
 pub struct JKey(pub i32);
+#[derive(Clone)]
 pub struct JVec<T>(pub Vec<T>);
 
 // Mark as: Not yet completely migrated.
