@@ -25,11 +25,12 @@ extern crate goldenfile;
 use json5::from_str;
 use serde_json::to_string_pretty;
 
-use z_graph::jaywalk_graph::zgraph_base::ZGraph;
+use z_graph::jaywalk_graph::zgraph_base::RenderSvg;
+use z_graph::jaywalk_graph::zgraph_base::Renderer;
 use z_graph::jaywalk_graph::zgraph_base::ZGraphDef;
+use z_graph::jaywalk_graph::zgraph_base::ZMachine;
 use z_graph::jaywalk_graph::ZebraixGraph;
 use z_graph::render_svg::write_sample_to_write;
-
 use z_graph::test_utils::JsonGoldenTest;
 use z_graph::test_utils::SvgGoldenTest;
 
@@ -41,16 +42,17 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
 
    let deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
 
-   let mut z_graph = ZGraph::new();
+   let mut z_graph = ZMachine::new();
+   let svg_renderer = RenderSvg::default();
 
    z_graph.provide_graph_def(&deserialized).unwrap();
 
    z_graph.transition_to_deffed().unwrap();
-   z_graph.setup_render_to_stream(svg_golden.get_raw_writeable()).unwrap();
+   svg_renderer.setup_render_to_stream(&mut z_graph, svg_golden.get_raw_writeable()).unwrap();
    z_graph.transition_to_constructed().unwrap();
    z_graph.transition_to_calculated().unwrap();
    z_graph.transition_to_inked().unwrap();
-   let raw_result = z_graph.finish_renderer().unwrap();
+   let raw_result = svg_renderer.finish_renderer(&mut z_graph).unwrap();
    z_graph.transition_to_finished().unwrap();
 
    svg_golden.handover_result(raw_result);

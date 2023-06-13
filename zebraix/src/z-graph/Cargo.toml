@@ -20,6 +20,7 @@ serde_default = "0.1"
 pangocairo = "0.16"
 goldenfile = "1.1"
 serde_json = "1.0"
+derive_builder = "0.12.0"
 
 [dev-dependencies]
 # goldenfile should be here, but Rust has bugs with test-only config.
@@ -31,3 +32,4 @@ features = ["svg", "v1_16"]
 [dependencies.pango]
 version =  "0.16.0"
 features = ["v1_44"]
+
