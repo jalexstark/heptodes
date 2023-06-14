@@ -25,10 +25,11 @@ extern crate goldenfile;
 use json5::from_str;
 use serde_json::to_string_pretty;
 
-use z_graph::jaywalk_graph::zgraph_base::RenderSvg;
-use z_graph::jaywalk_graph::zgraph_base::Renderer;
-use z_graph::jaywalk_graph::zgraph_base::ZGraphDef;
-use z_graph::jaywalk_graph::zgraph_base::ZMachine;
+use z_graph::jaywalk_graph::zgraph_graphdef::ZGraphDef;
+use z_graph::jaywalk_graph::zgraph_machine::ZMachine;
+// use z_graph::jaywalk_graph::zgraph_machine::Renderer;
+use z_graph::jaywalk_graph::zgraph_svg::RenderSvg;
+use z_graph::jaywalk_graph::zgraph_svg::Renderer;
 use z_graph::jaywalk_graph::ZebraixGraph;
 use z_graph::render_svg::write_sample_to_write;
 use z_graph::test_utils::JsonGoldenTest;
