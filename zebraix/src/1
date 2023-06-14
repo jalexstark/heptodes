@@ -1,0 +1,1465 @@
+   Compiling z-graph v0.1.0 (/usr/local/google/home/starka/Desktop/git-heptodes/zebraix/src/z-graph)
+error[E0428]: the name `test_text_inking` is defined multiple times
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:265:1
+    |
+166 | / fn test_text_inking(
+167 | |    renderer_data_in: &mut ZRendererData,
+168 | |    state_data: &mut ZNodeStateData,
+169 | |    _in_data: &ZData,
+...   |
+188 | |    pangocairo::show_layout(context, text_layout);
+189 | | }
+    | |_- previous definition of the value `test_text_inking` here
+...
+265 | / fn test_text_inking(
+266 | |    renderer_data_in: &mut ZRendererData,
+267 | |    state_data: &mut ZNodeStateData,
+268 | |    _in_data: &ZData,
+...   |
+287 | |    pangocairo::show_layout(context, text_layout);
+288 | | }
+    | |_^ `test_text_inking` redefined here
+    |
+    = note: `test_text_inking` must be defined only once in the value namespace of this module
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:207:21
+    |
+207 |          return Err(ZGraphError::DuplicateRendererSetup);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:235:21
+    |
+235 |          return Err(ZGraphError::FinishNoRenderer);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:252:19
+    |
+252 |                   DebugLine::SimpleString(s) => {
+    |                   ^^^^^^^^^ use of undeclared type `DebugLine`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:63:21
+   |
+63 |          typestate: ZMachineTypestate::Init,
+   |                     ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:86:21
+   |
+86 |          return Err(ZGraphError::DuplicateGraphDef);
+   |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:95:28
+   |
+95 |       if self.typestate != ZMachineTypestate::Init {
+   |                            ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:96:21
+   |
+96 |          return Err(ZGraphError::IncorrectTypestateTransition);
+   |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:99:21
+   |
+99 |          return Err(ZGraphError::MissingGraphDef);
+   |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:104:24
+    |
+104 |       self.typestate = ZMachineTypestate::Deffed;
+    |                        ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:109:28
+    |
+109 |       if self.typestate != ZMachineTypestate::Deffed {
+    |                            ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:110:21
+    |
+110 |          return Err(ZGraphError::IncorrectTypestateTransition);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:113:21
+    |
+113 |          return Err(ZGraphError::RendererForConstruction);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:127:24
+    |
+127 |       self.typestate = ZMachineTypestate::Constructed;
+    |                        ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:132:28
+    |
+132 |       if self.typestate != ZMachineTypestate::Constructed {
+    |                            ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:133:21
+    |
+133 |          return Err(ZGraphError::IncorrectTypestateTransition);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:135:24
+    |
+135 |       self.typestate = ZMachineTypestate::Calculated;
+    |                        ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:140:28
+    |
+140 |       if self.typestate != ZMachineTypestate::Calculated {
+    |                            ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:141:21
+    |
+141 |          return Err(ZGraphError::IncorrectTypestateTransition);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:155:24
+    |
+155 |       self.typestate = ZMachineTypestate::Inked;
+    |                        ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:160:28
+    |
+160 |       if self.typestate != ZMachineTypestate::Inked {
+    |                            ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:161:21
+    |
+161 |          return Err(ZGraphError::IncorrectTypestateTransition);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphError`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:164:21
+    |
+164 |          return Err(ZGraphError::UnfinishedRenderer);
+    |                     ^^^^^^^^^^^ use of undeclared type `ZGraphError`
+
+error[E0433]: failed to resolve: use of undeclared type `ZMachineTypestate`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:166:24
+    |
+166 |       self.typestate = ZMachineTypestate::Finished;
+    |                        ^^^^^^^^^^^^^^^^^ use of undeclared type `ZMachineTypestate`
+
+error[E0412]: cannot find type `DebugLine` in this scope
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:46:25
+   |
+46 |    pub debug_lines: Vec<DebugLine>,
+   |                         ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::DebugLine;
+   |
+
+error[E0412]: cannot find type `ZRendererData` in this scope
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:54:27
+   |
+42 | pub struct SvgRendererData {
+   | -------------------------- similarly named struct `SvgRendererData` defined here
+...
+54 |    renderer_data_in: &mut ZRendererData,
+   |                           ^^^^^^^^^^^^^ help: a struct with a similar name exists: `SvgRendererData`
+   |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZRendererData` exists but is inaccessible
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:87:1
+   |
+87 | type ZRendererData = Option<Box<dyn Any>>;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZNodeStateData` in this scope
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:55:21
+   |
+55 |    state_data: &mut ZNodeStateData,
+   |                     ^^^^^^^^^^^^^^ not found in this scope
+   |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZNodeStateData` exists but is inaccessible
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:86:1
+   |
+86 | type ZNodeStateData = Option<Box<dyn Any>>;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZData` in this scope
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:56:15
+   |
+56 |    _in_data: &ZData,
+   |               ^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZData;
+   |
+
+error[E0412]: cannot find type `ZData` in this scope
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:57:20
+   |
+57 |    _out_data: &mut ZData,
+   |                    ^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZData;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:79:35
+   |
+79 |    renderer_data.debug_lines.push(DebugLine::SimpleString("Test debug string".to_string()));
+   |                                   ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::DebugLine;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:81:35
+   |
+81 |    renderer_data.debug_lines.push(DebugLine::SimpleString(format!(
+   |                                   ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::DebugLine;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:90:13
+   |
+90 |       .push(DebugLine::SimpleString(format!("Text height = {h}", h = metrics.height())));
+   |             ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::DebugLine;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:93:13
+   |
+93 |       .push(DebugLine::SimpleString(format!("Text descent = {h}", h = metrics.descent())));
+   |             ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::DebugLine;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:96:13
+   |
+96 |       .push(DebugLine::SimpleString(format!("Text ascent = {h}", h = metrics.ascent())));
+   |             ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::DebugLine;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:102:13
+    |
+102 |       .push(DebugLine::SimpleString(format!("Text anchor = {h}", h = strikethrough_centre)));
+    |             ^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::DebugLine;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:144:35
+    |
+144 |    renderer_data.debug_lines.push(DebugLine::SimpleString(format!(
+    |                                   ^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::DebugLine;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:151:35
+    |
+151 |    renderer_data.debug_lines.push(DebugLine::SimpleString(format!(
+    |                                   ^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::DebugLine;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `DebugLine`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:161:13
+    |
+161 |       .push(DebugLine::SimpleString(format!("Text spacing = {h}", h = text_layout.line_spacing())));
+    |             ^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::DebugLine;
+    |
+
+error[E0412]: cannot find type `ZRendererData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:167:27
+    |
+42  | pub struct SvgRendererData {
+    | -------------------------- similarly named struct `SvgRendererData` defined here
+...
+167 |    renderer_data_in: &mut ZRendererData,
+    |                           ^^^^^^^^^^^^^ help: a struct with a similar name exists: `SvgRendererData`
+    |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZRendererData` exists but is inaccessible
+   --> z-graph/src/jaywalk_graph/zgraph_base.rs:87:1
+    |
+87  | type ZRendererData = Option<Box<dyn Any>>;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZNodeStateData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:168:21
+    |
+168 |    state_data: &mut ZNodeStateData,
+    |                     ^^^^^^^^^^^^^^ not found in this scope
+    |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZNodeStateData` exists but is inaccessible
+   --> z-graph/src/jaywalk_graph/zgraph_base.rs:86:1
+    |
+86  | type ZNodeStateData = Option<Box<dyn Any>>;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:169:15
+    |
+169 |    _in_data: &ZData,
+    |               ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0412]: cannot find type `ZData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:170:20
+    |
+170 |    _out_data: &mut ZData,
+    |                    ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0412]: cannot find type `ZRegistry` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:191:44
+    |
+191 | pub fn register_svg_library(registry: &mut ZRegistry) {
+    |                                            ^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_registry::ZRegistry;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ZNodeRegistrationBuilder`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:193:7
+    |
+193 |       ZNodeRegistrationBuilder::default().name("Test text".to_string()).build().unwrap(),
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
+    |
+
+error[E0412]: cannot find type `ZMachine` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:203:20
+    |
+203 |       zgraph: &mut ZMachine,
+    |                    ^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_machine::ZMachine;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:205:20
+    |
+205 |    ) -> Result<(), ZGraphError> {
+    |                    ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0412]: cannot find type `DebugLine` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:223:29
+    |
+223 |          debug_lines: Vec::<DebugLine>::new(),
+    |                             ^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::DebugLine;
+    |
+
+error[E0412]: cannot find type `ZMachine` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:232:20
+    |
+232 |       zgraph: &mut ZMachine,
+    |                    ^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_machine::ZMachine;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:233:73
+    |
+233 |    ) -> Result<Result<Box<dyn core::any::Any>, cairo::StreamWithError>, ZGraphError> {
+    |                                                                         ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0412]: cannot find type `ZRendererData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:266:27
+    |
+42  | pub struct SvgRendererData {
+    | -------------------------- similarly named struct `SvgRendererData` defined here
+...
+266 |    renderer_data_in: &mut ZRendererData,
+    |                           ^^^^^^^^^^^^^ help: a struct with a similar name exists: `SvgRendererData`
+    |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZRendererData` exists but is inaccessible
+   --> z-graph/src/jaywalk_graph/zgraph_base.rs:87:1
+    |
+87  | type ZRendererData = Option<Box<dyn Any>>;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZNodeStateData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:267:21
+    |
+267 |    state_data: &mut ZNodeStateData,
+    |                     ^^^^^^^^^^^^^^ not found in this scope
+    |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZNodeStateData` exists but is inaccessible
+   --> z-graph/src/jaywalk_graph/zgraph_base.rs:86:1
+    |
+86  | type ZNodeStateData = Option<Box<dyn Any>>;
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:268:15
+    |
+268 |    _in_data: &ZData,
+    |               ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0412]: cannot find type `ZData` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:269:20
+    |
+269 |    _out_data: &mut ZData,
+    |                    ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0412]: cannot find type `ZMachine` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:293:20
+    |
+293 |       zgraph: &mut ZMachine,
+    |                    ^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_machine::ZMachine;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:295:20
+    |
+295 |    ) -> Result<(), ZGraphError>;
+    |                    ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0412]: cannot find type `ZMachine` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:299:20
+    |
+299 |       zgraph: &mut ZMachine,
+    |                    ^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_machine::ZMachine;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:300:73
+    |
+300 |    ) -> Result<Result<Box<dyn core::any::Any>, cairo::StreamWithError>, ZGraphError>;
+    |                                                                         ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0412]: cannot find type `ZRegistry` in this scope
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:303:49
+    |
+303 | pub fn register_renderer_library(registry: &mut ZRegistry) {
+    |                                                 ^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_registry::ZRegistry;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ZNodeRegistrationBuilder`
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:305:7
+    |
+305 |       ZNodeRegistrationBuilder::default().name("Test text".to_string()).build().unwrap(),
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
+    |
+
+error[E0412]: cannot find type `ZNodeTypeFinder` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:91:19
+   |
+91 |    pub node_type: ZNodeTypeFinder,
+   |                   ^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
+   |
+
+error[E0412]: cannot find type `ZData` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:94:28
+   |
+94 |    pub preset_data: Option<ZData>,
+   |                            ^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZData;
+   |
+
+error[E0412]: cannot find type `ZMachineTypestate` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:43:19
+   |
+43 |    pub typestate: ZMachineTypestate,
+   |                   ^^^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZMachineTypestate;
+   |
+
+error[E0412]: cannot find type `ZGraphDef` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:46:19
+   |
+46 |    pub graph_def: ZGraphDef,
+   |                   ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
+   |
+
+error[E0412]: cannot find type `ZRendererData` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:53:23
+   |
+53 |    pub renderer_data: ZRendererData,
+   |                       ^^^^^^^^^^^^^ not found in this scope
+   |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZRendererData` exists but is inaccessible
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:87:1
+   |
+87 | type ZRendererData = Option<Box<dyn Any>>;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZNodeStateData` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:54:29
+   |
+54 |    pub test_text_node_data: ZNodeStateData,
+   |                             ^^^^^^^^^^^^^^ not found in this scope
+   |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZNodeStateData` exists but is inaccessible
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:86:1
+   |
+86 | type ZNodeStateData = Option<Box<dyn Any>>;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZRegistry` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:57:14
+   |
+57 |    registry: ZRegistry,
+   |              ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_registry::ZRegistry;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `ZGraphDef`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:66:21
+   |
+66 |          graph_def: ZGraphDef::default(),
+   |                     ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
+   |
+
+error[E0433]: failed to resolve: use of undeclared type `ZRegistry`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:79:20
+   |
+79 |          registry: ZRegistry::default(),
+   |                    ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_registry::ZRegistry;
+   |
+
+error[E0412]: cannot find type `ZGraphDef` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:84:52
+   |
+84 |    pub fn provide_graph_def(&mut self, graph_def: &ZGraphDef) -> Result<(), ZGraphError> {
+   |                                                    ^^^^^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
+   |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:84:77
+   |
+84 |    pub fn provide_graph_def(&mut self, graph_def: &ZGraphDef) -> Result<(), ZGraphError> {
+   |                                                                             ^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+   |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:94:57
+   |
+94 |    pub fn transition_to_deffed(&mut self) -> Result<(), ZGraphError> {
+   |                                                         ^^^^^^^^^^^ not found in this scope
+   |
+help: consider importing this enum
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+   |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:108:62
+    |
+108 |    pub fn transition_to_constructed(&mut self) -> Result<(), ZGraphError> {
+    |                                                              ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ZData`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:121:11
+    |
+121 |          &ZData::default(),
+    |           ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ZData`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:122:15
+    |
+122 |          &mut ZData::default(),
+    |               ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:131:61
+    |
+131 |    pub fn transition_to_calculated(&mut self) -> Result<(), ZGraphError> {
+    |                                                             ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:139:56
+    |
+139 |    pub fn transition_to_inked(&mut self) -> Result<(), ZGraphError> {
+    |                                                        ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ZData`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:149:11
+    |
+149 |          &ZData::default(),
+    |           ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0433]: failed to resolve: use of undeclared type `ZData`
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:150:15
+    |
+150 |          &mut ZData::default(),
+    |               ^^^^^ not found in this scope
+    |
+help: consider importing this struct
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZData;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:159:59
+    |
+159 |    pub fn transition_to_finished(&mut self) -> Result<(), ZGraphError> {
+    |                                                           ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0412]: cannot find type `ZGraphError` in this scope
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:170:52
+    |
+170 |    fn build_from_graphdef(&mut self) -> Result<(), ZGraphError> {
+    |                                                    ^^^^^^^^^^^ not found in this scope
+    |
+help: consider importing this enum
+    |
+24  | use crate::jaywalk_graph::zgraph_base::ZGraphError;
+    |
+
+error[E0412]: cannot find type `ZRendererData` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:55:34
+   |
+55 | type ZNodeInvocationFn = fn(&mut ZRendererData, &mut ZNodeStateData, &ZData, &mut ZData);
+   |                                  ^^^^^^^^^^^^^ not found in this scope
+   |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZRendererData` exists but is inaccessible
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:87:1
+   |
+87 | type ZRendererData = Option<Box<dyn Any>>;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZNodeStateData` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:55:54
+   |
+55 | type ZNodeInvocationFn = fn(&mut ZRendererData, &mut ZNodeStateData, &ZData, &mut ZData);
+   |                                                      ^^^^^^^^^^^^^^ not found in this scope
+   |
+note: type alias `crate::jaywalk_graph::zgraph_base::ZNodeStateData` exists but is inaccessible
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:86:1
+   |
+86 | type ZNodeStateData = Option<Box<dyn Any>>;
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not accessible
+
+error[E0412]: cannot find type `ZData` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:55:71
+   |
+55 | type ZNodeInvocationFn = fn(&mut ZRendererData, &mut ZNodeStateData, &ZData, &mut ZData);
+   |                                                                       ^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZData;
+   |
+
+error[E0412]: cannot find type `ZData` in this scope
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:55:83
+   |
+55 | type ZNodeInvocationFn = fn(&mut ZRendererData, &mut ZNodeStateData, &ZData, &mut ZData);
+   |                                                                                   ^^^^^ not found in this scope
+   |
+help: consider importing this struct
+   |
+24 | use crate::jaywalk_graph::zgraph_base::ZData;
+   |
+
+error[E0603]: function `test_text_construction` is private
+   --> z-graph/src/jaywalk_graph/zgraph_base.rs:27:41
+    |
+27  | use crate::jaywalk_graph::svg_renderer::test_text_construction;
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_construction` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:53:1
+    |
+53  | / fn test_text_construction(
+54  | |    renderer_data_in: &mut ZRendererData,
+55  | |    state_data: &mut ZNodeStateData,
+56  | |    _in_data: &ZData,
+...   |
+163 | |    *state_data = Some(Box::new(SvgTextNode { sample_text_layout: text_layout }));
+164 | | }
+    | |_^
+
+error[E0603]: function `test_text_inking` is private
+   --> z-graph/src/jaywalk_graph/zgraph_base.rs:28:41
+    |
+28  | use crate::jaywalk_graph::svg_renderer::test_text_inking;
+    |                                         ^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_inking` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:166:1
+    |
+166 | / fn test_text_inking(
+167 | |    renderer_data_in: &mut ZRendererData,
+168 | |    state_data: &mut ZNodeStateData,
+169 | |    _in_data: &ZData,
+...   |
+188 | |    pangocairo::show_layout(context, text_layout);
+189 | | }
+    | |_^
+
+error[E0603]: function `test_text_construction` is private
+   --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:27:41
+    |
+27  | use crate::jaywalk_graph::svg_renderer::test_text_construction;
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_construction` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:53:1
+    |
+53  | / fn test_text_construction(
+54  | |    renderer_data_in: &mut ZRendererData,
+55  | |    state_data: &mut ZNodeStateData,
+56  | |    _in_data: &ZData,
+...   |
+163 | |    *state_data = Some(Box::new(SvgTextNode { sample_text_layout: text_layout }));
+164 | | }
+    | |_^
+
+error[E0603]: function `test_text_inking` is private
+   --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:28:41
+    |
+28  | use crate::jaywalk_graph::svg_renderer::test_text_inking;
+    |                                         ^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_inking` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:166:1
+    |
+166 | / fn test_text_inking(
+167 | |    renderer_data_in: &mut ZRendererData,
+168 | |    state_data: &mut ZNodeStateData,
+169 | |    _in_data: &ZData,
+...   |
+188 | |    pangocairo::show_layout(context, text_layout);
+189 | | }
+    | |_^
+
+error[E0603]: function `test_text_construction` is private
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:27:41
+    |
+27  | use crate::jaywalk_graph::svg_renderer::test_text_construction;
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_construction` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:53:1
+    |
+53  | / fn test_text_construction(
+54  | |    renderer_data_in: &mut ZRendererData,
+55  | |    state_data: &mut ZNodeStateData,
+56  | |    _in_data: &ZData,
+...   |
+163 | |    *state_data = Some(Box::new(SvgTextNode { sample_text_layout: text_layout }));
+164 | | }
+    | |_^
+
+error[E0603]: function `test_text_inking` is private
+   --> z-graph/src/jaywalk_graph/zgraph_machine.rs:28:41
+    |
+28  | use crate::jaywalk_graph::svg_renderer::test_text_inking;
+    |                                         ^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_inking` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:166:1
+    |
+166 | / fn test_text_inking(
+167 | |    renderer_data_in: &mut ZRendererData,
+168 | |    state_data: &mut ZNodeStateData,
+169 | |    _in_data: &ZData,
+...   |
+188 | |    pangocairo::show_layout(context, text_layout);
+189 | | }
+    | |_^
+
+error[E0603]: function `test_text_construction` is private
+   --> z-graph/src/jaywalk_graph/zgraph_registry.rs:27:41
+    |
+27  | use crate::jaywalk_graph::svg_renderer::test_text_construction;
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_construction` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:53:1
+    |
+53  | / fn test_text_construction(
+54  | |    renderer_data_in: &mut ZRendererData,
+55  | |    state_data: &mut ZNodeStateData,
+56  | |    _in_data: &ZData,
+...   |
+163 | |    *state_data = Some(Box::new(SvgTextNode { sample_text_layout: text_layout }));
+164 | | }
+    | |_^
+
+error[E0603]: function `test_text_inking` is private
+   --> z-graph/src/jaywalk_graph/zgraph_registry.rs:28:41
+    |
+28  | use crate::jaywalk_graph::svg_renderer::test_text_inking;
+    |                                         ^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_inking` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:166:1
+    |
+166 | / fn test_text_inking(
+167 | |    renderer_data_in: &mut ZRendererData,
+168 | |    state_data: &mut ZNodeStateData,
+169 | |    _in_data: &ZData,
+...   |
+188 | |    pangocairo::show_layout(context, text_layout);
+189 | | }
+    | |_^
+
+error[E0603]: function `test_text_construction` is private
+   --> z-graph/src/jaywalk_graph/zgraph_solver.rs:27:41
+    |
+27  | use crate::jaywalk_graph::svg_renderer::test_text_construction;
+    |                                         ^^^^^^^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_construction` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:53:1
+    |
+53  | / fn test_text_construction(
+54  | |    renderer_data_in: &mut ZRendererData,
+55  | |    state_data: &mut ZNodeStateData,
+56  | |    _in_data: &ZData,
+...   |
+163 | |    *state_data = Some(Box::new(SvgTextNode { sample_text_layout: text_layout }));
+164 | | }
+    | |_^
+
+error[E0603]: function `test_text_inking` is private
+   --> z-graph/src/jaywalk_graph/zgraph_solver.rs:28:41
+    |
+28  | use crate::jaywalk_graph::svg_renderer::test_text_inking;
+    |                                         ^^^^^^^^^^^^^^^^ private function
+    |
+note: the function `test_text_inking` is defined here
+   --> z-graph/src/jaywalk_graph/svg_renderer.rs:166:1
+    |
+166 | / fn test_text_inking(
+167 | |    renderer_data_in: &mut ZRendererData,
+168 | |    state_data: &mut ZNodeStateData,
+169 | |    _in_data: &ZData,
+...   |
+188 | |    pangocairo::show_layout(context, text_layout);
+189 | | }
+    | |_^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_foundation::is_default`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:24:5
+   |
+24 | use crate::jaywalk_graph::jaywalk_foundation::is_default;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:25:5
+   |
+25 | use crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:26:5
+   |
+26 | use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::JVec`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:27:5
+   |
+27 | use crate::jaywalk_graph::JVec;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `derive_builder::Builder`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:31:5
+   |
+31 | use derive_builder::Builder;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Deserialize`, `Serialize`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:34:13
+   |
+34 | use serde::{Deserialize, Serialize};
+   |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `serde_default::DefaultFromSerde`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:35:5
+   |
+35 | use serde_default::DefaultFromSerde;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:37:5
+   |
+37 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::rc::Rc`
+  --> z-graph/src/jaywalk_graph/svg_renderer.rs:40:5
+   |
+40 | use std::rc::Rc;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_foundation::is_default`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:24:5
+   |
+24 | use crate::jaywalk_graph::jaywalk_foundation::is_default;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::JVec`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:29:5
+   |
+29 | use crate::jaywalk_graph::JVec;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `cairo::Context`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:30:5
+   |
+30 | use cairo::Context;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `derive_builder::Builder`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:31:5
+   |
+31 | use derive_builder::Builder;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Language`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:32:5
+   |
+32 | use pango::Language;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Layout`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:33:5
+   |
+33 | use pango::Layout;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `serde_default::DefaultFromSerde`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:35:5
+   |
+35 | use serde_default::DefaultFromSerde;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:37:5
+   |
+37 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::f64::consts::PI`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:38:5
+   |
+38 | use std::f64::consts::PI;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::io::Write`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:39:5
+   |
+39 | use std::io::Write;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `std::rc::Rc`
+  --> z-graph/src/jaywalk_graph/zgraph_base.rs:40:5
+   |
+40 | use std::rc::Rc;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `cairo::Context`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:30:5
+   |
+30 | use cairo::Context;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `derive_builder::Builder`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:31:5
+   |
+31 | use derive_builder::Builder;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Language`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:32:5
+   |
+32 | use pango::Language;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Layout`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:33:5
+   |
+33 | use pango::Layout;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `serde_default::DefaultFromSerde`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:35:5
+   |
+35 | use serde_default::DefaultFromSerde;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::any::Any`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:36:5
+   |
+36 | use std::any::Any;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:37:5
+   |
+37 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::f64::consts::PI`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:38:5
+   |
+38 | use std::f64::consts::PI;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::io::Write`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:39:5
+   |
+39 | use std::io::Write;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `std::rc::Rc`
+  --> z-graph/src/jaywalk_graph/zgraph_graphdef.rs:40:5
+   |
+40 | use std::rc::Rc;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_foundation::is_default`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:24:5
+   |
+24 | use crate::jaywalk_graph::jaywalk_foundation::is_default;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:25:5
+   |
+25 | use crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:26:5
+   |
+26 | use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::JVec`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:29:5
+   |
+29 | use crate::jaywalk_graph::JVec;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `cairo::Context`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:30:5
+   |
+30 | use cairo::Context;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `derive_builder::Builder`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:31:5
+   |
+31 | use derive_builder::Builder;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Language`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:32:5
+   |
+32 | use pango::Language;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Layout`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:33:5
+   |
+33 | use pango::Layout;
+   |     ^^^^^^^^^^^^^
+
+warning: unused imports: `Deserialize`, `Serialize`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:34:13
+   |
+34 | use serde::{Deserialize, Serialize};
+   |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `serde_default::DefaultFromSerde`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:35:5
+   |
+35 | use serde_default::DefaultFromSerde;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::any::Any`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:36:5
+   |
+36 | use std::any::Any;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:37:5
+   |
+37 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::f64::consts::PI`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:38:5
+   |
+38 | use std::f64::consts::PI;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::io::Write`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:39:5
+   |
+39 | use std::io::Write;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `std::rc::Rc`
+  --> z-graph/src/jaywalk_graph/zgraph_machine.rs:40:5
+   |
+40 | use std::rc::Rc;
+   |     ^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_foundation::is_default`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:24:5
+   |
+24 | use crate::jaywalk_graph::jaywalk_foundation::is_default;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:25:5
+   |
+25 | use crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:26:5
+   |
+26 | use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::JVec`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:29:5
+   |
+29 | use crate::jaywalk_graph::JVec;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `cairo::Context`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:30:5
+   |
+30 | use cairo::Context;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Language`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:32:5
+   |
+32 | use pango::Language;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Layout`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:33:5
+   |
+33 | use pango::Layout;
+   |     ^^^^^^^^^^^^^
+
+warning: unused imports: `Deserialize`, `Serialize`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:34:13
+   |
+34 | use serde::{Deserialize, Serialize};
+   |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `serde_default::DefaultFromSerde`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:35:5
+   |
+35 | use serde_default::DefaultFromSerde;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::any::Any`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:36:5
+   |
+36 | use std::any::Any;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `std::f64::consts::PI`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:38:5
+   |
+38 | use std::f64::consts::PI;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::jaywalk_foundation::is_default`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:24:5
+   |
+24 | use crate::jaywalk_graph::jaywalk_foundation::is_default;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::jaywalk_graph::JVec`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:29:5
+   |
+29 | use crate::jaywalk_graph::JVec;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `cairo::Context`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:30:5
+   |
+30 | use cairo::Context;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `derive_builder::Builder`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:31:5
+   |
+31 | use derive_builder::Builder;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Language`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:32:5
+   |
+32 | use pango::Language;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `pango::Layout`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:33:5
+   |
+33 | use pango::Layout;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `serde_default::DefaultFromSerde`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:35:5
+   |
+35 | use serde_default::DefaultFromSerde;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::any::Any`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:36:5
+   |
+36 | use std::any::Any;
+   |     ^^^^^^^^^^^^^
+
+warning: unused import: `std::collections::HashMap`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:37:5
+   |
+37 | use std::collections::HashMap;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::f64::consts::PI`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:38:5
+   |
+38 | use std::f64::consts::PI;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::io::Write`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:39:5
+   |
+39 | use std::io::Write;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `std::rc::Rc`
+  --> z-graph/src/jaywalk_graph/zgraph_solver.rs:40:5
+   |
+40 | use std::rc::Rc;
+   |     ^^^^^^^^^^^
+
+error[E0283]: type annotations needed
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:45:4
+   |
+42 | #[derive(Default, Builder)]
+   |          ------- in this derive macro expansion
+...
+45 |    construction_fn: Option<ZNodeInvocationFn>,
+   |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot infer type
+   |
+   = note: cannot satisfy `_: std::default::Default`
+   = note: this error originates in the derive macro `Default` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0283]: type annotations needed
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:42:19
+   |
+42 | #[derive(Default, Builder)]
+   |                   ^^^^^^^ cannot infer type
+   |
+   = note: cannot satisfy `_: std::default::Default`
+   = note: this error originates in the derive macro `Builder` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused import: `std::io::Write`
+  --> z-graph/src/jaywalk_graph/zgraph_registry.rs:39:5
+   |
+39 | use std::io::Write;
+   |     ^^^^^^^^^^^^^^
+
+Some errors have detailed explanations: E0283, E0412, E0428, E0433, E0603.
+For more information about an error, try `rustc --explain E0283`.
+warning: `z-graph` (lib test) generated 69 warnings
+error: could not compile `z-graph` due to 96 previous errors; 69 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+warning: `z-graph` (lib) generated 69 warnings (69 duplicates)
+error: could not compile `z-graph` due to 96 previous errors; 69 warnings emitted

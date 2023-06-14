@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate cairo;
-extern crate pango;
-extern crate pangocairo;
-
 use cairo::SvgUnit::Pt;
 // use cairo::enums::SvgUnit;
 use cairo::SvgSurface;
