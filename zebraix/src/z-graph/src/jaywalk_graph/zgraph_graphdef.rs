@@ -17,7 +17,6 @@ use crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64;
 use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
 use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
-use crate::jaywalk_graph::JVec;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -69,7 +68,7 @@ pub struct ZNodeDef {
 
    // #[serde(skip_serializing_if = "is_default")]
    // #[serde(default)]
-   pub node_type: ZNodeTypeFinder,
+   pub element: ZNodeTypeFinder,
 
    #[serde(skip_serializing_if = "is_default")]
    pub preset_data: Option<ZData>,
@@ -119,7 +118,7 @@ pub struct ZGraphDef {
    pub description: Option<String>,
 
    #[serde(default)]
-   pub nodes: JVec<ZNodeDef>,
+   pub nodes: Vec<ZNodeDef>,
    #[serde(default)]
-   pub edges: JVec<ZEdgeDef>,
+   pub edges: Vec<ZEdgeDef>,
 }

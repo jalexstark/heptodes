@@ -16,15 +16,24 @@ use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZMachineTypestate;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
+use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
+use crate::jaywalk_graph::zgraph_graphdef::ZNodeDef;
+use crate::jaywalk_graph::zgraph_registry::ZNodeRegistration;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
-use crate::jaywalk_graph::zgraph_svg::test_text_construction;
-use crate::jaywalk_graph::zgraph_svg::test_text_inking;
+use std::rc::Rc;
 
 #[derive(Debug)]
 pub enum DebugLine {
    SimpleString(String),
+}
+
+#[allow(dead_code)]
+pub struct ZNode {
+   node_type: Rc<ZNodeRegistration>,
+   node_type_finder: ZNodeTypeFinder,
+   node_state_data: ZNodeStateData,
 }
 
 pub struct ZMachine {
@@ -39,10 +48,11 @@ pub struct ZMachine {
    // pub nodes: JVec<ZNodeDef>,
    // pub edges: JVec<ZEdgeDef>,
    pub renderer_data: ZRendererData,
-   pub test_text_node_data: ZNodeStateData,
+
+   pub nodes: Vec<ZNode>,
 
    // Node registry
-   registry: ZRegistry,
+   pub registry: ZRegistry,
 }
 
 impl ZMachine {
@@ -61,7 +71,7 @@ impl ZMachine {
 
          // Renderer.
          renderer_data: None,
-         test_text_node_data: None,
+         nodes: Vec::<ZNode>::default(),
 
          // Node registry
          registry: ZRegistry::default(),
@@ -87,7 +97,11 @@ impl ZMachine {
          return Err(ZGraphError::MissingGraphDef);
       }
 
+      //
+
       self.build_from_graphdef().unwrap();
+
+      //
 
       self.typestate = ZMachineTypestate::Deffed;
       Ok(())
@@ -103,12 +117,17 @@ impl ZMachine {
 
       //
 
-      test_text_construction(
-         &mut self.renderer_data,
-         &mut self.test_text_node_data,
-         &ZData::default(),
-         &mut ZData::default(),
-      );
+      for n in &mut self.nodes {
+         let node_element = &n.node_type;
+         if node_element.construction_fn.is_some() {
+            node_element.construction_fn.unwrap()(
+               &mut self.renderer_data,
+               &mut n.node_state_data,
+               &ZData::default(),
+               &mut ZData::default(),
+            );
+         }
+      }
 
       //
 
@@ -120,6 +139,23 @@ impl ZMachine {
       if self.typestate != ZMachineTypestate::Constructed {
          return Err(ZGraphError::IncorrectTypestateTransition);
       }
+
+      //
+
+      for n in &mut self.nodes {
+         let node_element = &n.node_type;
+         if node_element.calculation_fn.is_some() {
+            node_element.calculation_fn.unwrap()(
+               &mut self.renderer_data,
+               &mut n.node_state_data,
+               &ZData::default(),
+               &mut ZData::default(),
+            );
+         }
+      }
+
+      //
+
       self.typestate = ZMachineTypestate::Calculated;
       Ok(())
    }
@@ -131,12 +167,17 @@ impl ZMachine {
 
       //
 
-      test_text_inking(
-         &mut self.renderer_data,
-         &mut self.test_text_node_data,
-         &ZData::default(),
-         &mut ZData::default(),
-      );
+      for n in &mut self.nodes {
+         let node_element = &n.node_type;
+         if node_element.inking_fn.is_some() {
+            node_element.inking_fn.unwrap()(
+               &mut self.renderer_data,
+               &mut n.node_state_data,
+               &ZData::default(),
+               &mut ZData::default(),
+            );
+         }
+      }
 
       //
 
@@ -156,6 +197,19 @@ impl ZMachine {
    }
 
    fn build_from_graphdef(&mut self) -> Result<(), ZGraphError> {
+      let node_defs: &Vec<ZNodeDef> = &self.graph_def.nodes;
+      let registry = &self.registry;
+
+      for n_def in node_defs {
+         let node_type: &Rc<ZNodeRegistration> = registry.find(&n_def.element).unwrap();
+
+         self.nodes.push(ZNode {
+            node_state_data: None,
+            node_type: node_type.clone(),
+            node_type_finder: n_def.element.clone(),
+         });
+      }
+
       return Ok(());
    }
 }

@@ -40,9 +40,19 @@ use crate::jaywalk_graph::jaywalk_traiting::Shape;
 use crate::jaywalk_graph::jaywalk_traiting::StateMark;
 use crate::jaywalk_graph::jaywalk_traiting::TMatrix;
 use crate::jaywalk_graph::jaywalk_traiting::Yna;
+use crate::jaywalk_graph::zgraph_builtins::register_builtin_library;
+use crate::jaywalk_graph::zgraph_registry::ZRegistry;
+use crate::jaywalk_graph::zgraph_solver::register_solver_library;
+use crate::jaywalk_graph::zgraph_svg::register_renderer_library;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use std::collections::HashMap;
+
+pub fn register_all(registry: &mut ZRegistry) {
+   register_builtin_library(registry);
+   register_solver_library(registry);
+   register_renderer_library(registry);
+}
 
 // Fields involving keys are generally not (de-)serialized, at least
 // for now.  If we later serialize we should renumber keys based on
