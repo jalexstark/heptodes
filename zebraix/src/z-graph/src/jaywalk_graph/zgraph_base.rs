@@ -65,11 +65,9 @@ pub type ZNodeStateData = Option<Box<dyn Any>>;
 pub type ZRendererData = Option<Box<dyn Any>>;
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct ZNodeTypeFinder {
-   pub name: String,
-   #[serde(skip_serializing_if = "is_mult_ident_f64")]
-   #[serde(default = "mult_ident_f64")]
-   pub field_c: f64,
+#[serde(untagged)]
+pub enum ZNodeTypeFinder {
+   ByString(String),
 }
 
 #[derive(Debug)]
@@ -82,22 +80,3 @@ pub enum ZGraphError {
    FinishNoRenderer,
    UnfinishedRenderer,
 }
-
-// pub enum ZNodeStateData {
-//    None,
-//    RendererNode(Box<dyn Any>),
-// }
-
-// impl Default for ZNodeStateData {
-//    fn default() -> Self {
-//       ZNodeStateData::None
-//    }
-// }
-
-//     pub struct ZNodeStateData<'a> {
-//    pub data: &'a mut Option<Box<dyn Any>>,
-// }
-
-// pub struct ZRendererData<'a> {
-//    pub data: &'a mut Option<Box<dyn Any>>,
-// }

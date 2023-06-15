@@ -149,6 +149,26 @@ impl<T> JVec<T> {
 //    }
 // }
 
+// impl<T> Iterator for IntoIter<T> {
+//    type Item = T;
+//    fn next(&mut self) -> Option<T> {
+//       if self.start == self.end {
+//          None
+//       } else {
+//          unsafe {
+//             let result = ptr::read(self.start);
+//             self.start = self.start.offset(1);
+//             Some(result)
+//          }
+//       }
+//    }
+
+//    fn size_hint(&self) -> (usize, Option<usize>) {
+//       let len = (self.end as usize - self.start as usize) / mem::size_of::<T>();
+//       (len, Some(len))
+//    }
+// }
+
 impl Default for Coord {
    fn default() -> Self {
       Coord(ADDITIVE_ID_F64, ADDITIVE_ID_F64)

@@ -267,6 +267,14 @@ pub trait Renderer {
 
 pub fn register_renderer_library(registry: &mut ZRegistry) {
    registry.register_new(
-      ZNodeRegistrationBuilder::default().name("Test text".to_string()).build().unwrap(),
+      ZNodeRegistrationBuilder::default()
+         .name("Test text".to_string())
+         .construction_fn(test_text_construction)
+         .inking_fn(test_text_inking)
+         .build()
+         .unwrap(),
+   );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default().name("Test circle".to_string()).build().unwrap(),
    );
 }

@@ -14,6 +14,7 @@
 
 use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
+use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use derive_builder::Builder;
 use std::collections::HashMap;
@@ -21,10 +22,13 @@ use std::rc::Rc;
 
 #[derive(Default, Builder)]
 pub struct ZNodeRegistration {
-   name: String,
-   construction_fn: Option<ZNodeInvocationFn>,
-   calculation_fn: Option<ZNodeInvocationFn>,
-   inking_fn: Option<ZNodeInvocationFn>,
+   pub name: String,
+   #[builder(setter(strip_option), default)]
+   pub construction_fn: Option<ZNodeInvocationFn>,
+   #[builder(setter(strip_option), default)]
+   pub calculation_fn: Option<ZNodeInvocationFn>,
+   #[builder(setter(strip_option), default)]
+   pub inking_fn: Option<ZNodeInvocationFn>,
 }
 
 #[derive(Default)]
@@ -34,6 +38,28 @@ pub struct ZRegistry {
 
 type ZNodeInvocationFn = fn(&mut ZRendererData, &mut ZNodeStateData, &ZData, &mut ZData);
 
+#[derive(Debug)]
+pub enum ZRegistryError {
+   ZRegistryNotFound,
+}
+
 impl ZRegistry {
-   pub fn register_new(&mut self, _node_registration: ZNodeRegistration) {}
+   pub fn register_new(&mut self, new_element: ZNodeRegistration) {
+      self
+         .node_registrations
+         .insert(new_element.name.clone(), Rc::<ZNodeRegistration>::new(new_element));
+   }
+
+   pub fn find(&self, finder: &ZNodeTypeFinder) -> Result<&Rc<ZNodeRegistration>, ZRegistryError> {
+      match finder {
+         ZNodeTypeFinder::ByString(s) => {
+            let search = self.node_registrations.get(s);
+            if search.is_some() {
+               return Ok(search.unwrap());
+            } else {
+               return Err(ZRegistryError::ZRegistryNotFound);
+            }
+         }
+      }
+   }
 }
