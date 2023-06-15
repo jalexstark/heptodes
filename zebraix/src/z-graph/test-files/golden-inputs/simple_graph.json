@@ -4,33 +4,23 @@
   "nodes": [
     {
       "name": "input",
-      "node_type": {
-        "name": "gather"
-      }
+      "element": "Input"
     },
     {
       "name": "test text",
-      "node_type": {
-        "name": "test_text"
-      }
+      "element": "Test text"
     },
     {
-      "name": "text circle",
-      "node_type": {
-        "name": "test_circle"
-      }
+      "name": "test circle",
+      "element": "Test circle"
     },
     {
       "name": "main group",
-      "node_type": {
-        "name": "group"
-      }
+      "element": "Group"
     },
     {
       "name": "output",
-      "node_type": {
-        "name": "gather"
-      }
+      "element": "Output"
     }
   ],
   "edges": []

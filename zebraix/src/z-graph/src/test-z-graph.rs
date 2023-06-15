@@ -25,9 +25,9 @@ extern crate goldenfile;
 use json5::from_str;
 use serde_json::to_string_pretty;
 
+use z_graph::jaywalk_graph::register_all;
 use z_graph::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use z_graph::jaywalk_graph::zgraph_machine::ZMachine;
-// use z_graph::jaywalk_graph::zgraph_machine::Renderer;
 use z_graph::jaywalk_graph::zgraph_svg::RenderSvg;
 use z_graph::jaywalk_graph::zgraph_svg::Renderer;
 use z_graph::jaywalk_graph::ZebraixGraph;
@@ -45,6 +45,7 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
 
    let mut z_graph = ZMachine::new();
    let svg_renderer = RenderSvg::default();
+   register_all(&mut z_graph.registry);
 
    z_graph.provide_graph_def(&deserialized).unwrap();
 
