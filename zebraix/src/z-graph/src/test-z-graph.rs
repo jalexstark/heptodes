@@ -47,7 +47,7 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
    let svg_renderer = RenderSvg::default();
    register_all(&mut z_graph.registry);
 
-   z_graph.provide_graph_def(&deserialized).unwrap();
+   z_graph.provide_graph_def(deserialized).unwrap();
 
    z_graph.transition_to_deffed().unwrap();
    svg_renderer.setup_render_to_stream(&mut z_graph, svg_golden.get_raw_writeable()).unwrap();

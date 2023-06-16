@@ -44,6 +44,8 @@ pub enum ZDataByType {
    Fit,
 }
 
+// ZData should be a set of data, a set of ports, and is passed to
+// invocation functions.
 #[derive(Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct ZData {
    #[serde(skip_serializing_if = "is_mult_ident_f64")]

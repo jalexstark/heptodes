@@ -79,12 +79,13 @@ impl ZMachine {
    }
 
    // User-level graphdef for overall drawing.
-   pub fn provide_graph_def(&mut self, graph_def: &ZGraphDef) -> Result<(), ZGraphError> {
+   pub fn provide_graph_def(&mut self, graph_def: ZGraphDef) -> Result<(), ZGraphError> {
       if self.has_graph_def {
          return Err(ZGraphError::DuplicateGraphDef);
       }
 
-      self.graph_def = graph_def.clone();
+      self.graph_def = graph_def;
+      // self.graph_def = graph_def.clone();
       self.has_graph_def = true;
       Ok(())
    }

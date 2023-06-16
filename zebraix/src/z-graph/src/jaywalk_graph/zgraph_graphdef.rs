@@ -13,9 +13,6 @@
 // limitations under the License.
 
 use crate::jaywalk_graph::jaywalk_foundation::is_default;
-use crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64;
-use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
-use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use serde::{Deserialize, Serialize};
 
@@ -60,6 +57,54 @@ impl Default for ZGraphDefCategory {
    }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Connection(pub String, pub String);
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ZEdgeDef {
+   #[serde(skip_serializing_if = "is_default")]
+   pub name: Option<String>,
+
+   pub src_node: String,
+   // pub dest_node: String,
+   pub connections: Vec<Connection>, // Input-output.
+}
+
+// #[derive(Serialize, Deserialize)]
+// pub struct ZEdgeDataDef {
+//    #[serde(skip_serializing_if = "is_mult_ident_f64")]
+//    #[serde(default = "mult_ident_f64")]
+//    pub field_c: f64,
+// }
+
+#[derive(Clone, Serialize, Deserialize)]
+pub enum ZPiece {
+   Real(f64),
+}
+
+impl Default for ZPiece {
+   fn default() -> Self {
+      ZPiece::Real(f64::default())
+   }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub enum ZPieceType {
+   Real,
+}
+
+impl Default for ZPieceType {
+   fn default() -> Self {
+      ZPieceType::Real
+   }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Port {
+   pub name: String,
+   pub piece_type: ZPieceType,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ZNodeDef {
    pub name: String,
@@ -70,42 +115,15 @@ pub struct ZNodeDef {
    // #[serde(default)]
    pub element: ZNodeTypeFinder,
 
-   #[serde(skip_serializing_if = "is_default")]
-   pub preset_data: Option<ZData>,
-}
+   #[serde(skip_serializing_if = "Vec::is_empty", default)]
+   pub edges: Vec<ZEdgeDef>,
 
-// impl EmptyVec for ZNodeDef {
-//    type Item = ZNodeDef;
+   // Input, output and preset nodes only. Others come from registered elements.
+   #[serde(skip_serializing_if = "Vec::is_empty", default)]
+   pub ports: Vec<Port>,
 
-//    fn empty_vec() -> &'static Vec<ZNodeDef> {
-//       static EMPTY_VEC: Vec<ZNodeDef> = Vec::<ZNodeDef>::new();
-//       &EMPTY_VEC
-//    }
-// }
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct ZEdgeDef {
-   // Number and name of src node, name of source node output. Name
-   // of input.
-   #[serde(skip_serializing_if = "is_mult_ident_f64")]
-   #[serde(default = "mult_ident_f64")]
-   pub field_c: f64,
-}
-
-// impl EmptyVec for ZEdgeDef {
-//    type Item = ZEdgeDef;
-
-//    fn empty_vec() -> &'static Vec<ZEdgeDef> {
-//       static EMPTY_VEC: Vec<ZEdgeDef> = Vec::<ZEdgeDef>::new();
-//       &EMPTY_VEC
-//    }
-// }
-
-#[derive(Serialize, Deserialize)]
-pub struct ZEdgeDataDef {
-   #[serde(skip_serializing_if = "is_mult_ident_f64")]
-   #[serde(default = "mult_ident_f64")]
-   pub field_c: f64,
+   #[serde(skip_serializing_if = "Vec::is_empty", default)]
+   pub preset_data: Vec<ZPiece>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Default)]
@@ -119,6 +137,4 @@ pub struct ZGraphDef {
 
    #[serde(default)]
    pub nodes: Vec<ZNodeDef>,
-   #[serde(default)]
-   pub edges: Vec<ZEdgeDef>,
 }
