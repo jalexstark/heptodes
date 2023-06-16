@@ -41,11 +41,7 @@ use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 
 pub fn register_solver_library(registry: &mut ZRegistry) {
-   registry
-      .register_new(ZNodeRegistrationBuilder::default().name("Group".to_string()).build().unwrap());
-   registry
-      .register_new(ZNodeRegistrationBuilder::default().name("Input".to_string()).build().unwrap());
    registry.register_new(
-      ZNodeRegistrationBuilder::default().name("Output".to_string()).build().unwrap(),
+      ZNodeRegistrationBuilder::default().name("Future element".to_string()).build().unwrap(),
    );
 }

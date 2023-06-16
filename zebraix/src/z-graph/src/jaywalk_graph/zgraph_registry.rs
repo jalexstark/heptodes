@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_base::Port;
 use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
@@ -29,6 +30,10 @@ pub struct ZNodeRegistration {
    pub calculation_fn: Option<ZNodeInvocationFn>,
    #[builder(setter(strip_option), default)]
    pub inking_fn: Option<ZNodeInvocationFn>,
+   #[builder(default)]
+   pub input_ports: Vec<Port>,
+   #[builder(default)]
+   pub output_ports: Vec<Port>,
 }
 
 #[derive(Default)]

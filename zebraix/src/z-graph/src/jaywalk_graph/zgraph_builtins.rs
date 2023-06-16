@@ -23,4 +23,7 @@ pub fn register_builtin_library(registry: &mut ZRegistry) {
    registry.register_new(
       ZNodeRegistrationBuilder::default().name("Output".to_string()).build().unwrap(),
    );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default().name("Preset data".to_string()).build().unwrap(),
+   );
 }
