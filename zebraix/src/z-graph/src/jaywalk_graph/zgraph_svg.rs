@@ -168,14 +168,28 @@ pub fn test_text_inking(
    let context: &Context = &renderer_data.main_context;
    let text_layout: &Layout = &text_node_data.sample_text_layout;
 
+   context.set_source_rgb(0.0, 0.0, 7.0);
+   context.move_to(120.0, 60.0);
+   pangocairo::show_layout(context, text_layout);
+   context.set_source_rgb(0.0, 1.0, 0.0);
+}
+
+pub fn test_circle_inking(
+   renderer_data_in: &mut ZRendererData,
+   _state_data: &mut ZNodeStateData,
+   _in_data: &ZData,
+   _out_data: &mut ZData,
+) {
+   let renderer_data: &mut SvgRendererData =
+      renderer_data_in.as_mut().unwrap().downcast_mut::<SvgRendererData>().unwrap();
+
+   let context: &Context = &renderer_data.main_context;
+
+   context.set_source_rgb(0.5, 0.0, 0.0);
    context.move_to(160.0 + 30.0, 120.0);
    context.arc(160.0, 120.0, 30.0, 0.0 * PI, 2.0 * PI);
    context.stroke().unwrap();
-
-   context.set_source_rgb(0.0, 0.0, 1.0);
-
-   context.move_to(120.0, 60.0);
-   pangocairo::show_layout(context, text_layout);
+   context.set_source_rgb(0.0, 1.0, 0.0);
 }
 
 pub fn register_svg_library(registry: &mut ZRegistry) {
@@ -275,6 +289,10 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .unwrap(),
    );
    registry.register_new(
-      ZNodeRegistrationBuilder::default().name("Test circle".to_string()).build().unwrap(),
+      ZNodeRegistrationBuilder::default()
+         .name("Test circle".to_string())
+         .inking_fn(test_circle_inking)
+         .build()
+         .unwrap(),
    );
 }

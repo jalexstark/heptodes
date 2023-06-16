@@ -7,12 +7,63 @@
       "element": "Input"
     },
     {
-      "name": "test text",
-      "element": "Test text"
+      "name": "test circle",
+      "element": "Test circle",
+      "preset_data": [
+        [
+          "color",
+          {
+            "type": "Color",
+            "Rgb": [
+              0.5,
+              0.0,
+              0.0
+            ]
+          }
+        ],
+        [
+          "center",
+          {
+            "Coord2D": [
+              160.0,
+              120.0
+            ]
+          }
+        ],
+        [
+          "radius",
+          30.0
+        ]
+      ]
     },
     {
-      "name": "test circle",
-      "element": "Test circle"
+      "name": "test text",
+      "element": "Test text",
+      "preset_data": [
+        [
+          "color",
+          {
+            "type": "Color",
+            "Rgb": [
+              0.0,
+              0.0,
+              0.7
+            ]
+          }
+        ],
+        [
+          "text",
+          "Hello world! pygq"
+        ],
+        [
+          "font style",
+          {
+            "type": "FontStyle",
+            "size": 10.0,
+            "family": "sans"
+          }
+        ]
+      ]
     },
     {
       "name": "main group",
@@ -53,5 +104,13 @@
         }
       ]
     }
-  ]
+  ],
+  "canvas": {
+    "width": 320.0,
+    "height": 240.0,
+    "x_offset": 40.0,
+    "y_offset": 50.0,
+    "unit": "Pt",
+    "direction": "Downwards"
+  }
 }
