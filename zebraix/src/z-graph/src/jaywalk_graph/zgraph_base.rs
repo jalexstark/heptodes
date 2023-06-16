@@ -184,6 +184,16 @@ impl Default for ZPiece {
 #[derive(Clone, Serialize, Deserialize)]
 pub enum ZPieceType {
    Real,
+   Integer,
+   Unit,
+   Text,
+   //
+   Color,
+   FontStyle,
+   //
+   Coord2D,
+   //
+   // Renderer / library data will be box-dyn-any here.
 }
 
 impl Default for ZPieceType {
