@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_base::Port;
 use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
+use crate::jaywalk_graph::zgraph_base::ZPieceType;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_machine::DebugLine;
 use crate::jaywalk_graph::zgraph_machine::ZMachine;
@@ -285,6 +287,11 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .name("Test text".to_string())
          .construction_fn(test_text_construction)
          .inking_fn(test_text_inking)
+         .input_ports(vec![
+            Port { name: "text".to_string(), piece_type: ZPieceType::Text },
+            Port { name: "color".to_string(), piece_type: ZPieceType::Color },
+            Port { name: "font style".to_string(), piece_type: ZPieceType::FontStyle },
+         ])
          .build()
          .unwrap(),
    );
@@ -292,6 +299,11 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
       ZNodeRegistrationBuilder::default()
          .name("Test circle".to_string())
          .inking_fn(test_circle_inking)
+         .input_ports(vec![
+            Port { name: "center".to_string(), piece_type: ZPieceType::Coord2D },
+            Port { name: "radius".to_string(), piece_type: ZPieceType::Real },
+            Port { name: "color".to_string(), piece_type: ZPieceType::Color },
+         ])
          .build()
          .unwrap(),
    );
