@@ -26,13 +26,13 @@ use json5::from_str;
 use serde_json::to_string_pretty;
 
 use z_graph::jaywalk_graph::register_all;
-use z_graph::jaywalk_graph::zgraph_graphdef::CoordReal2D;
+use z_graph::jaywalk_graph::zgraph_base::CoordReal2D;
+use z_graph::jaywalk_graph::zgraph_base::ZBigData;
+use z_graph::jaywalk_graph::zgraph_base::ZColor;
+use z_graph::jaywalk_graph::zgraph_base::ZPiece;
+use z_graph::jaywalk_graph::zgraph_base::ZTupleData;
 use z_graph::jaywalk_graph::zgraph_graphdef::PresetPiece;
-use z_graph::jaywalk_graph::zgraph_graphdef::ZBigData;
-use z_graph::jaywalk_graph::zgraph_graphdef::ZColor;
 use z_graph::jaywalk_graph::zgraph_graphdef::ZGraphDef;
-use z_graph::jaywalk_graph::zgraph_graphdef::ZPiece;
-use z_graph::jaywalk_graph::zgraph_graphdef::ZTupleData;
 use z_graph::jaywalk_graph::zgraph_machine::ZMachine;
 use z_graph::jaywalk_graph::zgraph_svg::RenderSvg;
 use z_graph::jaywalk_graph::zgraph_svg::Renderer;
