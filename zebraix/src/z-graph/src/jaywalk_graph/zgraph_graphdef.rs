@@ -78,8 +78,91 @@ pub struct ZEdgeDef {
 // }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub enum ZUnit {
+   // Em,
+   // Ex,
+   In,
+   Mm,
+   Pt,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub enum ZCanvasDirection {
+   Upwards,
+   Downwards,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ZCanvas {
+   pub width: f64,
+   pub height: f64,
+   pub x_offset: f64,
+   pub y_offset: f64,
+   pub unit: ZUnit,
+   pub direction: ZCanvasDirection,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub enum ZColor {
+   Rgb(f64, f64, f64),
+   Cmyk(f64, f64, f64, f64),
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ZFontStyle {
+   #[serde(skip_serializing_if = "is_default")]
+   pub size: f64,
+   #[serde(skip_serializing_if = "String::is_empty")]
+   pub family: String,
+   #[serde(skip_serializing_if = "Option::is_none")]
+   pub language: Option<String>, // Example: "en-US".
+}
+
+impl Default for ZFontStyle {
+   fn default() -> Self {
+      ZFontStyle {
+         size: 10.0,
+         family: "monospace".to_string(),
+         language: Some("en-US".to_string()),
+      }
+   }
+}
+
+// context.set_source_rgb(0.5, 0.0, 0.0);
+// Centre 160,120, radius 30
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct CoordReal2D(pub f64, pub f64);
+
+//  context.move_to(120.0, 60.0);
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum ZBigData {
+   Color(ZColor),
+   FontStyle(ZFontStyle),
+}
+
+//  context.move_to(120.0, 60.0);
+#[derive(Clone, Serialize, Deserialize)]
+pub enum ZTupleData {
+   Coord2D(CoordReal2D),
+}
+
+// Pieces are small, but can indirect to bigger.
+//
+// Pieces should be mutually exclusive, so deserializable from untagged.
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum ZPiece {
    Real(f64),
+   Integer(i32),
+   Unit(ZUnit),
+   Text(String),
+   //
+   Big(ZBigData),
+   Tuple(ZTupleData),
+   //
+   // Renderer / library data will be box-dyn-any here.
 }
 
 impl Default for ZPiece {
@@ -106,6 +189,9 @@ pub struct Port {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub struct PresetPiece(pub String, pub ZPiece);
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ZNodeDef {
    pub name: String,
    #[serde(skip_serializing_if = "is_default")]
@@ -122,8 +208,9 @@ pub struct ZNodeDef {
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
    pub ports: Vec<Port>,
 
+   // Preset data nodes can input, in which case fields are overridden by merging.
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
-   pub preset_data: Vec<ZPiece>,
+   pub preset_data: Vec<PresetPiece>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Default)]
@@ -137,4 +224,7 @@ pub struct ZGraphDef {
 
    #[serde(default)]
    pub nodes: Vec<ZNodeDef>,
+
+   #[serde(skip_serializing_if = "Option::is_none")]
+   pub canvas: Option<ZCanvas>,
 }

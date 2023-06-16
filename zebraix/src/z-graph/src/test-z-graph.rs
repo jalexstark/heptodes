@@ -26,7 +26,13 @@ use json5::from_str;
 use serde_json::to_string_pretty;
 
 use z_graph::jaywalk_graph::register_all;
+use z_graph::jaywalk_graph::zgraph_graphdef::CoordReal2D;
+use z_graph::jaywalk_graph::zgraph_graphdef::PresetPiece;
+use z_graph::jaywalk_graph::zgraph_graphdef::ZBigData;
+use z_graph::jaywalk_graph::zgraph_graphdef::ZColor;
 use z_graph::jaywalk_graph::zgraph_graphdef::ZGraphDef;
+use z_graph::jaywalk_graph::zgraph_graphdef::ZPiece;
+use z_graph::jaywalk_graph::zgraph_graphdef::ZTupleData;
 use z_graph::jaywalk_graph::zgraph_machine::ZMachine;
 use z_graph::jaywalk_graph::zgraph_svg::RenderSvg;
 use z_graph::jaywalk_graph::zgraph_svg::Renderer;
@@ -138,7 +144,16 @@ fn run_idem_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
 
    let in_text = json_golden.read_to_string();
 
-   let deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+   let mut deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+
+   // Overwrite with same as existing.  This provides an example
+   // manipulation that can be useful when working with JSON.
+   deserialized.nodes[2].preset_data[0] =
+      PresetPiece("color".to_string(), ZPiece::Big(ZBigData::Color(ZColor::Rgb(0.0, 0.0, 0.7))));
+   deserialized.nodes[1].preset_data[1] = PresetPiece(
+      "center".to_string(),
+      ZPiece::Tuple(ZTupleData::Coord2D(CoordReal2D(160.0, 120.0))),
+   );
 
    let serialized = to_string_pretty::<ZGraphDef>(&deserialized).unwrap();
 
