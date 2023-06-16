@@ -16,12 +16,42 @@
     },
     {
       "name": "main group",
-      "element": "Group"
+      "element": "Group",
+      "edges": [
+        {
+          "src_node": "test text",
+          "connections": [
+            [
+              "void",
+              "void"
+            ]
+          ]
+        },
+        {
+          "src_node": "Test circle",
+          "connections": [
+            [
+              "void",
+              "void"
+            ]
+          ]
+        }
+      ]
     },
     {
       "name": "output",
-      "element": "Output"
+      "element": "Output",
+      "edges": [
+        {
+          "src_node": "input",
+          "connections": [
+            [
+              "void",
+              "void"
+            ]
+          ]
+        }
+      ]
     }
-  ],
-  "edges": []
+  ]
 }
