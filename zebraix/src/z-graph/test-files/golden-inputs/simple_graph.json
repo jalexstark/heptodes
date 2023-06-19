@@ -1,64 +1,62 @@
 {
   "name": "A test graph",
-  "description": "",
   "nodes": [
     {
       "name": "input",
       "element": "Input"
     },
     {
-      "name": "test circle",
-      "element": "Test circle",
+      "name": "test circle data",
+      "element": "Preset data",
       "preset_data": [
         [
           "color",
           {
             "type": "Color",
-            "Rgb": [
-              0.5,
-              0.0,
-              0.0
-            ]
+            "Rgb": [ 0.5, 0.0, 0.0 ]
           }
         ],
         [
           "center",
           {
-            "Coord2D": [
-              160.0,
-              120.0
-            ]
+            "Coord2D": [ 160.0, 120.0 ]
           }
         ],
-        [
-          "radius",
-          30.0
-        ]
+        [ "radius", 30.0 ]
       ]
     },
     {
-      "name": "test text",
-      "element": "Test text",
+      "name": "test circle",
+      "element": "Test circle",
+      "edges": [
+        { "src_node": "test circle data",
+          "connections": [
+            [ "color", "color" ],
+            [ "center", "center" ],
+            [ "radius", "radius" ]
+          ] }
+      ]
+    },
+    {
+      "name": "test text data",
+      "element": "Preset data",
       "preset_data": [
         [
           "color",
           {
             "type": "Color",
-            "Rgb": [
-              0.0,
-              0.0,
-              0.7
-            ]
+            "Rgb": [ 0.0, 0.0, 0.7 ]
           }
         ],
         [
-          "text",
-          "Hello world! pygq"
-        ],
-        [
-          "font style",
+          "location",
           {
-            "type": "FontStyle",
+            "Coord2D": [ 120.0, 60.0 ]
+          }
+        ],
+        [ "text", "Hello world! pygq" ],
+        [ "font style",
+          { "type": "FontStyle",
             "size": 10.0,
             "family": "sans"
           }
@@ -66,51 +64,44 @@
       ]
     },
     {
+      "name": "test text",
+      "element": "Test text",
+      "edges": [
+        {  "src_node": "test text data",
+           "connections": [
+             [ "color", "color" ],
+             [ "location", "location" ],
+             [ "text", "radius" ],
+             [ "font style", "font style" ]
+           ] }
+      ]
+    },
+    {
       "name": "main group",
       "element": "Group",
       "edges": [
-        {
-          "src_node": "test text",
+        { "src_node": "test text",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        },
-        {
-          "src_node": "Test circle",
+            [ "void", "void" ]
+          ] },
+        { "src_node": "Test circle",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        }
+            [ "void", "void" ]
+          ] }
       ]
     },
     {
       "name": "output",
       "element": "Output",
       "edges": [
-        {
-          "src_node": "input",
+        { "src_node": "input",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        },
-        {
-          "src_node": "main group",
+            [ "void", "void" ]
+          ] },
+        { "src_node": "main group",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        }
+            [ "void", "void" ]
+          ] }
       ]
     }
   ],
