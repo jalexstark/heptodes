@@ -36,6 +36,11 @@ pub struct ZNode {
    node_state_data: ZNodeStateData,
 }
 
+#[derive(Default)]
+pub struct RealizedGraph {
+   pub nodes: Vec<ZNode>,
+}
+
 pub struct ZMachine {
    pub typestate: ZMachineTypestate,
    pub has_graph_def: bool,
@@ -49,7 +54,7 @@ pub struct ZMachine {
    // pub edges: JVec<ZEdgeDef>,
    pub renderer_data: ZRendererData,
 
-   pub nodes: Vec<ZNode>,
+   pub realized_graph: RealizedGraph,
 
    // Node registry
    pub registry: ZRegistry,
@@ -71,7 +76,7 @@ impl ZMachine {
 
          // Renderer.
          renderer_data: None,
-         nodes: Vec::<ZNode>::default(),
+         realized_graph: RealizedGraph::default(),
 
          // Node registry
          registry: ZRegistry::default(),
@@ -118,7 +123,7 @@ impl ZMachine {
 
       //
 
-      for n in &mut self.nodes {
+      for n in &mut self.realized_graph.nodes {
          let node_element = &n.node_type;
          if node_element.construction_fn.is_some() {
             node_element.construction_fn.unwrap()(
@@ -143,7 +148,7 @@ impl ZMachine {
 
       //
 
-      for n in &mut self.nodes {
+      for n in &mut self.realized_graph.nodes {
          let node_element = &n.node_type;
          if node_element.calculation_fn.is_some() {
             node_element.calculation_fn.unwrap()(
@@ -168,7 +173,7 @@ impl ZMachine {
 
       //
 
-      for n in &mut self.nodes {
+      for n in &mut self.realized_graph.nodes {
          let node_element = &n.node_type;
          if node_element.inking_fn.is_some() {
             node_element.inking_fn.unwrap()(
@@ -204,7 +209,7 @@ impl ZMachine {
       for n_def in node_defs {
          let node_type: &Rc<ZNodeRegistration> = registry.find(&n_def.element).unwrap();
 
-         self.nodes.push(ZNode {
+         self.realized_graph.nodes.push(ZNode {
             node_state_data: None,
             node_type: node_type.clone(),
             node_type_finder: n_def.element.clone(),
