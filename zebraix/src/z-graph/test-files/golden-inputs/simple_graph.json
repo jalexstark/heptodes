@@ -87,23 +87,16 @@
         { "src_node": "Test circle",
           "connections": [
             [ "void", "void" ]
-          ] }
-      ]
-    },
-    {
-      "name": "output",
-      "element": "Output",
-      "edges": [
-        { "src_node": "input",
-          "connections": [
-            [ "void", "void" ]
           ] },
-        { "src_node": "main group",
+        { "src_node": "input",
           "connections": [
             [ "void", "void" ]
           ] }
       ]
     }
+  ],
+  "output_ports": [
+    [ "output", "main group", "void" ]
   ],
   "canvas": {
     "width": 320.0,

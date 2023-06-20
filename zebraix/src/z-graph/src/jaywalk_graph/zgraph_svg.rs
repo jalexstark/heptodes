@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::jaywalk_graph::zgraph_base::Port;
+use crate::jaywalk_graph::zgraph_base::PortTyped;
 use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
@@ -252,7 +252,7 @@ impl Renderer for RenderSvg {
       if result.is_ok() {
          {
             let borrowed_writer: &mut Vec<u8> =
-               &mut result.as_mut().unwrap().as_mut().downcast_mut::<Vec<u8>>().unwrap();
+               result.as_mut().unwrap().as_mut().downcast_mut::<Vec<u8>>().unwrap();
             for d in &renderer_data.debug_lines {
                match d {
                   DebugLine::SimpleString(s) => {
@@ -288,9 +288,9 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .construction_fn(test_text_construction)
          .inking_fn(test_text_inking)
          .input_ports(vec![
-            Port { name: "text".to_string(), piece_type: ZPieceType::Text },
-            Port { name: "color".to_string(), piece_type: ZPieceType::Color },
-            Port { name: "font style".to_string(), piece_type: ZPieceType::FontStyle },
+            PortTyped { name: "text".to_string(), piece_type: ZPieceType::Text },
+            PortTyped { name: "color".to_string(), piece_type: ZPieceType::Color },
+            PortTyped { name: "font style".to_string(), piece_type: ZPieceType::FontStyle },
          ])
          .build()
          .unwrap(),
@@ -300,9 +300,9 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .name("Test circle".to_string())
          .inking_fn(test_circle_inking)
          .input_ports(vec![
-            Port { name: "center".to_string(), piece_type: ZPieceType::Coord2D },
-            Port { name: "radius".to_string(), piece_type: ZPieceType::Real },
-            Port { name: "color".to_string(), piece_type: ZPieceType::Color },
+            PortTyped { name: "center".to_string(), piece_type: ZPieceType::Coord2D },
+            PortTyped { name: "radius".to_string(), piece_type: ZPieceType::Real },
+            PortTyped { name: "color".to_string(), piece_type: ZPieceType::Color },
          ])
          .build()
          .unwrap(),
