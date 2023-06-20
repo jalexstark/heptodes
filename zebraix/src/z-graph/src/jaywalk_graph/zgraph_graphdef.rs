@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::jaywalk_graph::jaywalk_foundation::is_default;
-use crate::jaywalk_graph::zgraph_base::Port;
+use crate::jaywalk_graph::zgraph_base::PortTyped;
 use crate::jaywalk_graph::zgraph_base::ZCanvas;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
@@ -83,6 +83,13 @@ pub struct ZEdgeDef {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PresetPiece(pub String, pub ZPiece);
 
+// Says which internal node output ports are exposed as graph output
+// ports, and sets external name.
+//
+// Port name, src node name, src port name.
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ZPortDef(pub String, pub String, pub String);
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ZNodeDef {
    pub name: String,
@@ -98,7 +105,7 @@ pub struct ZNodeDef {
 
    // Input, output and preset nodes only. Others come from registered elements.
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
-   pub ports: Vec<Port>,
+   pub ports: Vec<PortTyped>,
 
    // Preset data nodes can input, in which case fields are overridden by merging.
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
@@ -116,6 +123,9 @@ pub struct ZGraphDef {
 
    #[serde(default)]
    pub nodes: Vec<ZNodeDef>,
+
+   #[serde(default)]
+   pub output_ports: Vec<ZPortDef>,
 
    #[serde(skip_serializing_if = "Option::is_none")]
    pub canvas: Option<ZCanvas>,
