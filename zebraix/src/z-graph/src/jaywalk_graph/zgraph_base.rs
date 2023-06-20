@@ -164,6 +164,7 @@ pub enum ZTupleData {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ZPiece {
+   Void,
    Real(f64),
    Integer(i32),
    Unit(ZUnit),
@@ -183,6 +184,7 @@ impl Default for ZPiece {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum ZPieceType {
+   Void,
    Real,
    Integer,
    Unit,
@@ -203,7 +205,7 @@ impl Default for ZPieceType {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct Port {
+pub struct PortTyped {
    pub name: String,
    pub piece_type: ZPieceType,
 }

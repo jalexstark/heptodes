@@ -136,13 +136,13 @@ impl JsonGoldenTest {
       reformatted_old.set_file_name(
          reformatted_old.file_stem().unwrap().to_str().unwrap().to_owned()
             + "-old."
-            + &reformatted_old.extension().unwrap().to_str().unwrap(),
+            + reformatted_old.extension().unwrap().to_str().unwrap(),
       );
       let mut reformatted_new = dir.join(new.file_name().unwrap());
       reformatted_new.set_file_name(
          reformatted_new.file_stem().unwrap().to_str().unwrap().to_owned()
             + "-new."
-            + &reformatted_new.extension().unwrap().to_str().unwrap(),
+            + reformatted_new.extension().unwrap().to_str().unwrap(),
       );
 
       let data_old = fs::read(old).unwrap();

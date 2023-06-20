@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::jaywalk_graph::zgraph_base::Port;
+use crate::jaywalk_graph::zgraph_base::PortTyped;
 use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
@@ -31,12 +31,11 @@ pub struct ZNodeRegistration {
    #[builder(setter(strip_option), default)]
    pub inking_fn: Option<ZNodeInvocationFn>,
    #[builder(default)]
-   pub input_ports: Vec<Port>,
+   pub input_ports: Vec<PortTyped>,
    #[builder(default)]
-   pub output_ports: Vec<Port>,
+   pub output_ports: Vec<PortTyped>,
 }
 
-#[derive(Default)]
 pub struct ZRegistry {
    pub node_registrations: HashMap<String, Rc<ZNodeRegistration>>,
 }
@@ -49,6 +48,15 @@ pub enum ZRegistryError {
 }
 
 impl ZRegistry {
+   pub fn new() -> Self {
+      let mut new_registry: Self =
+         Self { node_registrations: HashMap::<String, Rc<ZNodeRegistration>>::default() };
+      new_registry.register_new(
+         ZNodeRegistrationBuilder::default().name("Null".to_string()).build().unwrap(),
+      );
+      new_registry
+   }
+
    pub fn register_new(&mut self, new_element: ZNodeRegistration) {
       self
          .node_registrations
@@ -59,12 +67,24 @@ impl ZRegistry {
       match finder {
          ZNodeTypeFinder::ByString(s) => {
             let search = self.node_registrations.get(s);
-            if search.is_some() {
-               return Ok(search.unwrap());
+            if let Some(node_registration) = search {
+               Ok(node_registration)
             } else {
-               return Err(ZRegistryError::ZRegistryNotFound);
+               Err(ZRegistryError::ZRegistryNotFound)
             }
          }
       }
+   }
+
+   pub fn get_null_noderegistration(&self) -> &Rc<ZNodeRegistration> {
+      let null_finder = ZNodeTypeFinder::ByString("Null".to_string());
+      let null_node: &Rc<ZNodeRegistration> = self.find(&null_finder).unwrap();
+      null_node
+   }
+}
+
+impl Default for ZRegistry {
+   fn default() -> Self {
+      Self::new()
    }
 }
