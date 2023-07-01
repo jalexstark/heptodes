@@ -54,6 +54,9 @@ impl ZRegistry {
       new_registry.register_new(
          ZNodeRegistrationBuilder::default().name("Null".to_string()).build().unwrap(),
       );
+      new_registry.register_new(
+         ZNodeRegistrationBuilder::default().name("Subgraph".to_string()).build().unwrap(),
+      );
       new_registry
    }
 
@@ -78,8 +81,14 @@ impl ZRegistry {
 
    pub fn get_null_noderegistration(&self) -> &Rc<ZNodeRegistration> {
       let null_finder = ZNodeTypeFinder::ByString("Null".to_string());
-      let null_node: &Rc<ZNodeRegistration> = self.find(&null_finder).unwrap();
-      null_node
+      let null_node_reg: &Rc<ZNodeRegistration> = self.find(&null_finder).unwrap();
+      null_node_reg
+   }
+
+   pub fn get_subgraph_noderegistration(&self) -> &Rc<ZNodeRegistration> {
+      let subgraph_finder = ZNodeTypeFinder::ByString("Subgraph".to_string());
+      let subgraph_node_reg: &Rc<ZNodeRegistration> = self.find(&subgraph_finder).unwrap();
+      subgraph_node_reg
    }
 }
 
