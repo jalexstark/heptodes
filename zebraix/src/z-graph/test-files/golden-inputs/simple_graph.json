@@ -77,6 +77,16 @@
       ]
     },
     {
+      "name": "prunable dangling",
+      "element": "Group",
+      "edges": [
+        { "src_node": "test text",
+          "connections": [
+            [ "void", "void" ]
+          ] }
+      ]
+    },
+    {
       "name": "main group",
       "element": "Group",
       "edges": [
@@ -84,7 +94,7 @@
           "connections": [
             [ "void", "void" ]
           ] },
-        { "src_node": "Test circle",
+        { "src_node": "test circle",
           "connections": [
             [ "void", "void" ]
           ] },
