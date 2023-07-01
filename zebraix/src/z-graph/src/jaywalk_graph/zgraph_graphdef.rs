@@ -60,6 +60,7 @@ impl Default for ZGraphDefCategory {
    }
 }
 
+// Name among source nodes's outputs, name among dest node's inputs.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Connection(pub String, pub String);
 
