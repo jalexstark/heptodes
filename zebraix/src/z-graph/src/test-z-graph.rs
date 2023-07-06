@@ -145,9 +145,9 @@ fn run_idem_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
 
    // Overwrite with same as existing.  This provides an example
    // manipulation that can be useful when working with JSON.
-   deserialized.nodes[3].preset_data[0] =
+   deserialized.nodes[2].preset_data[0] =
       PresetPiece("color".to_string(), ZPiece::Big(ZBigData::Color(ZColor::Rgb(0.0, 0.0, 0.7))));
-   deserialized.nodes[1].preset_data[1] = PresetPiece(
+   deserialized.nodes[0].preset_data[1] = PresetPiece(
       "center".to_string(),
       ZPiece::Tuple(ZTupleData::Coord2D(CoordReal2D(160.0, 120.0))),
    );

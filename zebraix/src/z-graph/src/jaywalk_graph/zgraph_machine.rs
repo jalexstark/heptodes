@@ -39,21 +39,15 @@ pub struct ZNode {
    pub node_type: Rc<ZNodeRegistration>,
    pub node_type_finder: Option<ZNodeTypeFinder>,
    pub node_state_data: ZNodeStateData,
+
    pub inbound_data_copiers: Vec<Rc<RefCell<PortDataCopier>>>,
    pub outbound_data_copiers: Vec<Rc<RefCell<PortDataCopier>>>,
+   pub input_data_ports: PortDataVec,
+   pub output_data_ports: PortDataVec,
 
    pub subgraph_nodes: Vec<Rc<RefCell<ZNode>>>, // Prolly init with 0 reserve.
    pub subgraph_node_map: Option<HashMap<String, usize>>,
 }
-
-// #[derive(Default)]
-// pub struct RealizedGraph {
-//    // Subgraph expansion is contextual.  That is, it is based on the
-//    // union of all data_copiers consuming its results.
-//    pub subgraph_nodes: Vec<Rc<RefCell<ZNode>>>,
-//    pub subgraph_node_map: HashMap<String, usize>,
-//    // node_map= HashMap<String, String>::new();
-// }
 
 pub struct ZMachine {
    pub typestate: ZMachineTypestate,
@@ -69,7 +63,6 @@ pub struct ZMachine {
    pub renderer_data: ZRendererData,
 
    pub realized_node: Rc<RefCell<ZNode>>,
-   // pub realized_graph: RealizedGraph,
 
    // Node registry
    pub registry: ZRegistry,
@@ -96,6 +89,8 @@ impl ZMachine {
          node_type_finder: None,
          inbound_data_copiers: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
          outbound_data_copiers: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+         input_data_ports: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
+         output_data_ports: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
          subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
          subgraph_node_map: None,
       }));
@@ -107,6 +102,8 @@ impl ZMachine {
          node_type_finder: None,
          inbound_data_copiers: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
          outbound_data_copiers: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+         input_data_ports: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
+         output_data_ports: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
          subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
          subgraph_node_map: None,
       }));
@@ -126,7 +123,6 @@ impl ZMachine {
 
          // Renderer.
          renderer_data: None,
-         // realized_graph: RealizedGraph::default(),
 
          // Node registry
          registry,
@@ -145,7 +141,6 @@ impl ZMachine {
       }
 
       self.graph_def = graph_def;
-      // self.graph_def = graph_def.clone();
       self.has_graph_def = true;
       Ok(())
    }
@@ -178,7 +173,6 @@ impl ZMachine {
 
       //
 
-      // for n in &mut self.realized_graph.subgraph_nodes {
       for n in &mut self.realized_node.borrow_mut().subgraph_nodes {
          let node: &mut ZNode = &mut n.borrow_mut();
          let node_element = &node.node_type;
@@ -205,7 +199,6 @@ impl ZMachine {
 
       //
 
-      // for n in &mut self.realized_graph.subgraph_nodes {
       for n in &mut self.realized_node.borrow_mut().subgraph_nodes {
          let node: &mut ZNode = &mut n.borrow_mut();
          let node_element = &node.node_type;
@@ -232,7 +225,6 @@ impl ZMachine {
 
       //
 
-      // for n in &mut self.realized_graph.subgraph_nodes {
       for n in &mut self.realized_node.borrow_mut().subgraph_nodes {
          let node: &mut ZNode = &mut n.borrow_mut();
          let node_element = &node.node_type;
@@ -270,14 +262,6 @@ impl ZMachine {
       // self.global_sink_copiers.clear();
       assert!(realized_node.outbound_data_copiers.is_empty());
       for port_def in &self.graph_def.output_ports {
-         // self.global_sink_copiers.push(Rc::new(RefCell::new(PortDataCopier {
-         //    src_node: self.null_node.clone(),
-         //    src_port_data: self.floating_port_data.clone(),
-         //    src_index: PortDataCopier::VOID_SENTINEL,
-         //    dst_port_data: self.global_sink_data_ports.clone(),
-         //    dst_index: PortDataCopier::VOID_SENTINEL,
-         //    port_def: Some(port_def.clone()),
-         // })));
          realized_node.outbound_data_copiers.push(Rc::new(RefCell::new(PortDataCopier {
             src_node: self.null_node.clone(),
             src_port_data: self.floating_port_data.clone(),
@@ -291,17 +275,10 @@ impl ZMachine {
          // pub global_sink_copiers: Vec<PortDataCopier>,
       }
 
-      // pub src_node: This node,
-      // pub src_port_data: NOT SET CORRECTLY - null node,
-      // pub src_index: i32,
-      // pub dst_port_data: NOT SET CORRECTLY - null node, PortDataVec,
-      // pub dst_index: i32,
-
-      // // Port name, src node name, src port name.
-      // #[derive(Clone, Serialize, Deserialize)]
-      // pub struct ZPortDef(pub String, pub String, pub String);
-
-      realized_node.build_from_graphdef(
+      // realized_node.outbound_data_copiers populated before.
+      //
+      // realized_node.inbound_data_copiers populated by builder.
+      realized_node.build_subgraph_from_graphdef(
          // &mut self.global_sink_copiers,
          &self.graph_def,
          &self.registry,
@@ -309,6 +286,8 @@ impl ZMachine {
          &self.floating_port_data,
       )
 
+      // XXX
+      //
       // After building graph, will need (for user graph) to created
       // output data vec and plumb into global_sink_copiers.
    }
@@ -338,16 +317,80 @@ impl PortDataCopier {
    const VOID_SENTINEL: usize = usize::MAX;
 }
 
-// Need mutable vector of edge copiers, one for input, one for
-// output. User graph provided with already-finalized output
-// destination. Creates and returns vector of input edge copiers.
+#[inline(always)]
+fn is_leaf_node(subnode_type: &Rc<ZNodeRegistration>) -> bool {
+   !subnode_type.is_subgraph_type
+}
+
 impl ZNode {
-   fn build_from_graphdef(
+   fn finish_leaf_node(
       &mut self,
-      // pull_data_copiers: &mut [Rc<RefCell<PortDataCopier>>],
+      node_num: usize,
+      n_def: &ZNodeDef,
+      _registry: &ZRegistry,
+      null_node: &Rc<RefCell<ZNode>>,
+      floating_port_data: &PortDataVec,
+   ) -> Result<(), ZGraphError> {
+      let subnode: &mut ZNode = &mut self.subgraph_nodes[node_num].borrow_mut();
+
+      assert!(subnode.inbound_data_copiers.is_empty());
+      subnode.inbound_data_copiers.clear();
+
+      for edge in &n_def.edges {
+         eprintln!("   Adding subnode dependency on: {}", edge.src_node);
+         let is_internal_src_node: bool = edge.src_node != "input";
+         let src_node_znode: &Rc<RefCell<ZNode>>;
+         if is_internal_src_node {
+            let node_num: usize =
+               *self.subgraph_node_map.as_ref().unwrap().get(&edge.src_node).unwrap();
+            src_node_znode = &self.subgraph_nodes[node_num];
+         } else {
+            src_node_znode = &null_node;
+         }
+
+         for connection in &edge.connections {
+            // Name among source nodes's outputs, name among dest node's inputs.
+            eprintln!(
+               "      Adding data copier: {}:{} to {}:{}",
+               edge.src_node, connection.0, n_def.name, connection.1
+            );
+
+            // Only leaf nodes actually create copiers (plus
+            // the very outer user-graph realization).
+            let edges_copier = Rc::new(RefCell::new(PortDataCopier {
+               src_node: src_node_znode.clone(),
+               src_port_data: floating_port_data.clone(),
+               src_index: PortDataCopier::VOID_SENTINEL,
+               dst_port_data: floating_port_data.clone(),
+               dst_index: PortDataCopier::VOID_SENTINEL,
+               port_def: Some(ZPortDef(
+                  connection.1.clone(),
+                  edge.src_node.clone(),
+                  connection.0.clone(),
+               )),
+            }));
+            subnode.inbound_data_copiers.push(edges_copier.clone());
+
+            // XXX At this point we should be able to create input data vector and clean up dst connection.
+
+            if is_internal_src_node {
+               src_node_znode.borrow_mut().outbound_data_copiers.push(edges_copier);
+            } else {
+               self.inbound_data_copiers.push(edges_copier);
+            }
+         }
+      }
+      Ok(())
+   }
+
+   // Need mutable vector of edge copiers, one for input, one for
+   // output. User graph provided with already-finalized output
+   // destination. Creates and returns vector of input edge copiers.
+   fn build_subgraph_from_graphdef(
+      &mut self,
       graph_def: &ZGraphDef,
       registry: &ZRegistry,
-      _null_node: &Rc<RefCell<ZNode>>,
+      null_node: &Rc<RefCell<ZNode>>,
       floating_port_data: &PortDataVec,
    ) -> Result<(), ZGraphError> {
       {
@@ -369,6 +412,8 @@ impl ZNode {
                node_type_finder: None,
                inbound_data_copiers: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
                outbound_data_copiers: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+               input_data_ports: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
+               output_data_ports: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
                subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
                subgraph_node_map: None,
             })));
@@ -401,7 +446,7 @@ impl ZNode {
          let &mut subgraph_node_map = &mut self.subgraph_node_map.as_ref().unwrap();
          for external_copier in &self.outbound_data_copiers {
             let borrow_hold: &PortDataCopier = &external_copier.borrow();
-            let port_def: &ZPortDef = &(borrow_hold.port_def.as_ref().unwrap());
+            let port_def: &ZPortDef = borrow_hold.port_def.as_ref().unwrap();
             // Port name, src node name, src port name.
             let node_num: usize = *subgraph_node_map.get(&port_def.1).unwrap();
             let src_node_znode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
@@ -418,53 +463,29 @@ impl ZNode {
          for i in (0..subgraph_size).rev() {
             let n_def = &node_defs[i];
 
-            eprintln!("Processing node: {}", n_def.name);
+            eprintln!("Processing subnode: {}", n_def.name);
 
-            let node_type: &Rc<ZNodeRegistration> = registry.find(&n_def.element).unwrap();
+            let subnode_type: &Rc<ZNodeRegistration> = registry.find(&n_def.element).unwrap();
+            let node_num: usize =
+               *self.subgraph_node_map.as_ref().unwrap().get(&n_def.name).unwrap();
 
-            let node: &mut ZNode = &mut self.subgraph_nodes
-               [*self.subgraph_node_map.as_ref().unwrap().get(&n_def.name).unwrap()]
-            .borrow_mut();
+            {
+               let subnode: &mut ZNode = &mut self.subgraph_nodes[node_num].borrow_mut();
 
-            if node.outbound_data_copiers.is_empty() {
-               continue;
-            }
-            node.node_type = node_type.clone();
-            node.node_type_finder = Some(n_def.element.clone());
-
-            assert!(node.inbound_data_copiers.is_empty());
-            node.inbound_data_copiers.clear();
-
-            for edge in &n_def.edges {
-               eprintln!("   Adding node dependency on: {}", edge.src_node);
-               let node_num: usize =
-                  *self.subgraph_node_map.as_ref().unwrap().get(&edge.src_node).unwrap();
-
-               let src_node_znode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
-
-               for connection in &edge.connections {
-                  // Name among source nodes's outputs, name among dest node's inputs.
-                  eprintln!(
-                     "      Adding data copier: {}:{} to {}:{}",
-                     edge.src_node, connection.0, n_def.name, connection.1
-                  );
-
-                  let edges_copier = Rc::new(RefCell::new(PortDataCopier {
-                     src_node: src_node_znode.clone(),
-                     src_port_data: floating_port_data.clone(),
-                     src_index: PortDataCopier::VOID_SENTINEL,
-                     dst_port_data: floating_port_data.clone(),
-                     dst_index: PortDataCopier::VOID_SENTINEL,
-                     port_def: Some(ZPortDef(
-                        connection.1.clone(),
-                        edge.src_node.clone(),
-                        connection.0.clone(),
-                     )),
-                  }));
-                  node.inbound_data_copiers.push(edges_copier.clone());
-
-                  src_node_znode.borrow_mut().outbound_data_copiers.push(edges_copier);
+               if subnode.outbound_data_copiers.is_empty() {
+                  continue;
                }
+               subnode.node_type = subnode_type.clone();
+               subnode.node_type_finder = Some(n_def.element.clone());
+            }
+
+            if is_leaf_node(subnode_type) {
+               self.finish_leaf_node(node_num, n_def, &registry, null_node, floating_port_data)?;
+            } else {
+               eprintln!(
+                  "Apply input remapping from all self.inbound_data_copiers for {}",
+                  n_def.name
+               );
             }
          }
       }
