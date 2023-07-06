@@ -2,10 +2,6 @@
   "name": "A test graph",
   "nodes": [
     {
-      "name": "input",
-      "element": "Input"
-    },
-    {
       "name": "test circle data",
       "element": "Preset data",
       "preset_data": [
