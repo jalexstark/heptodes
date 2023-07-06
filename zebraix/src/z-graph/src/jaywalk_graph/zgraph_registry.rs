@@ -34,6 +34,8 @@ pub struct ZNodeRegistration {
    pub input_ports: Vec<PortTyped>,
    #[builder(default)]
    pub output_ports: Vec<PortTyped>,
+   #[builder(default)]
+   pub is_subgraph_type: bool,
 }
 
 pub struct ZRegistry {
@@ -55,7 +57,11 @@ impl ZRegistry {
          ZNodeRegistrationBuilder::default().name("Null".to_string()).build().unwrap(),
       );
       new_registry.register_new(
-         ZNodeRegistrationBuilder::default().name("Subgraph".to_string()).build().unwrap(),
+         ZNodeRegistrationBuilder::default()
+            .name("Subgraph".to_string())
+            .is_subgraph_type(true)
+            .build()
+            .unwrap(),
       );
       new_registry
    }
