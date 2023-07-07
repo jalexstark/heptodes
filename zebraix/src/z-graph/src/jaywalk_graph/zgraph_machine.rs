@@ -378,7 +378,128 @@ impl ZNode {
             // XXX At this point we should be able to create input data vector and clean up dst connection.
 
             if is_internal_src_node {
-               src_node_znode.borrow_mut().data_copiers_src
+               src_node_znode.borrow_mut().data_copiers_src_copy.push(edges_copier);
+            } else {
+               self.data_copiers_src_copy.push(edges_copier);
+            }
+         }
+      }
+      Ok(())
+   }
+
+   // Need mutable vector of edge copiers, one for input, one for
+   // output. User graph provided with already-finalized output
+   // destination. Creates and returns vector of input edge copiers.
+   fn build_subgraph_from_graphdef(
+      &mut self,
+      graph_def: &ZGraphDef,
+      registry: &ZRegistry,
+      null_node: &Rc<RefCell<ZNode>>,
+      floating_port_data: &PortDataVec,
+   ) -> Result<(), ZGraphError> {
+      {
+         let node_defs: &Vec<ZNodeDef> = &graph_def.nodes;
+         let subgraph_size = node_defs.len();
+         let null_noderegistration: &Rc<ZNodeRegistration> = registry.get_null_noderegistration();
+
+         // 1st pass: set up minimal vector of realized nodes.
+         let mut node_map_size: usize = self.subgraph_nodes.len();
+         assert_eq!(node_map_size, 0);
+         self.subgraph_nodes.reserve_exact(subgraph_size);
+         let mut subgraph_node_map = HashMap::<String, usize>::default();
+
+         for n_def in node_defs {
+            self.subgraph_nodes.push(Rc::new(RefCell::new(ZNode {
+               name: n_def.name.clone(),
+               node_state_data: None,
+               node_type: null_noderegistration.clone(),
+               node_type_finder: None,
+               data_copiers_src_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+               data_copiers_dest_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+               data_ports_src_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
+               data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
+               subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
+               subgraph_node_map: None,
+            })));
+
+            assert!(!subgraph_node_map.contains_key(&n_def.name));
+            subgraph_node_map.insert(n_def.name.clone(), node_map_size);
+            node_map_size += 1;
+         }
+         assert_eq!(node_map_size, subgraph_size);
+         self.subgraph_node_map = Some(subgraph_node_map);
+      }
+
+      // XXX
+
+      // --- Sub tasks when required for above
+
+      // Create function to build copiers for node input signature.
+
+      // Create function to build port data vectors from port type vectors.
+
+      // When visiting a node, if not a subgraph itself, then create output data vector.
+
+      // Populate preset data in output port data.
+
+      // ---
+
+      // Inter-pass replumbing of copiers out of subgraph. Replumb to
+      // internal nodes for which each is outbound.
+      {
+         let &mut subgraph_node_map = &mut self.subgraph_node_map.as_ref().unwrap();
+         let mut direct_in_out_copiers = Vec::<Rc<RefCell<PortDataCopier>>>::default();
+         for external_copier in &self.data_copiers_src_copy {
+            let borrow_hold: &PortDataCopier = &external_copier.borrow();
+            let port_def: &ZPortDef = borrow_hold.port_def.as_ref().unwrap();
+
+            let connects_to_internal: bool = port_def.1 != "input";
+            if connects_to_internal {
+               // Port name, src node name, src port name.
+               let node_num: usize = *subgraph_node_map.get(&port_def.1).unwrap();
+               let src_node_znode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
+               src_node_znode.borrow_mut().data_copiers_src_copy.push(external_copier.clone());
+            } else {
+               direct_in_out_copiers.push(external_copier.clone());
+            }
+         }
+         self.data_copiers_src_copy = direct_in_out_copiers; // Finish "move" of copiers to their internal nodes.
+      }
+
+      // 2nd pass vector of created nodes and node_defs matches before and after.
+      {
+         let node_defs: &Vec<ZNodeDef> = &graph_def.nodes;
+         let subgraph_size = node_defs.len();
+
+         for i in (0..subgraph_size).rev() {
+            let n_def = &node_defs[i];
+
+            eprintln!("Processing subnode: {}", n_def.name);
+
+            let subnode_type: &Rc<ZNodeRegistration> = registry.find(&n_def.element).unwrap();
+            let node_num: usize =
+               *self.subgraph_node_map.as_ref().unwrap().get(&n_def.name).unwrap();
+
+            {
+               let subnode: &mut ZNode = &mut self.subgraph_nodes[node_num].borrow_mut();
+
+               if subnode.data_copiers_src_copy.is_empty() {
+                  continue;
+               }
+               subnode.node_type = subnode_type.clone();
+               subnode.node_type_finder = Some(n_def.element.clone());
+            }
+
+            if is_leaf_node(subnode_type) {
+               self.finish_leaf_node(node_num, n_def, &registry, null_node, floating_port_data)?;
+            } else {
+               eprintln!(
+                  "Apply input remapping from all self.data_copiers_src_copy for {}",
+                  n_def.name
+               );
+            }
+         }
+      }
 
       // Hereafter avoid use of graphdef.
 

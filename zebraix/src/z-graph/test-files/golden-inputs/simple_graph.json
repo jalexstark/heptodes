@@ -1,22 +1,19 @@
 {
   "name": "A test graph",
+  "inputs": [
+    [ "real_input", "Real" ],
+    [ "integer_input", "Integer" ]
+  ],
   "nodes": [
-    {
-      "name": "test circle data",
+    { "name": "test circle data",
       "element": "Preset data",
       "preset_data": [
-        [
-          "color",
-          {
-            "type": "Color",
-            "Rgb": [ 0.5, 0.0, 0.0 ]
-          }
+        [ "color",
+          { "type": "Color",
+            "Rgb": [ 0.5, 0.0, 0.0 ] }
         ],
-        [
-          "center",
-          {
-            "Coord2D": [ 160.0, 120.0 ]
-          }
+        [ "center",
+          { "Coord2D": [ 160.0, 120.0 ] }
         ],
         [ "radius", 30.0 ]
       ]
@@ -102,7 +99,8 @@
     }
   ],
   "output_ports": [
-    [ "output", "main group", "void" ]
+    [ "output", "main group", "void" ],
+    [ "passthrough", "input", "integer_input" ]
   ],
   "canvas": {
     "width": 320.0,
