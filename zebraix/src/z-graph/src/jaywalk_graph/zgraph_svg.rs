@@ -287,10 +287,11 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .name("Test text".to_string())
          .construction_fn(test_text_construction)
          .inking_fn(test_text_inking)
-         .input_ports(vec![
+         .ports_dest_copy(vec![
             PortPieceTyped("text".to_string(), ZPieceType::Text),
             PortPieceTyped("color".to_string(), ZPieceType::Color),
             PortPieceTyped("font style".to_string(), ZPieceType::FontStyle),
+            PortPieceTyped("location".to_string(), ZPieceType::Coord2D),
          ])
          .build()
          .unwrap(),
@@ -299,7 +300,7 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
       ZNodeRegistrationBuilder::default()
          .name("Test circle".to_string())
          .inking_fn(test_circle_inking)
-         .input_ports(vec![
+         .ports_dest_copy(vec![
             PortPieceTyped("center".to_string(), ZPieceType::Coord2D),
             PortPieceTyped("radius".to_string(), ZPieceType::Real),
             PortPieceTyped("color".to_string(), ZPieceType::Color),

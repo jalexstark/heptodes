@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_registry::ZNodeCategory;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 
@@ -24,6 +25,10 @@ pub fn register_builtin_library(registry: &mut ZRegistry) {
       ZNodeRegistrationBuilder::default().name("Output".to_string()).build().unwrap(),
    );
    registry.register_new(
-      ZNodeRegistrationBuilder::default().name("Preset data".to_string()).build().unwrap(),
+      ZNodeRegistrationBuilder::default()
+         .name("Preset data".to_string())
+         .category(ZNodeCategory::PresetData)
+         .build()
+         .unwrap(),
    );
 }
