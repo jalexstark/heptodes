@@ -21,7 +21,20 @@ use derive_builder::Builder;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-#[derive(Default, Builder)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ZNodeCategory {
+   OtherCategory,
+   Subgraph,
+   PresetData,
+}
+
+impl Default for ZNodeCategory {
+   fn default() -> Self {
+      ZNodeCategory::OtherCategory
+   }
+}
+
+#[derive(Default, Builder, Clone)]
 pub struct ZNodeRegistration {
    pub name: String,
    #[builder(setter(strip_option), default)]
@@ -31,11 +44,11 @@ pub struct ZNodeRegistration {
    #[builder(setter(strip_option), default)]
    pub inking_fn: Option<ZNodeInvocationFn>,
    #[builder(default)]
-   pub input_ports: Vec<PortPieceTyped>,
+   pub ports_src_copy: Vec<PortPieceTyped>,
    #[builder(default)]
-   pub output_ports: Vec<PortPieceTyped>,
+   pub ports_dest_copy: Vec<PortPieceTyped>,
    #[builder(default)]
-   pub is_subgraph_type: bool,
+   pub category: ZNodeCategory,
 }
 
 pub struct ZRegistry {
@@ -59,7 +72,7 @@ impl ZRegistry {
       new_registry.register_new(
          ZNodeRegistrationBuilder::default()
             .name("Subgraph".to_string())
-            .is_subgraph_type(true)
+            .category(ZNodeCategory::Subgraph)
             .build()
             .unwrap(),
       );

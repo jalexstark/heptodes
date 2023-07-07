@@ -96,6 +96,12 @@ pub enum ZUnit {
    Pt,
 }
 
+impl Default for ZUnit {
+   fn default() -> Self {
+      ZUnit::Pt
+   }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub enum ZCanvasDirection {
    Upwards,
@@ -116,6 +122,12 @@ pub struct ZCanvas {
 pub enum ZColor {
    Rgb(f64, f64, f64),
    Cmyk(f64, f64, f64, f64),
+}
+
+impl Default for ZColor {
+   fn default() -> Self {
+      ZColor::Rgb(0.5, 0.5, 0.5)
+   }
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -158,6 +170,12 @@ pub enum ZTupleData {
    Coord2D(CoordReal2D),
 }
 
+impl Default for CoordReal2D {
+   fn default() -> Self {
+      CoordReal2D(0.5, 0.5)
+   }
+}
+
 // Pieces are small, but can indirect to bigger.
 //
 // Pieces should be mutually exclusive, so deserializable from untagged.
@@ -182,7 +200,7 @@ impl Default for ZPiece {
    }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub enum ZPieceType {
    Void,
    Real,
@@ -212,3 +230,40 @@ pub struct PortPieceTyped(pub String, pub ZPieceType);
 //    pub name: String,
 //    pub piece_type: ZPieceType,
 // }
+
+impl ZPieceType {
+   pub fn get_piece_type_from_data(piece: &ZPiece) -> ZPieceType {
+      match piece {
+         ZPiece::Void => ZPieceType::Void,
+         ZPiece::Real(_) => ZPieceType::Real,
+         ZPiece::Integer(_) => ZPieceType::Integer,
+         ZPiece::Unit(_) => ZPieceType::Unit,
+         ZPiece::Text(_) => ZPieceType::Text,
+         //
+         ZPiece::Big(big_data) => match big_data {
+            ZBigData::Color(_) => ZPieceType::Color,
+            ZBigData::FontStyle(_) => ZPieceType::FontStyle,
+         },
+         ZPiece::Tuple(tuple_data) => match tuple_data {
+            ZTupleData::Coord2D(_) => ZPieceType::Coord2D,
+         },
+      }
+   }
+}
+
+impl ZPiece {
+   pub fn piece_data_default_for_piece_type(piece_type: &ZPieceType) -> ZPiece {
+      match piece_type {
+         ZPieceType::Void => ZPiece::Void,
+         ZPieceType::Real => ZPiece::Real(0.0),
+         ZPieceType::Integer => ZPiece::Integer(0),
+         ZPieceType::Unit => ZPiece::Unit(ZUnit::default()),
+         ZPieceType::Text => ZPiece::Text("".to_string()),
+         //
+         ZPieceType::Color => ZPiece::Big(ZBigData::Color(ZColor::default())),
+         ZPieceType::FontStyle => ZPiece::Big(ZBigData::FontStyle(ZFontStyle::default())),
+         //
+         ZPieceType::Coord2D => ZPiece::Tuple(ZTupleData::Coord2D(CoordReal2D::default())),
+      }
+   }
+}

@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
 use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZMachineTypestate;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
+use crate::jaywalk_graph::zgraph_base::ZPieceType;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use crate::jaywalk_graph::zgraph_graphdef::ZNodeDef;
 use crate::jaywalk_graph::zgraph_graphdef::ZPortDef;
+use crate::jaywalk_graph::zgraph_registry::ZNodeCategory;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistration;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 use std::cell::RefCell;
@@ -31,6 +34,24 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub enum DebugLine {
    SimpleString(String),
+}
+
+type PortDataVec = Rc<RefCell<Vec<ZPiece>>>;
+
+// Floatable version of edge copier
+pub struct PortDataCopier {
+   pub src_node: Rc<RefCell<ZNode>>,
+   pub src_port_data: PortDataVec,
+   pub src_index: usize,
+   pub dest_port_data: PortDataVec,
+   pub dest_index: usize,
+   pub port_def: Option<ZPortDef>,
+   // #[derive(Clone, Serialize, Deserialize)]
+   // pub struct ZPortDef(pub String, pub String, pub String);
+}
+
+impl PortDataCopier {
+   const VOID_SENTINEL: usize = usize::MAX;
 }
 
 #[allow(dead_code)]
@@ -70,10 +91,6 @@ pub struct ZMachine {
    pub null_node: Rc<RefCell<ZNode>>,
 
    pub floating_port_data: PortDataVec,
-
-   // Probably delete, and just use node_state_data in outermost.
-   pub global_sink_data_ports: PortDataVec,
-   // pub global_sink_copiers: Vec<Rc<RefCell<PortDataCopier>>>,
 }
 
 impl ZMachine {
@@ -111,9 +128,6 @@ impl ZMachine {
       // floating_port_data is a sentinel, used to indicate that a
       // connection is floating.
       let floating_port_data = Rc::new(RefCell::new(Vec::<ZPiece>::default()));
-      let global_sink_data_ports = Rc::new(RefCell::new(Vec::<ZPiece>::default()));
-      global_sink_data_ports.borrow_mut().push(ZPiece::Void);
-      // let global_sink_copiers = Vec::<Rc<RefCell<PortDataCopier>>>::default();
 
       Self {
          typestate: ZMachineTypestate::Init,
@@ -128,8 +142,6 @@ impl ZMachine {
          registry,
          null_node,
          floating_port_data,
-         global_sink_data_ports,
-         // global_sink_copiers,
          realized_node,
       }
    }
@@ -256,44 +268,120 @@ impl ZMachine {
    }
 
    fn build_from_graphdef(&mut self) -> Result<(), ZGraphError> {
-      let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
+      {
+         let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
 
-      // In ordinary mode of operation, for a user graph, we create one copier for each output.
-      // self.global_sink_copiers.clear();
-      assert!(realized_node.data_copiers_dest_copy.is_empty());
-      for port_def in &self.graph_def.output_ports {
-         let expanded_graph_data_copier = Rc::new(RefCell::new(PortDataCopier {
-            src_node: self.null_node.clone(),
-            src_port_data: self.floating_port_data.clone(),
-            src_index: PortDataCopier::VOID_SENTINEL,
-            // xxx move into self.port data dest copy.
-            dst_port_data: self.global_sink_data_ports.clone(),
-            dst_index: PortDataCopier::VOID_SENTINEL,
-            port_def: Some(port_def.clone()),
-         }));
-         realized_node.data_copiers_dest_copy.push(expanded_graph_data_copier.clone());
-         // The "src copiers" are a temporary parking spot.
-         realized_node.data_copiers_src_copy.push(expanded_graph_data_copier);
-         eprintln!("Port attachment: {}", port_def.0);
-         // pub global_sink_data_ports: PortDataVec,
-         // pub global_sink_copiers: Vec<PortDataCopier>,
+         // In ordinary mode of operation, for a user graph, we create one copier for each output.
+         assert!(realized_node.data_copiers_dest_copy.is_empty());
+         for port_def in &self.graph_def.output_ports {
+            let expanded_graph_data_copier = Rc::new(RefCell::new(PortDataCopier {
+               src_node: self.null_node.clone(),
+               src_port_data: self.floating_port_data.clone(),
+               src_index: PortDataCopier::VOID_SENTINEL,
+               dest_port_data: realized_node.data_ports_dest_copy.clone(),
+               dest_index: PortDataCopier::VOID_SENTINEL,
+               port_def: Some(port_def.clone()),
+            }));
+            realized_node.data_copiers_dest_copy.push(expanded_graph_data_copier.clone());
+            // The "src copiers" are a temporary parking spot.
+            realized_node.data_copiers_src_copy.push(expanded_graph_data_copier);
+            eprintln!("Port attachment: {}", port_def.0);
+         }
       }
 
-      // realized_node.data_copiers_dest_copy populated before.
-      //
-      // realized_node.data_copiers_src_copy populated by builder.
-      realized_node.build_subgraph_from_graphdef(
-         // &mut self.global_sink_copiers,
-         &self.graph_def,
-         &self.registry,
-         &self.null_node,
-         &self.floating_port_data,
-      )
+      {
+         let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
 
-      // XXX
-      //
-      // After building graph, will need (for user graph) to created
-      // output data vec and plumb into global_sink_copiers.
+         // realized_node.data_copiers_dest_copy populated before.
+         //
+         // realized_node.data_copiers_src_copy populated by builder.
+         realized_node.build_subgraph_from_graphdef(
+            &self.graph_def,
+            &self.registry,
+            &self.null_node,
+            &self.floating_port_data,
+         )?;
+      }
+
+      {
+         let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
+
+         // Create custom type "registration" with source port typing.
+         //
+         let subnode_type: &ZNodeRegistration = realized_node.node_type.as_ref();
+         let mut replacement_registration: ZNodeRegistration = subnode_type.clone();
+         for input in &self.graph_def.inputs {
+            replacement_registration.ports_src_copy.push(input.clone());
+         }
+         realized_node.node_type = Rc::new(replacement_registration);
+      }
+
+      {
+         // XXX Is this needed?
+
+         let realized_node: &ZNode = &self.realized_node.borrow();
+         for copier in &realized_node.data_copiers_src_copy {
+            let new_src_node = &mut copier.borrow_mut();
+            assert!(Rc::ptr_eq(&new_src_node.src_node, &self.null_node));
+            new_src_node.src_node = self.realized_node.clone();
+         }
+      }
+
+      let mut unsourced_copiers = Vec::<Rc<RefCell<PortDataCopier>>>::default();
+      ZNode::create_src_data_for_node(
+         &self.realized_node,
+         &mut unsourced_copiers,
+         &self.null_node,
+      )?;
+
+      {
+         // Recreate custom type "registration" with destination port typing.
+
+         // This is not intended to be fast.
+         let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
+
+         let subnode_type: &ZNodeRegistration = realized_node.node_type.as_ref();
+         let mut replacement_registration: ZNodeRegistration = subnode_type.clone();
+
+         replacement_registration.ports_dest_copy.reserve(self.graph_def.output_ports.len());
+
+         assert_eq!(self.graph_def.output_ports.len(), realized_node.data_copiers_dest_copy.len());
+
+         for (i, wrapped_copier) in realized_node.data_copiers_dest_copy.iter().enumerate() {
+            let port_def = &self.graph_def.output_ports[i];
+            let copier: &mut PortDataCopier = &mut wrapped_copier.borrow_mut();
+            assert_eq!(port_def.0, copier.port_def.as_ref().unwrap().0);
+
+            let piece_type = if copier.src_index == PortDataCopier::VOID_SENTINEL {
+               ZPieceType::Void
+            } else if Rc::ptr_eq(&copier.src_node, &self.realized_node) {
+               let src_node: &ZNode = realized_node;
+               ZPieceType::get_piece_type_from_data(
+                  &src_node.data_ports_src_copy.borrow()[copier.src_index],
+               )
+            } else {
+               let wrapped_src_node = copier.src_node.borrow();
+               let src_node: &ZNode = &wrapped_src_node;
+               let x = ZPieceType::get_piece_type_from_data(
+                  &src_node.data_ports_src_copy.borrow()[copier.src_index],
+               );
+               x
+            };
+
+            replacement_registration
+               .ports_dest_copy
+               .push(PortPieceTyped(port_def.0.clone(), piece_type));
+         }
+         realized_node.node_type = Rc::new(replacement_registration);
+      }
+
+      ZNode::create_dest_data_for_node(
+         &self.realized_node,
+         &mut unsourced_copiers,
+         &self.null_node,
+      )?;
+
+      Ok(())
    }
 }
 
@@ -303,27 +391,9 @@ impl Default for ZMachine {
    }
 }
 
-type PortDataVec = Rc<RefCell<Vec<ZPiece>>>;
-
-// Floatable version of edge copier
-pub struct PortDataCopier {
-   pub src_node: Rc<RefCell<ZNode>>,
-   pub src_port_data: PortDataVec,
-   pub src_index: usize,
-   pub dst_port_data: PortDataVec,
-   pub dst_index: usize,
-   pub port_def: Option<ZPortDef>,
-   // #[derive(Clone, Serialize, Deserialize)]
-   // pub struct ZPortDef(pub String, pub String, pub String);
-}
-
-impl PortDataCopier {
-   const VOID_SENTINEL: usize = usize::MAX;
-}
-
 #[inline(always)]
 fn is_leaf_node(subnode_type: &Rc<ZNodeRegistration>) -> bool {
-   !subnode_type.is_subgraph_type
+   subnode_type.category != ZNodeCategory::Subgraph
 }
 
 impl ZNode {
@@ -343,14 +413,14 @@ impl ZNode {
       for edge in &n_def.edges {
          eprintln!("   Adding subnode dependency on: {}", edge.src_node);
          let is_internal_src_node: bool = edge.src_node != "input";
-         let src_node_znode: &Rc<RefCell<ZNode>>;
-         if is_internal_src_node {
+         let src_node_znode: &Rc<RefCell<ZNode>> = if is_internal_src_node {
             let node_num: usize =
                *self.subgraph_node_map.as_ref().unwrap().get(&edge.src_node).unwrap();
-            src_node_znode = &self.subgraph_nodes[node_num];
+            &self.subgraph_nodes[node_num]
          } else {
-            src_node_znode = &null_node;
-         }
+            eprintln!("      !! Edge source is not internal");
+            null_node
+         };
 
          for connection in &edge.connections {
             // Name among source nodes's outputs, name among dest node's inputs.
@@ -365,8 +435,8 @@ impl ZNode {
                src_node: src_node_znode.clone(),
                src_port_data: floating_port_data.clone(),
                src_index: PortDataCopier::VOID_SENTINEL,
-               dst_port_data: floating_port_data.clone(),
-               dst_index: PortDataCopier::VOID_SENTINEL,
+               dest_port_data: floating_port_data.clone(),
+               dest_index: PortDataCopier::VOID_SENTINEL,
                port_def: Some(ZPortDef(
                   connection.1.clone(),
                   edge.src_node.clone(),
@@ -381,6 +451,155 @@ impl ZNode {
                src_node_znode.borrow_mut().data_copiers_src_copy.push(edges_copier);
             } else {
                self.data_copiers_src_copy.push(edges_copier);
+            }
+         }
+      }
+      Ok(())
+   }
+
+   fn create_src_data_for_node(
+      wrapped_subnode: &Rc<RefCell<ZNode>>,
+      unsourced_copiers: &mut Vec<Rc<RefCell<PortDataCopier>>>,
+      null_node: &Rc<RefCell<ZNode>>,
+   ) -> Result<(), ZGraphError> {
+      let subnode: &mut ZNode = &mut wrapped_subnode.borrow_mut();
+      let subnode_type: &ZNodeRegistration = subnode.node_type.as_ref();
+
+      if subnode.data_copiers_src_copy.is_empty() {
+         return Ok(());
+      }
+      {
+         let src_ports_types: &Vec<PortPieceTyped> = &subnode_type.ports_src_copy;
+         let src_data_copiers: &mut Vec<Rc<RefCell<PortDataCopier>>> =
+            &mut subnode.data_copiers_src_copy;
+
+         {
+            let src_ports_data: &mut Vec<ZPiece> = &mut subnode.data_ports_src_copy.borrow_mut();
+            assert!(src_ports_data.is_empty());
+            src_ports_data.clear();
+            src_ports_data.reserve(src_ports_types.len());
+            for port_type in src_ports_types {
+               src_ports_data.push(ZPiece::piece_data_default_for_piece_type(&port_type.1));
+            }
+         }
+
+         let mut port_names = Vec::<&String>::default();
+         let mut port_name_map = HashMap::<String, usize>::default();
+         port_names.reserve(src_ports_types.len());
+
+         for (i, entry_type) in src_ports_types.iter().enumerate() {
+            port_names.push(&entry_type.0);
+            port_name_map.insert(entry_type.0.clone(), i);
+         }
+         for wrapped_copier in src_data_copiers {
+            let mut copier: &mut PortDataCopier = &mut wrapped_copier.borrow_mut();
+
+            if Rc::ptr_eq(&copier.src_node, null_node) {
+               unsourced_copiers.push(wrapped_copier.clone());
+               continue;
+            }
+
+            assert!(Rc::ptr_eq(wrapped_subnode, &copier.src_node));
+            copier.src_port_data = subnode.data_ports_src_copy.clone();
+            let port_name: &String = &copier.port_def.as_ref().unwrap().2;
+
+            if port_name == "void" {
+               copier.src_index = PortDataCopier::VOID_SENTINEL;
+            } else {
+               let gotten = port_name_map.get(port_name);
+               assert!(
+                  gotten.is_some(),
+                  "Unable to find port \"{}\" in src node named \"{}\" for destination \"{}\"",
+                  &port_name,
+                  subnode.name,
+                  "Unknown"
+               );
+               copier.src_index = *gotten.unwrap();
+            }
+         }
+      }
+      Ok(())
+   }
+
+   fn create_dest_data_for_node(
+      wrapped_subnode: &Rc<RefCell<ZNode>>,
+      unsourced_copiers: &mut Vec<Rc<RefCell<PortDataCopier>>>,
+      null_node: &Rc<RefCell<ZNode>>,
+   ) -> Result<(), ZGraphError> {
+      let subnode: &mut ZNode = &mut wrapped_subnode.borrow_mut();
+      let subnode_type: &ZNodeRegistration = subnode.node_type.as_ref();
+
+      if subnode.data_copiers_src_copy.is_empty() {
+         return Ok(());
+      }
+      {
+         let dest_ports_types: &Vec<PortPieceTyped> = &subnode_type.ports_dest_copy;
+         let dest_data_copiers: &mut Vec<Rc<RefCell<PortDataCopier>>> =
+            &mut subnode.data_copiers_dest_copy;
+         {
+            let dest_ports_data: &mut Vec<ZPiece> = &mut subnode.data_ports_dest_copy.borrow_mut();
+            assert!(dest_ports_data.is_empty());
+            dest_ports_data.clear();
+            dest_ports_data.reserve(dest_ports_types.len());
+            for port_type in dest_ports_types {
+               dest_ports_data.push(ZPiece::piece_data_default_for_piece_type(&port_type.1));
+            }
+         }
+
+         let mut port_names = Vec::<&String>::default();
+         let mut port_name_map = HashMap::<String, usize>::default();
+         port_names.reserve(dest_ports_types.len());
+
+         for (i, entry_type) in dest_ports_types.iter().enumerate() {
+            port_names.push(&entry_type.0);
+            port_name_map.insert(entry_type.0.clone(), i);
+         }
+         for wrapped_copier in dest_data_copiers {
+            let mut copier: &mut PortDataCopier = &mut wrapped_copier.borrow_mut();
+
+            if Rc::ptr_eq(&copier.src_node, null_node) {
+               unsourced_copiers.push(wrapped_copier.clone());
+            }
+
+            // assert!(Rc::ptr_eq(&self.subgraph_nodes[node_num], &copier.dest_node));
+            copier.dest_port_data = subnode.data_ports_dest_copy.clone();
+            let port_name: &String = &copier.port_def.as_ref().unwrap().0;
+
+            if port_name == "void" {
+               copier.dest_index = PortDataCopier::VOID_SENTINEL;
+            } else {
+               let gotten = port_name_map.get(port_name);
+               if gotten.is_none() {
+                  let src_name_try = copier.src_node.try_borrow();
+                  let src_name: String = if let Ok(src_name_node) = src_name_try {
+                     src_name_node.name.clone()
+                  } else {
+                     "Not sure (".to_string() + &subnode.name + "???)"
+                  };
+                  assert!(
+                        gotten.is_some(),
+                        "Unable to find port \"{}\" in dest for src node named \"{}\" for destination \"{}\"",
+                        &port_name,
+                        &src_name,
+                        subnode.name,
+                   );
+               }
+               copier.dest_index = *gotten.unwrap();
+            }
+
+            if copier.src_index != PortDataCopier::VOID_SENTINEL {
+               // Check src and dest port element types.
+               let src_piece_type = ZPieceType::get_piece_type_from_data(
+                  &copier.src_port_data.borrow()[copier.src_index],
+               );
+               let dest_piece_type = ZPieceType::get_piece_type_from_data(
+                  &copier.dest_port_data.borrow()[copier.dest_index],
+               );
+               eprintln!(
+                  "Copier has src type {:?} and dest type {:?}",
+                  src_piece_type, dest_piece_type
+               );
+               assert!(src_piece_type == dest_piece_type);
             }
          }
       }
@@ -450,7 +669,7 @@ impl ZNode {
          let &mut subgraph_node_map = &mut self.subgraph_node_map.as_ref().unwrap();
          let mut direct_in_out_copiers = Vec::<Rc<RefCell<PortDataCopier>>>::default();
          for external_copier in &self.data_copiers_src_copy {
-            let borrow_hold: &PortDataCopier = &external_copier.borrow();
+            let borrow_hold: &mut PortDataCopier = &mut external_copier.borrow_mut();
             let port_def: &ZPortDef = borrow_hold.port_def.as_ref().unwrap();
 
             let connects_to_internal: bool = port_def.1 != "input";
@@ -459,6 +678,7 @@ impl ZNode {
                let node_num: usize = *subgraph_node_map.get(&port_def.1).unwrap();
                let src_node_znode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
                src_node_znode.borrow_mut().data_copiers_src_copy.push(external_copier.clone());
+               borrow_hold.src_node = src_node_znode.clone();
             } else {
                direct_in_out_copiers.push(external_copier.clone());
             }
@@ -471,14 +691,16 @@ impl ZNode {
          let node_defs: &Vec<ZNodeDef> = &graph_def.nodes;
          let subgraph_size = node_defs.len();
 
-         for i in (0..subgraph_size).rev() {
-            let n_def = &node_defs[i];
+         for node_num in (0..subgraph_size).rev() {
+            let n_def = &node_defs[node_num];
 
             eprintln!("Processing subnode: {}", n_def.name);
 
             let subnode_type: &Rc<ZNodeRegistration> = registry.find(&n_def.element).unwrap();
-            let node_num: usize =
-               *self.subgraph_node_map.as_ref().unwrap().get(&n_def.name).unwrap();
+            assert_eq!(
+               node_num,
+               *self.subgraph_node_map.as_ref().unwrap().get(&n_def.name).unwrap()
+            );
 
             {
                let subnode: &mut ZNode = &mut self.subgraph_nodes[node_num].borrow_mut();
@@ -491,7 +713,7 @@ impl ZNode {
             }
 
             if is_leaf_node(subnode_type) {
-               self.finish_leaf_node(node_num, n_def, &registry, null_node, floating_port_data)?;
+               self.finish_leaf_node(node_num, n_def, registry, null_node, floating_port_data)?;
             } else {
                eprintln!(
                   "Apply input remapping from all self.data_copiers_src_copy for {}",
@@ -501,7 +723,92 @@ impl ZNode {
          }
       }
 
+      // Populate type information with custom "node registration"
+      // for preset data nodes. This could probably be folded in to
+      // later loops for efficiency, but is performed separately for
+      // now for semantic clarity.
+      {
+         let subgraph_size = self.subgraph_nodes.len();
+         let node_defs: &Vec<ZNodeDef> = &graph_def.nodes;
+
+         for node_num in (0..subgraph_size).rev() {
+            let subnode: &mut ZNode = &mut self.subgraph_nodes[node_num].borrow_mut();
+            let subnode_type: &ZNodeRegistration = subnode.node_type.as_ref();
+            let n_def = &node_defs[node_num];
+
+            if subnode.data_copiers_src_copy.is_empty() {
+               continue;
+            }
+            if subnode_type.category == ZNodeCategory::PresetData {
+               let mut replacement_registration: ZNodeRegistration = subnode_type.clone();
+               // Replace output port typing.
+               for preset_item in &n_def.preset_data {
+                  replacement_registration.ports_src_copy.push(PortPieceTyped(
+                     preset_item.0.clone(),
+                     ZPieceType::get_piece_type_from_data(&preset_item.1),
+                  ));
+               }
+               subnode.node_type = Rc::new(replacement_registration);
+            }
+         }
+         // Preset data nodes: populate ad-hoc Vec<PortPieceTyped> =
+         // &subnode_type.output_ports.
+      }
+
+      let mut unsourced_copiers = Vec::<Rc<RefCell<PortDataCopier>>>::default();
       // Hereafter avoid use of graphdef.
+
+      // Late pass, after pruning optimizations, is to create port data vectors.
+      {
+         // Copiers src data ports.
+
+         for node_num in (0..self.subgraph_nodes.len()).rev() {
+            let wrapped_subnode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
+            ZNode::create_src_data_for_node(wrapped_subnode, &mut unsourced_copiers, null_node)?;
+         }
+      }
+      assert!(unsourced_copiers.is_empty());
+
+      // It is likely possible to have only src_data_copiers as
+      // Vec<Box<PortDataCopier>> and at this point move the
+      // copiers to similar dest_data_copiers. However, such a
+      // simplification should only be done when we have
+      // established the desirability of invoking copiers as
+      // sub-iteration.
+      {
+         // Copiers dest data ports.
+
+         for node_num in (0..self.subgraph_nodes.len()).rev() {
+            let wrapped_subnode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
+            ZNode::create_dest_data_for_node(wrapped_subnode, &mut unsourced_copiers, null_node)?;
+         }
+
+         // Fill preset data.
+      }
+
+      // Begin: Debugging of unsourced copiers.
+      for wrapped_copier in &self.data_copiers_dest_copy {
+         let copier: &PortDataCopier = &wrapped_copier.borrow();
+
+         if Rc::ptr_eq(&copier.src_node, null_node) {
+            unsourced_copiers.push(wrapped_copier.clone());
+            continue;
+         }
+      }
+      for wrapped_copier in &self.data_copiers_src_copy {
+         let copier: &PortDataCopier = &wrapped_copier.borrow_mut();
+         let &port_def = &copier.port_def.as_ref().unwrap();
+         eprintln!("direct copier: {}, {}, {}", port_def.0, port_def.1, port_def.2);
+      }
+      for wrapped_copier in &unsourced_copiers {
+         let copier: &PortDataCopier = &wrapped_copier.borrow_mut();
+         let &port_def = &copier.port_def.as_ref().unwrap();
+         eprintln!("internally unsourced copier: {}, {}, {}", port_def.0, port_def.1, port_def.2);
+      }
+      assert_eq!(self.data_copiers_src_copy.len(), unsourced_copiers.len());
+      // End: Debugging of unsourced copiers.
+
+      // A late-late pass could merge adjacent copiers.
 
       Ok(())
    }
