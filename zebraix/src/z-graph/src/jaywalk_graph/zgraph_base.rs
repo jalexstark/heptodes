@@ -205,7 +205,10 @@ impl Default for ZPieceType {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct PortTyped {
-   pub name: String,
-   pub piece_type: ZPieceType,
-}
+pub struct PortPieceTyped(pub String, pub ZPieceType);
+
+// #[derive(Clone, Serialize, Deserialize)]
+// pub struct PortTyped {
+//    pub name: String,
+//    pub piece_type: ZPieceType,
+// }

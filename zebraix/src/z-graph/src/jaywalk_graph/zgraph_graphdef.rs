@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use crate::jaywalk_graph::jaywalk_foundation::is_default;
-use crate::jaywalk_graph::zgraph_base::PortTyped;
+use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
 use crate::jaywalk_graph::zgraph_base::ZCanvas;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
@@ -106,7 +106,7 @@ pub struct ZNodeDef {
 
    // Input, output and preset nodes only. Others come from registered elements.
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
-   pub ports: Vec<PortTyped>,
+   pub ports: Vec<PortPieceTyped>,
 
    // Preset data nodes can input, in which case fields are overridden by merging.
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
@@ -121,6 +121,14 @@ pub struct ZGraphDef {
    pub name: String,
    #[serde(skip_serializing_if = "Option::is_none")]
    pub description: Option<String>,
+
+   #[serde(skip_serializing_if = "Vec::is_empty", default)]
+   pub inputs: Vec<PortPieceTyped>,
+
+   // Subgraphs should not have outputs, but instead output_ports, for
+   // which the types are inferred.
+   #[serde(skip_serializing_if = "Vec::is_empty", default)]
+   pub outputs: Vec<PortPieceTyped>,
 
    #[serde(default)]
    pub nodes: Vec<ZNodeDef>,
