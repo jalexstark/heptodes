@@ -48,7 +48,7 @@
 </defs>
 <g id="surfaceXXXX">
 <path style="fill:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(50%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 190 120 C 190 136.570312 176.570312 150 160 150 C 143.429688 150 130 136.570312 130 120 C 130 103.429688 143.429688 90 160 90 C 176.570312 90 190 103.429688 190 120 " transform="matrix(1,0,0,1,40,50)"/>
-<g style="fill:rgb(0%,0%,100%);fill-opacity:1;">
+<g style="fill:rgb(0%,0%,70%);fill-opacity:1;">
   <use xlink:href="#glyph0-1" x="160" y="120.69043"/>
   <use xlink:href="#glyph0-2" x="167" y="120.69043"/>
   <use xlink:href="#glyph0-3" x="173" y="120.69043"/>
@@ -67,7 +67,7 @@
   <use xlink:href="#glyph0-12" x="232" y="120.69043"/>
   <use xlink:href="#glyph0-13" x="238" y="120.69043"/>
 </g>
-<path style="fill:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(50%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 190 120 C 190 136.570312 176.570312 150 160 150 C 143.429688 150 130 136.570312 130 120 C 130 103.429688 143.429688 90 160 90 C 176.570312 90 190 103.429688 190 120 " transform="matrix(1,0,0,1,40,50)"/>
+<path style="fill:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(50%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 100 45 C 100 61.570312 86.570312 75 70 75 C 53.429688 75 40 61.570312 40 45 C 40 28.429688 53.429688 15 70 15 C 86.570312 15 100 28.429688 100 45 " transform="matrix(1,0,0,1,40,50)"/>
 </g>
 </svg>
 <!-- Test debug string -->
