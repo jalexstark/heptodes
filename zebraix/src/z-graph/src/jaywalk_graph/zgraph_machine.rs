@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_base::PortDataVec;
 use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
-use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZMachineTypestate;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
@@ -35,8 +35,6 @@ use std::rc::Rc;
 pub enum DebugLine {
    SimpleString(String),
 }
-
-type PortDataVec = Rc<RefCell<Vec<ZPiece>>>;
 
 // Floatable version of edge copier
 pub struct PortDataCopier {
@@ -576,6 +574,26 @@ impl ZNode {
       Ok(())
    }
 
+   fn populate_preset_data_for_node(
+      wrapped_subnode: &Rc<RefCell<ZNode>>,
+      n_def: &ZNodeDef,
+   ) -> Result<(), ZGraphError> {
+      let subnode: &mut ZNode = &mut wrapped_subnode.borrow_mut();
+      let subnode_type: &ZNodeRegistration = subnode.node_type.as_ref();
+
+      if subnode.data_copiers_src_copy.is_empty() {
+         return Ok(());
+      }
+      if subnode_type.category != ZNodeCategory::PresetData {
+         return Ok(());
+      }
+      for (i, preset_item) in n_def.preset_data.iter().enumerate() {
+         let src_ports_data: &mut Vec<ZPiece> = &mut subnode.data_ports_src_copy.borrow_mut();
+         src_ports_data[i] = preset_item.1.clone();
+      }
+      Ok(())
+   }
+
    // Need mutable vector of edge copiers, one for input, one for
    // output. User graph provided with already-finalized output
    // destination. Creates and returns vector of input edge copiers.
@@ -621,20 +639,6 @@ impl ZNode {
          assert_eq!(node_map_size, subgraph_size);
          self.subgraph_node_map = Some(subgraph_node_map);
       }
-
-      // XXX
-
-      // --- Sub tasks when required for above
-
-      // Create function to build copiers for node input signature.
-
-      // Create function to build port data vectors from port type vectors.
-
-      // When visiting a node, if not a subgraph itself, then create output data vector.
-
-      // Populate preset data in output port data.
-
-      // ---
 
       // Inter-pass replumbing of copiers out of subgraph. Replumb to
       // internal nodes for which each is outbound.
@@ -728,8 +732,6 @@ impl ZNode {
                subnode.node_type = Rc::new(replacement_registration);
             }
          }
-         // Preset data nodes: populate ad-hoc Vec<PortPieceTyped> =
-         // &subnode_type.output_ports.
       }
 
       let mut unsourced_copiers = Vec::<Rc<RefCell<PortDataCopier>>>::default();
@@ -755,9 +757,13 @@ impl ZNode {
       {
          // Copiers dest data ports.
 
+         let node_defs: &Vec<ZNodeDef> = &graph_def.nodes;
          for node_num in (0..self.subgraph_nodes.len()).rev() {
             let wrapped_subnode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
             ZNode::create_dest_data_for_node(wrapped_subnode, &mut unsourced_copiers, null_node)?;
+
+            let n_def = &node_defs[node_num];
+            ZNode::populate_preset_data_for_node(wrapped_subnode, n_def)?;
          }
 
          // Fill preset data.
@@ -794,13 +800,28 @@ impl ZNode {
       for wrapped_copier in &self.data_copiers_src_copy {
          let copier: &PortDataCopier = &wrapped_copier.borrow_mut();
          if copier.src_index == PortDataCopier::VOID_SENTINEL {
+            // eprintln!("--- Skipping port for node \"{}\"", &self.name);
             continue;
          }
 
          let src_port_data: &Vec<ZPiece> = &copier.src_port_data.borrow();
          let dest_port_data: &mut Vec<ZPiece> = &mut copier.dest_port_data.borrow_mut();
 
+         eprintln!(
+            "Copying for {} src data = \"{:?}\", dest data = \"{:?}\"",
+            copier.port_def.as_ref().unwrap().0,
+            src_port_data[copier.src_index],
+            dest_port_data[copier.dest_index]
+         );
+
          dest_port_data[copier.dest_index] = src_port_data[copier.src_index].clone();
+
+         eprintln!(
+            "Copying for {} src data = \"{:?}\", dest data = \"{:?}\"",
+            copier.port_def.as_ref().unwrap().0,
+            src_port_data[copier.src_index],
+            dest_port_data[copier.dest_index]
+         );
       }
       Ok(())
    }
@@ -817,8 +838,8 @@ impl ZNode {
                   node_element.construction_fn.unwrap()(
                      renderer_data,
                      &mut node.node_state_data,
-                     &ZData::default(),
-                     &mut ZData::default(),
+                     &node.data_ports_dest_copy.borrow(),
+                     &mut node.data_ports_src_copy.borrow_mut(),
                   );
                }
             } else {
@@ -837,17 +858,19 @@ impl ZNode {
          let node: &mut ZNode = &mut n.borrow_mut();
          if node.is_active {
             if node.subgraph_nodes.is_empty() {
+               // eprintln!("+++ Leaf copying for src node \"{}\"", &node.name);
                let node_element = &node.node_type;
                if node_element.calculation_fn.is_some() {
                   node_element.calculation_fn.unwrap()(
                      renderer_data,
                      &mut node.node_state_data,
-                     &ZData::default(),
-                     &mut ZData::default(),
+                     &node.data_ports_dest_copy.borrow(),
+                     &mut node.data_ports_src_copy.borrow_mut(),
                   );
-                  node.run_src_copiers()?;
                }
+               node.run_src_copiers()?;
             } else {
+               // eprintln!("=== Recursing for src node \"{}\"", &node.name);
                node.run_calculators(renderer_data)?;
                // src copiers should be empty for non-outer subgraph nodes.
             }
@@ -869,8 +892,8 @@ impl ZNode {
                   node_element.inking_fn.unwrap()(
                      renderer_data,
                      &mut node.node_state_data,
-                     &ZData::default(),
-                     &mut ZData::default(),
+                     &node.data_ports_dest_copy.borrow(),
+                     &mut node.data_ports_src_copy.borrow_mut(),
                   );
                }
             } else {

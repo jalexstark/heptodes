@@ -1,67 +1,33 @@
 {
   "name": "A test graph",
   "inputs": [
-    [
-      "real_input",
-      "Real"
-    ],
-    [
-      "integer_input",
-      "Integer"
-    ]
+    [ "real_input", "Real" ],
+    [ "integer_input", "Integer" ]
   ],
   "nodes": [
-    {
-      "name": "test circle data",
+    { "name": "test circle data",
       "element": "Preset data",
       "preset_data": [
-        [
-          "color",
-          {
-            "type": "Color",
-            "Rgb": [
-              0.5,
-              0.0,
-              0.0
-            ]
-          }
+        [ "color",
+          { "type": "Color",
+            "Rgb": [ 0.5, 0.0, 0.0 ] }
         ],
-        [
-          "center",
-          {
-            "Coord2D": [
-              160.0,
-              120.0
-            ]
-          }
+        [ "center",
+          { "Coord2D": [ 160.0, 120.0 ] }
         ],
-        [
-          "radius",
-          30.0
-        ]
+        [ "radius", 30.0 ]
       ]
     },
     {
       "name": "test circle",
       "element": "Test circle",
       "edges": [
-        {
-          "src_node": "test circle data",
+        { "src_node": "test circle data",
           "connections": [
-            [
-              "color",
-              "color"
-            ],
-            [
-              "center",
-              "center"
-            ],
-            [
-              "radius",
-              "radius"
-            ]
-          ]
-        }
+            [ "color", "color" ],
+            [ "center", "center" ],
+            [ "radius", "radius" ]
+          ] }
       ]
     },
     {
@@ -72,30 +38,18 @@
           "color",
           {
             "type": "Color",
-            "Rgb": [
-              0.0,
-              0.0,
-              0.7
-            ]
+            "Rgb": [ 0.0, 0.0, 0.7 ]
           }
         ],
         [
           "location",
           {
-            "Coord2D": [
-              120.0,
-              60.0
-            ]
+            "Coord2D": [ 120.0, 60.0 ]
           }
         ],
-        [
-          "text",
-          "Hello world! pygq"
-        ],
-        [
-          "font style",
-          {
-            "type": "FontStyle",
+        [ "text", "Hello world! pygq" ],
+        [ "font style",
+          { "type": "FontStyle",
             "size": 10.0,
             "family": "sans"
           }
@@ -106,151 +60,76 @@
       "name": "test text",
       "element": "Test text",
       "edges": [
-        {
-          "src_node": "test text data",
-          "connections": [
-            [
-              "color",
-              "color"
-            ],
-            [
-              "location",
-              "location"
-            ],
-            [
-              "text",
-              "text"
-            ],
-            [
-              "font style",
-              "font style"
-            ]
-          ]
-        }
-      ]
-    },
-    {
-      "name": "test circle compound data",
-      "element": "Preset data",
-      "preset_data": [
-        [
-          "color",
-          {
-            "type": "Color",
-            "Rgb": [
-              0.5,
-              0.0,
-              0.0
-            ]
-          }
-        ],
-        [
-          "center",
-          {
-            "Coord2D": [
-              200.0,
-              120.0
-            ]
-          }
-        ],
-        [
-          "radius",
-          25.0
-        ]
-      ]
-    },
-    {
-      "name": "test circle compound",
-      "element": "Test circle compound",
-      "edges": [
-        {
-          "src_node": "test circle data",
-          "connections": [
-            [
-              "color",
-              "color"
-            ],
-            [
-              "center",
-              "center"
-            ],
-            [
-              "radius",
-              "radius"
-            ]
-          ]
-        }
+        {  "src_node": "test text data",
+           "connections": [
+             [ "color", "color" ],
+             [ "location", "location" ],
+             [ "text", "text" ],
+             [ "font style", "font style" ]
+           ] }
       ]
     },
     {
       "name": "prunable dangling",
       "element": "Group",
       "edges": [
-        {
-          "src_node": "test text",
+        { "src_node": "test text",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        }
+            [ "void", "void" ]
+          ] }
+      ]
+    },
+    { "name": "test circle data compound",
+      "element": "Preset data",
+      "preset_data": [
+        [ "color",
+          { "type": "Color",
+            "Rgb": [ 0.5, 0.0, 0.0 ] }
+        ],
+        [ "center",
+          { "Coord2D": [ 70.0, 45.0 ] }
+        ],
+        [ "radius", 30.0 ]
+      ]
+    },
+    {
+      "name": "test circle compound",
+      "element": "Test circle",
+      "edges": [
+        { "src_node": "test circle data compound",
+          "connections": [
+            [ "color", "color" ],
+            [ "center", "center" ],
+            [ "radius", "radius" ]
+          ] }
       ]
     },
     {
       "name": "main group",
       "element": "Group",
       "edges": [
-        {
-          "src_node": "test text",
+        { "src_node": "test text",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        },
-        {
-          "src_node": "test circle",
+            [ "void", "void" ]
+          ] },
+        { "src_node": "test circle",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        },
-        {
-          "src_node": "input",
+            [ "void", "void" ]
+          ] },
+        { "src_node": "test circle compound",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        },
-        {
-          "src_node": "test circle compound",
+            [ "void", "void" ]
+          ] },
+        { "src_node": "input",
           "connections": [
-            [
-              "void",
-              "void"
-            ]
-          ]
-        }
+            [ "void", "void" ]
+          ] }
       ]
     }
   ],
   "output_ports": [
-    [
-      "output",
-      "main group",
-      "void"
-    ],
-    [
-      "passthrough",
-      "input",
-      "integer_input"
-    ]
+    [ "output", "main group", "void" ],
+    [ "passthrough", "input", "integer_input" ]
   ],
   "canvas": {
     "width": 320.0,

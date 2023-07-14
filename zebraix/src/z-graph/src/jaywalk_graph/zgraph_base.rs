@@ -13,10 +13,10 @@
 // limitations under the License.
 
 use crate::jaywalk_graph::jaywalk_foundation::is_default;
-use crate::jaywalk_graph::jaywalk_traiting::is_mult_ident_f64;
-use crate::jaywalk_graph::jaywalk_traiting::mult_ident_f64;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 // The idea is to keep the base minimal, but that will be difficult.
 
@@ -37,22 +37,13 @@ pub enum Types {
    TextLine,
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum ZDataByType {
-   Void = 0,
-   Dirty,
-   Derived,
-   Fit,
-}
-
-// ZData should be a set of data, a set of ports, and is passed to
-// invocation functions.
-#[derive(Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct ZData {
-   #[serde(skip_serializing_if = "is_mult_ident_f64")]
-   #[serde(default = "mult_ident_f64")]
-   pub field_c: f64,
-}
+// #[derive(Serialize, Deserialize)]
+// pub enum ZDataByType {
+//    Void = 0,
+//    Dirty,
+//    Derived,
+//    Fit,
+// }
 
 #[derive(PartialEq, Eq)]
 pub enum ZMachineTypestate {
@@ -64,6 +55,7 @@ pub enum ZMachineTypestate {
    Finished,
 }
 
+pub type PortDataVec = Rc<RefCell<Vec<ZPiece>>>;
 pub type ZNodeStateData = Option<Box<dyn Any>>;
 pub type ZRendererData = Option<Box<dyn Any>>;
 
@@ -87,7 +79,7 @@ pub enum ZGraphError {
 // -----------------------------
 // Typing
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum ZUnit {
    // Em,
    // Ex,
@@ -118,7 +110,7 @@ pub struct ZCanvas {
    pub direction: ZCanvasDirection,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub enum ZColor {
    Rgb(f64, f64, f64),
    Cmyk(f64, f64, f64, f64),
@@ -130,7 +122,7 @@ impl Default for ZColor {
    }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct ZFontStyle {
    #[serde(skip_serializing_if = "is_default")]
    pub size: f64,
@@ -153,11 +145,11 @@ impl Default for ZFontStyle {
 // context.set_source_rgb(0.5, 0.0, 0.0);
 // Centre 160,120, radius 30
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct CoordReal2D(pub f64, pub f64);
 
 //  context.move_to(120.0, 60.0);
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "type")]
 pub enum ZBigData {
    Color(ZColor),
@@ -165,7 +157,7 @@ pub enum ZBigData {
 }
 
 //  context.move_to(120.0, 60.0);
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub enum ZTupleData {
    Coord2D(CoordReal2D),
 }
@@ -179,12 +171,12 @@ impl Default for CoordReal2D {
 // Pieces are small, but can indirect to bigger.
 //
 // Pieces should be mutually exclusive, so deserializable from untagged.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum ZPiece {
    Void,
    Real(f64),
-   Integer(i32),
+   Integer(i64),
    Unit(ZUnit),
    Text(String),
    //
@@ -266,4 +258,119 @@ impl ZPiece {
          ZPieceType::Coord2D => ZPiece::Tuple(ZTupleData::Coord2D(CoordReal2D::default())),
       }
    }
+}
+
+// These are horrible, requiring the caller to check something that we
+// insist should be a contractual entry assurance.
+impl ZPiece {
+   pub fn get_real(&self) -> Option<f64> {
+      match self {
+         ZPiece::Real(v) => Some(*v),
+         _default => None,
+      }
+   }
+
+   pub fn get_integer(&self) -> Option<i64> {
+      match self {
+         ZPiece::Integer(v) => Some(*v),
+         _default => None,
+      }
+   }
+
+   pub fn get_unit(&self) -> Option<ZUnit> {
+      match self {
+         ZPiece::Unit(v) => Some(v.clone()),
+         _default => None,
+      }
+   }
+
+   pub fn get_text(&self) -> Option<&String> {
+      match self {
+         ZPiece::Text(s) => Some(s),
+         _default => None,
+      }
+   }
+
+   pub fn get_mut_text(&mut self) -> Option<&mut String> {
+      match self {
+         ZPiece::Text(s) => Some(s),
+         _default => None,
+      }
+   }
+
+   pub fn get_color(&self) -> Option<&ZColor> {
+      match self {
+         ZPiece::Big(b) => match b {
+            ZBigData::Color(c) => Some(c),
+            _default => None,
+         },
+         _default => None,
+      }
+   }
+
+   pub fn get_mut_color(&mut self) -> Option<&mut ZColor> {
+      match self {
+         ZPiece::Big(b) => match b {
+            ZBigData::Color(c) => Some(c),
+            _default => None,
+         },
+         _default => None,
+      }
+   }
+
+   pub fn get_font_style(&self) -> Option<&ZFontStyle> {
+      match self {
+         ZPiece::Big(b) => match b {
+            ZBigData::FontStyle(c) => Some(c),
+            _default => None,
+         },
+         _default => None,
+      }
+   }
+
+   pub fn get_mut_font_style(&mut self) -> Option<&mut ZFontStyle> {
+      match self {
+         ZPiece::Big(b) => match b {
+            ZBigData::FontStyle(c) => Some(c),
+            _default => None,
+         },
+         _default => None,
+      }
+   }
+
+   pub fn get_coord2d(&self) -> Option<&CoordReal2D> {
+      match self {
+         ZPiece::Tuple(t) => match t {
+            ZTupleData::Coord2D(c) => Some(c),
+            // No other alternatives, so no default.
+            // _default => None,
+         },
+         _default => None,
+      }
+   }
+
+   pub fn get_mut_coord2d(&mut self) -> Option<&mut CoordReal2D> {
+      match self {
+         ZPiece::Tuple(t) => match t {
+            ZTupleData::Coord2D(c) => Some(c),
+            // No other alternatives, so no default.
+            // _default => None,
+         },
+         _default => None,
+      }
+   }
+
+   // Void,
+   // Real(f64),
+   // Integer(i32),
+   // Unit(ZUnit),
+   // Text(String),
+   // //
+   // Big(ZBigData),
+   // Tuple(ZTupleData),
+
+   // Color,
+   // FontStyle,
+   // //
+   // Coord2D,
 }

@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_base::CoordReal2D;
 use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
-use crate::jaywalk_graph::zgraph_base::ZData;
+use crate::jaywalk_graph::zgraph_base::ZColor;
+use crate::jaywalk_graph::zgraph_base::ZFontStyle;
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
+use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZPieceType;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_machine::DebugLine;
@@ -41,15 +44,16 @@ pub struct SvgRendererData {
 pub struct SvgTextNode {
    pub sample_text_layout: Layout,
 }
+const DEFAULT_LANGUAGE: &str = "en-US";
 
-pub fn test_text_construction(
-   renderer_data_in: &mut ZRendererData,
-   state_data: &mut ZNodeStateData,
-   _in_data: &ZData,
-   _out_data: &mut ZData,
-) {
+fn sample_text_metrics(renderer_data_in: &mut ZRendererData) {
    let renderer_data: &mut SvgRendererData =
       renderer_data_in.as_mut().unwrap().downcast_mut::<SvgRendererData>().unwrap();
+
+   let text: String = "Hello world! pygq".to_string();
+   let font_size = 10.0;
+   let font_family = "sans".to_string();
+   let language = DEFAULT_LANGUAGE.to_string();
 
    let context: &Context = &renderer_data.main_context;
 
@@ -58,15 +62,14 @@ pub fn test_text_construction(
    let text_context = pangocairo::create_context(context);
    let text_layout = pango::Layout::new(&text_context);
 
-   let k_label_font_size = 10.0;
-
    let mut font_description = pango::FontDescription::new();
-   font_description.set_family("sans");
-   font_description.set_absolute_size(k_label_font_size * pango::SCALE as f64);
+   font_description.set_family(&font_family[..]);
+   font_description.set_absolute_size(font_size * pango::SCALE as f64);
 
    text_layout.set_font_description(Some(&font_description));
-   text_layout.set_text("Hello world! pygq");
-   text_layout.context().set_language(Some(&Language::from_string("en-US")));
+
+   text_layout.set_text(&text[..]);
+   text_layout.context().set_language(Some(&Language::from_string(&language[..])));
 
    renderer_data.debug_lines.push(DebugLine::SimpleString("Test debug string".to_string()));
 
@@ -151,16 +154,69 @@ pub fn test_text_construction(
    renderer_data
       .debug_lines
       .push(DebugLine::SimpleString(format!("Text spacing = {h}", h = text_layout.line_spacing())));
+}
+
+pub fn test_text_calculation(
+   renderer_data_in: &mut ZRendererData,
+   state_data: &mut ZNodeStateData,
+   in_data: &[ZPiece],
+   _out_data: &mut [ZPiece],
+) {
+   sample_text_metrics(renderer_data_in);
+
+   let text: &String = &in_data[0].get_text().unwrap();
+   let font_style: &ZFontStyle = &in_data[2].get_font_style().unwrap();
+
+   let font_size = font_style.size;
+   let font_family = &font_style.family;
+
+   // Rust cannot do what we actually want, either for the language we
+   // are pulling in, or for the default.
+   let default_language_rust_copy: String = String::from(DEFAULT_LANGUAGE);
+   let language: &String = if font_style.language.is_some() {
+      &font_style.language.as_ref().unwrap()
+   } else {
+      &default_language_rust_copy
+   };
+
+   let renderer_data: &mut SvgRendererData =
+      renderer_data_in.as_mut().unwrap().downcast_mut::<SvgRendererData>().unwrap();
+
+   let context: &Context = &renderer_data.main_context;
+
+   // Create a single context, instead of using create_layout.  This
+   // demonstrates avoiding lots of Pango contexts.
+   let text_context = pangocairo::create_context(context);
+   let text_layout = pango::Layout::new(&text_context);
+
+   let mut font_description = pango::FontDescription::new();
+   font_description.set_family(&font_family[..]);
+   font_description.set_absolute_size(font_size * pango::SCALE as f64);
+
+   text_layout.set_font_description(Some(&font_description));
+
+   text_layout.set_text(&text[..]);
+   text_layout.context().set_language(Some(&Language::from_string(&language[..])));
 
    *state_data = Some(Box::new(SvgTextNode { sample_text_layout: text_layout }));
+}
+
+pub fn set_source_color(context: &Context, color: &ZColor) {
+   match color {
+      ZColor::Rgb(r, g, b) => context.set_source_rgb(*r, *g, *b),
+      _default => {}
+   }
 }
 
 pub fn test_text_inking(
    renderer_data_in: &mut ZRendererData,
    state_data: &mut ZNodeStateData,
-   _in_data: &ZData,
-   _out_data: &mut ZData,
+   in_data: &[ZPiece],
+   _out_data: &mut [ZPiece],
 ) {
+   let color: &ZColor = &in_data[1].get_color().unwrap();
+   let location: &CoordReal2D = &in_data[3].get_coord2d().unwrap();
+
    let renderer_data: &mut SvgRendererData =
       renderer_data_in.as_mut().unwrap().downcast_mut::<SvgRendererData>().unwrap();
 
@@ -170,26 +226,33 @@ pub fn test_text_inking(
    let context: &Context = &renderer_data.main_context;
    let text_layout: &Layout = &text_node_data.sample_text_layout;
 
-   context.set_source_rgb(0.0, 0.0, 7.0);
-   context.move_to(120.0, 60.0);
+   // context.set_source_rgb(0.0, 0.0, 7.0);
+   // assert_eq!(color, &ZColor::Rgb(0.0, 0.0, 0.7));
+   set_source_color(&context, &color);
+   context.move_to(location.0, location.1);
    pangocairo::show_layout(context, text_layout);
+   // For now, set to ugly color to avoid accidentally reusing selected color.
    context.set_source_rgb(0.0, 1.0, 0.0);
 }
 
 pub fn test_circle_inking(
    renderer_data_in: &mut ZRendererData,
    _state_data: &mut ZNodeStateData,
-   _in_data: &ZData,
-   _out_data: &mut ZData,
+   in_data: &[ZPiece],
+   _out_data: &mut [ZPiece],
 ) {
+   let center: &CoordReal2D = &in_data[0].get_coord2d().unwrap();
+   let radius: f64 = in_data[1].get_real().unwrap();
+   let color: &ZColor = &in_data[2].get_color().unwrap();
+
    let renderer_data: &mut SvgRendererData =
       renderer_data_in.as_mut().unwrap().downcast_mut::<SvgRendererData>().unwrap();
 
    let context: &Context = &renderer_data.main_context;
 
-   context.set_source_rgb(0.5, 0.0, 0.0);
-   context.move_to(160.0 + 30.0, 120.0);
-   context.arc(160.0, 120.0, 30.0, 0.0 * PI, 2.0 * PI);
+   set_source_color(&context, &color);
+   context.move_to(center.0 + radius, center.1);
+   context.arc(center.0, center.1, radius, 0.0 * PI, 2.0 * PI);
    context.stroke().unwrap();
    context.set_source_rgb(0.0, 1.0, 0.0);
 }
@@ -285,7 +348,7 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
    registry.register_new(
       ZNodeRegistrationBuilder::default()
          .name("Test text".to_string())
-         .construction_fn(test_text_construction)
+         .calculation_fn(test_text_calculation)
          .inking_fn(test_text_inking)
          .ports_dest_copy(vec![
             PortPieceTyped("text".to_string(), ZPieceType::Text),
