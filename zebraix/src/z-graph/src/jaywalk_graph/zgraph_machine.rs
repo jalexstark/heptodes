@@ -68,6 +68,8 @@ pub struct ZNode {
 
    pub subgraph_nodes: Vec<Rc<RefCell<ZNode>>>, // Prolly init with 0 reserve.
    pub subgraph_node_map: Option<HashMap<String, usize>>,
+
+   pub is_active: bool,
 }
 
 pub struct ZMachine {
@@ -110,6 +112,7 @@ impl ZMachine {
          data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
          subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
          subgraph_node_map: None,
+         is_active: false,
       }));
 
       let realized_node = Rc::new(RefCell::new(ZNode {
@@ -123,6 +126,7 @@ impl ZMachine {
          data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
          subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
          subgraph_node_map: None,
+         is_active: false,
       }));
 
       // floating_port_data is a sentinel, used to indicate that a
@@ -183,22 +187,9 @@ impl ZMachine {
          return Err(ZGraphError::RendererForConstruction);
       }
 
-      //
-
-      for n in &mut self.realized_node.borrow_mut().subgraph_nodes {
-         let node: &mut ZNode = &mut n.borrow_mut();
-         let node_element = &node.node_type;
-         if node_element.construction_fn.is_some() {
-            node_element.construction_fn.unwrap()(
-               &mut self.renderer_data,
-               &mut node.node_state_data,
-               &ZData::default(),
-               &mut ZData::default(),
-            );
-         }
-      }
-
-      //
+      let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
+      assert!(realized_node.is_active);
+      realized_node.run_constructors(&mut self.renderer_data)?;
 
       self.typestate = ZMachineTypestate::Constructed;
       Ok(())
@@ -209,22 +200,11 @@ impl ZMachine {
          return Err(ZGraphError::IncorrectTypestateTransition);
       }
 
-      //
-
-      for n in &mut self.realized_node.borrow_mut().subgraph_nodes {
-         let node: &mut ZNode = &mut n.borrow_mut();
-         let node_element = &node.node_type;
-         if node_element.calculation_fn.is_some() {
-            node_element.calculation_fn.unwrap()(
-               &mut self.renderer_data,
-               &mut node.node_state_data,
-               &ZData::default(),
-               &mut ZData::default(),
-            );
-         }
-      }
-
-      //
+      let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
+      assert!(realized_node.is_active);
+      // In the outer user graph, the copiers copy inputs.
+      realized_node.run_src_copiers().unwrap();
+      realized_node.run_calculators(&mut self.renderer_data)?;
 
       self.typestate = ZMachineTypestate::Calculated;
       Ok(())
@@ -235,22 +215,9 @@ impl ZMachine {
          return Err(ZGraphError::IncorrectTypestateTransition);
       }
 
-      //
-
-      for n in &mut self.realized_node.borrow_mut().subgraph_nodes {
-         let node: &mut ZNode = &mut n.borrow_mut();
-         let node_element = &node.node_type;
-         if node_element.inking_fn.is_some() {
-            node_element.inking_fn.unwrap()(
-               &mut self.renderer_data,
-               &mut node.node_state_data,
-               &ZData::default(),
-               &mut ZData::default(),
-            );
-         }
-      }
-
-      //
+      let realized_node: &mut ZNode = &mut self.realized_node.borrow_mut();
+      assert!(realized_node.is_active);
+      realized_node.run_inkings(&mut self.renderer_data)?;
 
       self.typestate = ZMachineTypestate::Inked;
       Ok(())
@@ -285,6 +252,7 @@ impl ZMachine {
             realized_node.data_copiers_dest_copy.push(expanded_graph_data_copier.clone());
             // The "src copiers" are a temporary parking spot.
             realized_node.data_copiers_src_copy.push(expanded_graph_data_copier);
+            realized_node.is_active = true;
             eprintln!("Port attachment: {}", port_def.0);
          }
       }
@@ -445,12 +413,13 @@ impl ZNode {
             }));
             subnode.data_copiers_dest_copy.push(edges_copier.clone());
 
-            // XXX At this point we should be able to create input data vector and clean up dst connection.
-
             if is_internal_src_node {
-               src_node_znode.borrow_mut().data_copiers_src_copy.push(edges_copier);
+               let mut src_node_znode_bmut = src_node_znode.borrow_mut();
+               src_node_znode_bmut.data_copiers_src_copy.push(edges_copier);
+               src_node_znode_bmut.is_active = true;
             } else {
                self.data_copiers_src_copy.push(edges_copier);
+               self.is_active = true;
             }
          }
       }
@@ -465,6 +434,7 @@ impl ZNode {
       let subnode: &mut ZNode = &mut wrapped_subnode.borrow_mut();
       let subnode_type: &ZNodeRegistration = subnode.node_type.as_ref();
 
+      assert_eq!(subnode.is_active, !subnode.data_copiers_src_copy.is_empty());
       if subnode.data_copiers_src_copy.is_empty() {
          return Ok(());
       }
@@ -617,6 +587,8 @@ impl ZNode {
       floating_port_data: &PortDataVec,
    ) -> Result<(), ZGraphError> {
       {
+         // Create vector of nodes for subgraph.
+
          let node_defs: &Vec<ZNodeDef> = &graph_def.nodes;
          let subgraph_size = node_defs.len();
          let null_noderegistration: &Rc<ZNodeRegistration> = registry.get_null_noderegistration();
@@ -639,6 +611,7 @@ impl ZNode {
                data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
                subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
                subgraph_node_map: None,
+               is_active: false,
             })));
 
             assert!(!subgraph_node_map.contains_key(&n_def.name));
@@ -677,7 +650,11 @@ impl ZNode {
                // Port name, src node name, src port name.
                let node_num: usize = *subgraph_node_map.get(&port_def.1).unwrap();
                let src_node_znode: &Rc<RefCell<ZNode>> = &self.subgraph_nodes[node_num];
-               src_node_znode.borrow_mut().data_copiers_src_copy.push(external_copier.clone());
+               {
+                  let mut src_node_znode_bmut = src_node_znode.borrow_mut();
+                  src_node_znode_bmut.data_copiers_src_copy.push(external_copier.clone());
+                  src_node_znode_bmut.is_active = true;
+               }
                borrow_hold.src_node = src_node_znode.clone();
             } else {
                direct_in_out_copiers.push(external_copier.clone());
@@ -809,6 +786,98 @@ impl ZNode {
       // End: Debugging of unsourced copiers.
 
       // A late-late pass could merge adjacent copiers.
+
+      Ok(())
+   }
+
+   fn run_src_copiers(&mut self) -> Result<(), ZGraphError> {
+      for wrapped_copier in &self.data_copiers_src_copy {
+         let copier: &PortDataCopier = &wrapped_copier.borrow_mut();
+         if copier.src_index == PortDataCopier::VOID_SENTINEL {
+            continue;
+         }
+
+         let src_port_data: &Vec<ZPiece> = &copier.src_port_data.borrow();
+         let dest_port_data: &mut Vec<ZPiece> = &mut copier.dest_port_data.borrow_mut();
+
+         dest_port_data[copier.dest_index] = src_port_data[copier.src_index].clone();
+      }
+      Ok(())
+   }
+
+   fn run_constructors(&mut self, renderer_data: &mut ZRendererData) -> Result<(), ZGraphError> {
+      // Assumes self node is active, not run on leaf node, no calculators run on this node.
+
+      for n in &mut self.subgraph_nodes {
+         let node: &mut ZNode = &mut n.borrow_mut();
+         if node.is_active {
+            if node.subgraph_nodes.is_empty() {
+               let node_element = &node.node_type;
+               if node_element.construction_fn.is_some() {
+                  node_element.construction_fn.unwrap()(
+                     renderer_data,
+                     &mut node.node_state_data,
+                     &ZData::default(),
+                     &mut ZData::default(),
+                  );
+               }
+            } else {
+               node.run_constructors(renderer_data)?;
+            }
+         }
+      }
+
+      Ok(())
+   }
+
+   fn run_calculators(&mut self, renderer_data: &mut ZRendererData) -> Result<(), ZGraphError> {
+      // Assumes self node is active, not run on leaf node, no calculators run on this node.
+
+      for n in &mut self.subgraph_nodes {
+         let node: &mut ZNode = &mut n.borrow_mut();
+         if node.is_active {
+            if node.subgraph_nodes.is_empty() {
+               let node_element = &node.node_type;
+               if node_element.calculation_fn.is_some() {
+                  node_element.calculation_fn.unwrap()(
+                     renderer_data,
+                     &mut node.node_state_data,
+                     &ZData::default(),
+                     &mut ZData::default(),
+                  );
+                  node.run_src_copiers()?;
+               }
+            } else {
+               node.run_calculators(renderer_data)?;
+               // src copiers should be empty for non-outer subgraph nodes.
+            }
+         }
+      }
+
+      Ok(())
+   }
+
+   fn run_inkings(&mut self, renderer_data: &mut ZRendererData) -> Result<(), ZGraphError> {
+      // Assumes self node is active, not run on leaf node, no calculators run on this node.
+
+      for n in &mut self.subgraph_nodes {
+         let node: &mut ZNode = &mut n.borrow_mut();
+         if node.is_active {
+            if node.subgraph_nodes.is_empty() {
+               let node_element = &node.node_type;
+               if node_element.inking_fn.is_some() {
+                  node_element.inking_fn.unwrap()(
+                     renderer_data,
+                     &mut node.node_state_data,
+                     &ZData::default(),
+                     &mut ZData::default(),
+                  );
+               }
+            } else {
+               node.run_inkings(renderer_data)?;
+            }
+         }
+      }
 
       Ok(())
    }

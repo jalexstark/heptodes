@@ -308,4 +308,16 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .build()
          .unwrap(),
    );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default()
+         .name("Test circle compound".to_string())
+         .inking_fn(test_circle_inking)
+         .ports_dest_copy(vec![
+            PortPieceTyped("center".to_string(), ZPieceType::Coord2D),
+            PortPieceTyped("radius".to_string(), ZPieceType::Real),
+            PortPieceTyped("color".to_string(), ZPieceType::Color),
+         ])
+         .build()
+         .unwrap(),
+   );
 }

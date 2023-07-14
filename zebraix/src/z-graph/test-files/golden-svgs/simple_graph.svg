@@ -67,6 +67,7 @@
   <use xlink:href="#glyph0-12" x="232" y="120.69043"/>
   <use xlink:href="#glyph0-13" x="238" y="120.69043"/>
 </g>
+<path style="fill:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(50%,0%,0%);stroke-opacity:1;stroke-miterlimit:10;" d="M 190 120 C 190 136.570312 176.570312 150 160 150 C 143.429688 150 130 136.570312 130 120 C 130 103.429688 143.429688 90 160 90 C 176.570312 90 190 103.429688 190 120 " transform="matrix(1,0,0,1,40,50)"/>
 </g>
 </svg>
 <!-- Test debug string -->
