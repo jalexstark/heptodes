@@ -13,9 +13,9 @@
 // limitations under the License.
 
 use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
-use crate::jaywalk_graph::zgraph_base::ZData;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
+use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use derive_builder::Builder;
 use std::collections::HashMap;
@@ -55,7 +55,7 @@ pub struct ZRegistry {
    pub node_registrations: HashMap<String, Rc<ZNodeRegistration>>,
 }
 
-type ZNodeInvocationFn = fn(&mut ZRendererData, &mut ZNodeStateData, &ZData, &mut ZData);
+type ZNodeInvocationFn = fn(&mut ZRendererData, &mut ZNodeStateData, &[ZPiece], &mut [ZPiece]);
 
 #[derive(Debug)]
 pub enum ZRegistryError {
