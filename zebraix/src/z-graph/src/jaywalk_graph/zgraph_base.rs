@@ -45,16 +45,6 @@ pub enum Types {
 //    Fit,
 // }
 
-#[derive(PartialEq, Eq)]
-pub enum ZMachineTypestate {
-   Init = 0,
-   Deffed,
-   Constructed,
-   Calculated,
-   Inked,
-   Finished,
-}
-
 pub type PortDataVec = Rc<RefCell<Vec<ZPiece>>>;
 pub type ZNodeStateData = Option<Box<dyn Any>>;
 pub type ZRendererData = Option<Box<dyn Any>>;
@@ -300,62 +290,42 @@ impl ZPiece {
 
    pub fn get_color(&self) -> Option<&ZColor> {
       match self {
-         ZPiece::Big(b) => match b {
-            ZBigData::Color(c) => Some(c),
-            _default => None,
-         },
+         ZPiece::Big(ZBigData::Color(c)) => Some(c),
          _default => None,
       }
    }
 
    pub fn get_mut_color(&mut self) -> Option<&mut ZColor> {
       match self {
-         ZPiece::Big(b) => match b {
-            ZBigData::Color(c) => Some(c),
-            _default => None,
-         },
+         ZPiece::Big(ZBigData::Color(c)) => Some(c),
          _default => None,
       }
    }
 
    pub fn get_font_style(&self) -> Option<&ZFontStyle> {
       match self {
-         ZPiece::Big(b) => match b {
-            ZBigData::FontStyle(c) => Some(c),
-            _default => None,
-         },
+         ZPiece::Big(ZBigData::FontStyle(c)) => Some(c),
          _default => None,
       }
    }
 
    pub fn get_mut_font_style(&mut self) -> Option<&mut ZFontStyle> {
       match self {
-         ZPiece::Big(b) => match b {
-            ZBigData::FontStyle(c) => Some(c),
-            _default => None,
-         },
+         ZPiece::Big(ZBigData::FontStyle(c)) => Some(c),
          _default => None,
       }
    }
 
    pub fn get_coord2d(&self) -> Option<&CoordReal2D> {
       match self {
-         ZPiece::Tuple(t) => match t {
-            ZTupleData::Coord2D(c) => Some(c),
-            // No other alternatives, so no default.
-            // _default => None,
-         },
+         ZPiece::Tuple(ZTupleData::Coord2D(c)) => Some(c),
          _default => None,
       }
    }
 
    pub fn get_mut_coord2d(&mut self) -> Option<&mut CoordReal2D> {
       match self {
-         ZPiece::Tuple(t) => match t {
-            ZTupleData::Coord2D(c) => Some(c),
-            // No other alternatives, so no default.
-            // _default => None,
-         },
+         ZPiece::Tuple(ZTupleData::Coord2D(c)) => Some(c),
          _default => None,
       }
    }

@@ -17,6 +17,7 @@ use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
+use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use derive_builder::Builder;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -47,6 +48,8 @@ pub struct ZNodeRegistration {
    pub ports_src_copy: Vec<PortPieceTyped>,
    #[builder(default)]
    pub ports_dest_copy: Vec<PortPieceTyped>,
+   #[builder(default)]
+   pub graph_def: ZGraphDef,
    #[builder(default)]
    pub category: ZNodeCategory,
 }
