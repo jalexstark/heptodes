@@ -18,6 +18,8 @@ pub mod zgraph_base;
 pub mod zgraph_builtins;
 pub mod zgraph_graphdef;
 pub mod zgraph_machine;
+pub mod zgraph_node;
+pub mod zgraph_realizer;
 pub mod zgraph_registry;
 pub mod zgraph_solver;
 pub mod zgraph_svg;

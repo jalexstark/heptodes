@@ -31,6 +31,7 @@ use z_graph::jaywalk_graph::zgraph_base::ZTupleData;
 use z_graph::jaywalk_graph::zgraph_graphdef::PresetPiece;
 use z_graph::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use z_graph::jaywalk_graph::zgraph_machine::ZMachine;
+use z_graph::jaywalk_graph::zgraph_node::ZNode;
 use z_graph::jaywalk_graph::zgraph_svg::RenderSvg;
 use z_graph::jaywalk_graph::zgraph_svg::Renderer;
 use z_graph::jaywalk_graph::ZebraixGraph;
@@ -55,8 +56,26 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
    z_graph.transition_to_deffed().unwrap();
    svg_renderer.setup_render_to_stream(&mut z_graph, svg_golden.get_raw_writeable()).unwrap();
    z_graph.transition_to_constructed().unwrap();
+
+   {
+      let realized_node: &mut ZNode = &mut z_graph.realized_node.borrow_mut();
+      let input_datavec: &mut Vec<ZPiece> = &mut realized_node.data_ports_src_copy.borrow_mut();
+      input_datavec[1] = ZPiece::Integer(42);
+   }
+
    z_graph.transition_to_calculated().unwrap();
    z_graph.transition_to_inked().unwrap();
+
+   {
+      let realized_node: &ZNode = &z_graph.realized_node.borrow();
+      let output_datavec: &Vec<ZPiece> = &realized_node.data_ports_dest_copy.borrow();
+      let output_integer = match &output_datavec[1] {
+         &ZPiece::Integer(v) => v,
+         _default => -1,
+      };
+      assert_eq!(output_integer, 42);
+   }
+
    let raw_result = svg_renderer.finish_renderer(&mut z_graph).unwrap();
    z_graph.transition_to_finished().unwrap();
 

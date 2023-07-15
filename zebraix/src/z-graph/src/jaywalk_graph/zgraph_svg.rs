@@ -21,6 +21,7 @@ use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZPieceType;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
+use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use crate::jaywalk_graph::zgraph_machine::DebugLine;
 use crate::jaywalk_graph::zgraph_machine::ZMachine;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
@@ -28,6 +29,7 @@ use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 use cairo::Context;
 use cairo::SvgSurface;
 use cairo::SvgUnit;
+use json5::from_str;
 use pango::Language;
 use pango::Layout;
 use std::any::Any;
@@ -164,8 +166,8 @@ pub fn test_text_calculation(
 ) {
    sample_text_metrics(renderer_data_in);
 
-   let text: &String = &in_data[0].get_text().unwrap();
-   let font_style: &ZFontStyle = &in_data[2].get_font_style().unwrap();
+   let text: &String = in_data[0].get_text().unwrap();
+   let font_style: &ZFontStyle = in_data[2].get_font_style().unwrap();
 
    let font_size = font_style.size;
    let font_family = &font_style.family;
@@ -174,7 +176,7 @@ pub fn test_text_calculation(
    // are pulling in, or for the default.
    let default_language_rust_copy: String = String::from(DEFAULT_LANGUAGE);
    let language: &String = if font_style.language.is_some() {
-      &font_style.language.as_ref().unwrap()
+      font_style.language.as_ref().unwrap()
    } else {
       &default_language_rust_copy
    };
@@ -214,8 +216,8 @@ pub fn test_text_inking(
    in_data: &[ZPiece],
    _out_data: &mut [ZPiece],
 ) {
-   let color: &ZColor = &in_data[1].get_color().unwrap();
-   let location: &CoordReal2D = &in_data[3].get_coord2d().unwrap();
+   let color: &ZColor = in_data[1].get_color().unwrap();
+   let location: &CoordReal2D = in_data[3].get_coord2d().unwrap();
 
    let renderer_data: &mut SvgRendererData =
       renderer_data_in.as_mut().unwrap().downcast_mut::<SvgRendererData>().unwrap();
@@ -228,7 +230,7 @@ pub fn test_text_inking(
 
    // context.set_source_rgb(0.0, 0.0, 7.0);
    // assert_eq!(color, &ZColor::Rgb(0.0, 0.0, 0.7));
-   set_source_color(&context, &color);
+   set_source_color(context, color);
    context.move_to(location.0, location.1);
    pangocairo::show_layout(context, text_layout);
    // For now, set to ugly color to avoid accidentally reusing selected color.
@@ -241,16 +243,16 @@ pub fn test_circle_inking(
    in_data: &[ZPiece],
    _out_data: &mut [ZPiece],
 ) {
-   let center: &CoordReal2D = &in_data[0].get_coord2d().unwrap();
+   let center: &CoordReal2D = in_data[0].get_coord2d().unwrap();
    let radius: f64 = in_data[1].get_real().unwrap();
-   let color: &ZColor = &in_data[2].get_color().unwrap();
+   let color: &ZColor = in_data[2].get_color().unwrap();
 
    let renderer_data: &mut SvgRendererData =
       renderer_data_in.as_mut().unwrap().downcast_mut::<SvgRendererData>().unwrap();
 
    let context: &Context = &renderer_data.main_context;
 
-   set_source_color(&context, &color);
+   set_source_color(context, color);
    context.move_to(center.0 + radius, center.1);
    context.arc(center.0, center.1, radius, 0.0 * PI, 2.0 * PI);
    context.stroke().unwrap();
@@ -345,6 +347,34 @@ pub trait Renderer {
 }
 
 pub fn register_renderer_library(registry: &mut ZRegistry) {
+   let graphdef_one_node: &'static str = r#"
+{
+  "name": "Subgraph with just one node",
+  "inputs": [
+    [ "sg_color", "Color" ],
+    [ "sg_center", "Coord2D" ],
+    [ "sg_radius", "Real" ]
+  ],
+  "nodes": [
+    {
+      "name": "actual_circle",
+      "element": "Test circle",
+      "edges": [
+        { "src_node": "inputs",
+          "connections": [
+            [ "sg_color", "color" ],
+            [ "sg_center", "center" ],
+            [ "sg_radius", "radius" ]
+          ] }
+      ]
+    }
+  ],
+  "output_ports": [
+    [ "placeholder", "actual_circle", "void" ]
+  ]
+}
+"#;
+
    registry.register_new(
       ZNodeRegistrationBuilder::default()
          .name("Test text".to_string())
@@ -371,9 +401,11 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .build()
          .unwrap(),
    );
+   let _deserialized_one_node = from_str::<ZGraphDef>(graphdef_one_node).unwrap();
    registry.register_new(
       ZNodeRegistrationBuilder::default()
          .name("Test circle compound".to_string())
+         // .graph_def(deserialized_one_node)
          .inking_fn(test_circle_inking)
          .ports_dest_copy(vec![
             PortPieceTyped("center".to_string(), ZPieceType::Coord2D),
