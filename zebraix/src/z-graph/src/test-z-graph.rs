@@ -69,7 +69,7 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
    {
       let realized_node: &ZNode = &z_graph.realized_node.borrow();
       let output_datavec: &Vec<ZPiece> = &realized_node.data_ports_dest_copy.borrow();
-      let output_integer = match &output_datavec[1] {
+      let output_integer = match &output_datavec[0] {
          &ZPiece::Integer(v) => v,
          _default => -1,
       };

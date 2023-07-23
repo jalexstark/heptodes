@@ -36,6 +36,7 @@ pub struct PortDataCopier {
 
 impl PortDataCopier {
    pub const VOID_SENTINEL: usize = usize::MAX;
+   pub const FLOATING_SENTINEL: usize = usize::MAX - 1;
 }
 
 #[allow(dead_code)]
