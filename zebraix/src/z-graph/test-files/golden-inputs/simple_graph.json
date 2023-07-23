@@ -94,13 +94,13 @@
     },
     {
       "name": "test circle compound",
-      "element": "Test circle",
+      "element": "Test circle compound",
       "edges": [
         { "src_node": "test circle data compound",
           "connections": [
-            [ "color", "color" ],
-            [ "center", "center" ],
-            [ "radius", "radius" ]
+            [ "color", "sg_color" ],
+            [ "center", "sg_center" ],
+            [ "radius", "sg_radius" ]
           ] }
       ]
     },
@@ -120,7 +120,7 @@
           "connections": [
             [ "void", "void" ]
           ] },
-        { "src_node": "input",
+        { "src_node": "inputs",
           "connections": [
             [ "void", "void" ]
           ] }
@@ -128,8 +128,8 @@
     }
   ],
   "output_ports": [
-    [ "output", "main group", "void" ],
-    [ "passthrough", "input", "integer_input" ]
+    [ "passthrough", "inputs", "integer_input" ],
+    [ "output", "main group", "void" ]
   ],
   "canvas": {
     "width": 320.0,

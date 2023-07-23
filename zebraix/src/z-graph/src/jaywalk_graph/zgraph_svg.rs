@@ -24,6 +24,7 @@ use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use crate::jaywalk_graph::zgraph_machine::DebugLine;
 use crate::jaywalk_graph::zgraph_machine::ZMachine;
+use crate::jaywalk_graph::zgraph_registry::ZNodeCategory;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 use cairo::Context;
@@ -401,17 +402,18 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .build()
          .unwrap(),
    );
-   let _deserialized_one_node = from_str::<ZGraphDef>(graphdef_one_node).unwrap();
+   let deserialized_one_node = from_str::<ZGraphDef>(graphdef_one_node).unwrap();
    registry.register_new(
       ZNodeRegistrationBuilder::default()
          .name("Test circle compound".to_string())
-         // .graph_def(deserialized_one_node)
-         .inking_fn(test_circle_inking)
+         .graph_def(deserialized_one_node)
+         // .inking_fn(test_circle_inking)
          .ports_dest_copy(vec![
-            PortPieceTyped("center".to_string(), ZPieceType::Coord2D),
-            PortPieceTyped("radius".to_string(), ZPieceType::Real),
-            PortPieceTyped("color".to_string(), ZPieceType::Color),
+            PortPieceTyped("sg_center".to_string(), ZPieceType::Coord2D),
+            PortPieceTyped("sg_radius".to_string(), ZPieceType::Real),
+            PortPieceTyped("sg_color".to_string(), ZPieceType::Color),
          ])
+         .category(ZNodeCategory::Subgraph)
          .build()
          .unwrap(),
    );
