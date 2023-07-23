@@ -204,12 +204,18 @@ impl ZMachine {
 
    fn build_from_graphdef(&mut self) -> Result<(), ZGraphError> {
       ZNode::reregister_user_graph_input_porting(&self.realized_node, &self.graph_def.inputs)?;
-      ZNode::seed_user_graph_outputs(
+      ZNode::seed_user_graph_outputs_non_void(
          &self.realized_node,
          &self.graph_def.output_ports,
          &self.null_node,
          &self.floating_port_data,
       )?;
+      // ZNode::seed_user_graph_outputs_void_only(
+      //    &self.realized_node,
+      //    &self.graph_def.output_ports,
+      //    &self.null_node,
+      //    &self.floating_port_data,
+      // )?;
 
       {
          // realized_node.data_copiers_dest_copy populated before.
@@ -238,6 +244,7 @@ impl ZNode {
    fn run_src_copiers(&mut self) -> Result<(), ZGraphError> {
       for wrapped_copier in &self.data_copiers_src_copy {
          let copier: &PortDataCopier = &wrapped_copier.borrow_mut();
+         assert_ne!(copier.src_index, PortDataCopier::FLOATING_SENTINEL);
          if copier.src_index == PortDataCopier::VOID_SENTINEL {
             // eprintln!("--- Skipping port for node \"{}\"", &self.name);
             continue;
