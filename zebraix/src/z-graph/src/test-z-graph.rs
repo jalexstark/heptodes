@@ -61,6 +61,7 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
       let realized_node: &mut ZNode = &mut z_graph.realized_node.borrow_mut();
       let input_datavec: &mut Vec<ZPiece> = &mut realized_node.data_ports_src_copy.borrow_mut();
       input_datavec[1] = ZPiece::Integer(42);
+      input_datavec[2] = ZPiece::Integer(37);
    }
 
    z_graph.transition_to_calculated().unwrap();
@@ -69,11 +70,21 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
    {
       let realized_node: &ZNode = &z_graph.realized_node.borrow();
       let output_datavec: &Vec<ZPiece> = &realized_node.data_ports_dest_copy.borrow();
-      let output_integer = match &output_datavec[0] {
+      let output_integer_a = match &output_datavec[0] {
          &ZPiece::Integer(v) => v,
          _default => -1,
       };
-      assert_eq!(output_integer, 42);
+      assert_eq!(output_integer_a, 42);
+      let output_integer_b = match &output_datavec[1] {
+         &ZPiece::Integer(v) => v,
+         _default => -1,
+      };
+      assert_eq!(output_integer_b, 37);
+      let output_integer_b = match &output_datavec[2] {
+         &ZPiece::Integer(v) => v,
+         _default => -1,
+      };
+      assert_eq!(output_integer_b, 23);
    }
 
    let raw_result = svg_renderer.finish_renderer(&mut z_graph).unwrap();

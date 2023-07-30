@@ -165,8 +165,8 @@ impl Default for CoordReal2D {
 #[serde(untagged)]
 pub enum ZPiece {
    Void,
+   Integer(i64), // Integer before Real, because then serde attempts to match it first.
    Real(f64),
-   Integer(i64),
    Unit(ZUnit),
    Text(String),
    //
@@ -185,8 +185,8 @@ impl Default for ZPiece {
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub enum ZPieceType {
    Void,
-   Real,
    Integer,
+   Real,
    Unit,
    Text,
    //
@@ -217,8 +217,8 @@ impl ZPieceType {
    pub fn get_piece_type_from_data(piece: &ZPiece) -> ZPieceType {
       match piece {
          ZPiece::Void => ZPieceType::Void,
-         ZPiece::Real(_) => ZPieceType::Real,
          ZPiece::Integer(_) => ZPieceType::Integer,
+         ZPiece::Real(_) => ZPieceType::Real,
          ZPiece::Unit(_) => ZPieceType::Unit,
          ZPiece::Text(_) => ZPieceType::Text,
          //
@@ -237,8 +237,8 @@ impl ZPiece {
    pub fn piece_data_default_for_piece_type(piece_type: &ZPieceType) -> ZPiece {
       match piece_type {
          ZPieceType::Void => ZPiece::Void,
-         ZPieceType::Real => ZPiece::Real(0.0),
          ZPieceType::Integer => ZPiece::Integer(0),
+         ZPieceType::Real => ZPiece::Real(0.0),
          ZPieceType::Unit => ZPiece::Unit(ZUnit::default()),
          ZPieceType::Text => ZPiece::Text("".to_string()),
          //

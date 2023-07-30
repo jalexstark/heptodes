@@ -354,7 +354,9 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
   "inputs": [
     [ "sg_color", "Color" ],
     [ "sg_center", "Coord2D" ],
-    [ "sg_radius", "Real" ]
+    [ "sg_radius", "Real" ],
+    [ "pass_int", "Integer" ],
+    [ "out_in_int", "Integer" ]
   ],
   "nodes": [
     {
@@ -368,10 +370,22 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
             [ "sg_radius", "radius" ]
           ] }
       ]
+    },
+    { "name": "inner preset int",
+      "element": "Preset data",
+      "preset_data": [
+        [ "inner_int", 56 ]
+      ]
     }
   ],
   "output_ports": [
-    [ "placeholder", "actual_circle", "void" ]
+    [ "placeholder", "actual_circle", "void" ],
+    [ "moat_int", "inputs", "out_in_int" ],
+    [ "consumed_int", "inputs", "pass_int" ],
+    [ "do_not_consume_int", "inputs", "pass_int" ],
+    [ "inside_int", "inner preset int", "inner_int" ],
+    [ "inside_int_test_no_connect", "inner preset int", "inner_int" ],
+    [ "much irrelevant", "inputs", "void" ]
   ]
 }
 "#;
