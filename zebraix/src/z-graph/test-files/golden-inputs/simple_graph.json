@@ -2,7 +2,8 @@
   "name": "A test graph",
   "inputs": [
     [ "real_input", "Real" ],
-    [ "integer_input", "Integer" ]
+    [ "integer_input_pass", "Integer" ],
+    [ "integer_input_consume", "Integer" ]
   ],
   "nodes": [
     { "name": "test circle data",
@@ -54,6 +55,12 @@
             "family": "sans"
           }
         ]
+      ],
+      "edges": [
+        {  "src_node": "inputs",
+           "connections": [
+             [ "void", "somewhat irrelevant" ]
+           ] }
       ]
     },
     {
@@ -79,6 +86,12 @@
           ] }
       ]
     },
+    { "name": "outer preset int",
+      "element": "Preset data",
+      "preset_data": [
+        [ "outer_int", 23 ]
+      ]
+    },
     { "name": "test circle data compound",
       "element": "Preset data",
       "preset_data": [
@@ -101,6 +114,15 @@
             [ "color", "sg_color" ],
             [ "center", "sg_center" ],
             [ "radius", "sg_radius" ]
+          ] },
+        { "src_node": "inputs",
+          "connections": [
+            [ "void", "compound_outer_void" ],
+            [ "integer_input_consume", "pass_int" ]
+          ] },
+        { "src_node": "outer preset int",
+          "connections": [
+            [ "outer_int", "out_in_int" ]
           ] }
       ]
     },
@@ -128,7 +150,12 @@
     }
   ],
   "output_ports": [
-    [ "passthrough", "inputs", "integer_input" ],
+    [ "passthrough_int", "inputs", "integer_input_pass" ],
+    [ "outer_consumed_int", "test circle compound", "consumed_int" ],
+    [ "moat_out_int", "test circle compound", "moat_int" ],
+    [ "inside_int_a", "test circle compound", "inside_int" ],
+    [ "inside_int_b", "test circle compound", "inside_int" ],
+    [ "passthrough_void", "inputs", "void" ],
     [ "output", "main group", "void" ]
   ],
   "canvas": {
