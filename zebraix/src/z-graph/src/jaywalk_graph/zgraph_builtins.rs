@@ -12,9 +12,63 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
+use crate::jaywalk_graph::zgraph_base::ZColor;
+use crate::jaywalk_graph::zgraph_base::ZFontStyle;
+use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
+use crate::jaywalk_graph::zgraph_base::ZOptionBox;
+use crate::jaywalk_graph::zgraph_base::ZPiece;
+use crate::jaywalk_graph::zgraph_base::ZPieceType;
+use crate::jaywalk_graph::zgraph_base::ZRendererData;
+use crate::jaywalk_graph::zgraph_base::ZTextStyle;
 use crate::jaywalk_graph::zgraph_registry::ZNodeCategory;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
+
+pub fn text_style_agg_calculation(
+   _renderer_data_in: &mut ZRendererData,
+   _state_data: &mut ZNodeStateData,
+   in_data: &[ZPiece],
+   out_data: &mut [ZPiece],
+) {
+   let font_style: &ZFontStyle = in_data[0].get_font_style().unwrap();
+   let color: &ZColor = in_data[1].get_color().unwrap();
+
+   let text_style: &mut ZTextStyle = &mut out_data[0].get_mut_text_style().unwrap();
+   text_style.font_style = font_style.clone();
+   text_style.color = color.clone();
+}
+
+pub fn text_style_disagg_calculation(
+   _renderer_data_in: &mut ZRendererData,
+   _state_data: &mut ZNodeStateData,
+   in_data: &[ZPiece],
+   out_data: &mut [ZPiece],
+) {
+   let text_style: &ZTextStyle = in_data[0].get_text_style().unwrap();
+
+   let font_style: &mut ZFontStyle = &mut out_data[0].get_mut_font_style().unwrap();
+   *font_style = text_style.font_style.clone();
+   let color: &mut ZColor = &mut out_data[1].get_mut_color().unwrap();
+   *color = text_style.color.clone();
+}
+
+pub fn font_style_disagg_calculation(
+   _renderer_data_in: &mut ZRendererData,
+   _state_data: &mut ZNodeStateData,
+   in_data: &[ZPiece],
+   out_data: &mut [ZPiece],
+) {
+   let font_style: &ZFontStyle = in_data[0].get_font_style().unwrap();
+
+   let size: &mut f64 = &mut out_data[0].get_mut_real().unwrap();
+   *size = font_style.size;
+   let family: &mut String = &mut out_data[1].get_mut_text().unwrap();
+   *family = font_style.family.clone();
+   let language: &mut ZOptionBox = &mut out_data[2].get_mut_option_box().unwrap();
+   *language = font_style.language.clone();
+   // &font_style.language.as_ref().unwrap().as_ref().get_text()
+}
 
 pub fn register_builtin_library(registry: &mut ZRegistry) {
    registry
@@ -28,6 +82,46 @@ pub fn register_builtin_library(registry: &mut ZRegistry) {
       ZNodeRegistrationBuilder::default()
          .name("Preset data".to_string())
          .category(ZNodeCategory::PresetData)
+         .build()
+         .unwrap(),
+   );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default()
+         .name("text_style_agg".to_string())
+         .calculation_fn(text_style_agg_calculation)
+         .ports_dest_copy(vec![
+            PortPieceTyped("font style".to_string(), ZPieceType::FontStyle),
+            PortPieceTyped("color".to_string(), ZPieceType::Color),
+         ])
+         .ports_src_copy(vec![PortPieceTyped("text style".to_string(), ZPieceType::TextStyle)])
+         .category(ZNodeCategory::Aggregator)
+         .build()
+         .unwrap(),
+   );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default()
+         .name("text_style_disagg".to_string())
+         .calculation_fn(text_style_disagg_calculation)
+         .ports_dest_copy(vec![PortPieceTyped("text style".to_string(), ZPieceType::TextStyle)])
+         .ports_src_copy(vec![
+            PortPieceTyped("font style".to_string(), ZPieceType::FontStyle),
+            PortPieceTyped("color".to_string(), ZPieceType::Color),
+         ])
+         .category(ZNodeCategory::Disaggregator)
+         .build()
+         .unwrap(),
+   );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default()
+         .name("font_style_disagg".to_string())
+         .calculation_fn(font_style_disagg_calculation)
+         .ports_dest_copy(vec![PortPieceTyped("font style".to_string(), ZPieceType::FontStyle)])
+         .ports_src_copy(vec![
+            PortPieceTyped("size".to_string(), ZPieceType::Real),
+            PortPieceTyped("family".to_string(), ZPieceType::Text),
+            PortPieceTyped("language".to_string(), ZPieceType::OptionBox),
+         ])
+         .category(ZNodeCategory::Disaggregator)
          .build()
          .unwrap(),
    );

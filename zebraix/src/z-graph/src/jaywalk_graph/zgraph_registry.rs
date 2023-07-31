@@ -27,6 +27,8 @@ pub enum ZNodeCategory {
    OtherCategory,
    Subgraph,
    PresetData,
+   Aggregator,
+   Disaggregator,
 }
 
 impl Default for ZNodeCategory {
