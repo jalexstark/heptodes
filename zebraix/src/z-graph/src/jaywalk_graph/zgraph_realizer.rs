@@ -204,6 +204,11 @@ impl ZNode {
             src_ports_data.reserve(src_ports_types.len());
             for port_type in src_ports_types {
                src_ports_data.push(ZPiece::piece_data_default_for_piece_type(&port_type.1));
+               eprintln!(
+                  "   src data element type and type of data {:?} and {:?}",
+                  port_type.1,
+                  ZPieceType::get_piece_type_from_data(&src_ports_data[src_ports_data.len() - 1])
+               );
             }
          }
 
@@ -277,6 +282,11 @@ impl ZNode {
             dest_ports_data.reserve(dest_ports_types.len());
             for port_type in dest_ports_types {
                dest_ports_data.push(ZPiece::piece_data_default_for_piece_type(&port_type.1));
+               eprintln!(
+                  "   dest data element type and type of data {:?} and {:?}",
+                  port_type.1,
+                  ZPieceType::get_piece_type_from_data(&dest_ports_data[dest_ports_data.len() - 1])
+               );
             }
          }
 
@@ -288,6 +298,7 @@ impl ZNode {
             port_names.push(&entry_type.0);
             port_name_map.insert(entry_type.0.clone(), i);
          }
+         eprintln!("Create dest data for {}", subnode.name);
          for wrapped_copier in dest_data_copiers {
             let mut copier: &mut PortDataCopier = &mut wrapped_copier.borrow_mut();
 
@@ -338,8 +349,8 @@ impl ZNode {
                   &copier.dest_port_data.borrow()[copier.dest_index],
                );
                eprintln!(
-                  "Copier has src type {:?} and dest type {:?}",
-                  src_piece_type, dest_piece_type
+                  "Copier has src type {:?} and dest type {:?}, indices {}, {}",
+                  src_piece_type, dest_piece_type, copier.src_index, copier.dest_index,
                );
                assert!(src_piece_type == dest_piece_type);
             }
@@ -354,6 +365,8 @@ impl ZNode {
       let subnode: &mut ZNode = &mut wrapped_subnode.borrow_mut();
       let subnode_type: &ZNodeRegistration = subnode.node_type.as_ref();
 
+      eprintln!("   Preset data population for node {}", subnode.name);
+
       if subnode.data_copiers_src_copy.is_empty() {
          return Ok(());
       }
@@ -363,6 +376,10 @@ impl ZNode {
       for (i, preset_item) in subnode.preset_data.iter().enumerate() {
          let src_ports_data: &mut Vec<ZPiece> = &mut subnode.data_ports_src_copy.borrow_mut();
          src_ports_data[i] = preset_item.1.clone();
+         eprintln!(
+            "      Preset data has apparent type {:?}",
+            ZPieceType::get_piece_type_from_data(&src_ports_data[i])
+         );
       }
       Ok(())
    }
@@ -511,7 +528,13 @@ impl ZNode {
 
             eprintln!("Processing subnode: {}", n_def.name);
 
-            let subnode_type: &Rc<ZNodeRegistration> = registry.find(&n_def.element).unwrap();
+            let gotten = registry.find(&n_def.element);
+            assert!(
+               gotten.is_ok(),
+               "Could not find element type in registry, named \"{}\"",
+               n_def.name
+            );
+            let subnode_type: &Rc<ZNodeRegistration> = gotten.unwrap();
             assert_eq!(
                node_num,
                *top_node_borrowed.subgraph_node_map.as_ref().unwrap().get(&n_def.name).unwrap()
@@ -613,24 +636,6 @@ impl ZNode {
                         top_node_borrowed.data_copiers_src_copy.push(copier_wrapped.clone());
                         count_of_pushed += 1;
                      } else {
-                        // subgraph copiers from inputs (copier destinations) reroute according to edge connections.
-
-                        // Should as-we-go find types, and then be able to check here.
-                        //  let input_ports: &Vec<PortPieceTyped> = &subnode_type.graph_def.inputs;
-                        // {
-                        //    let mut found_port: Option<PortPieceTyped> = None;
-                        //    for port in input_ports {
-                        //       if port.0 == copier.port_def.as_ref().unwrap().2 {
-                        //          found_port = Some(port.clone());
-                        //          break;
-                        //       }
-                        //    }
-                        //    assert_eq!(found_port.unwrap().1, copier_destination_type);
-                        // }
-
-                        // let mutable_port: &mut ZPortDef = &mut found_port.unwrap();
-                        // mutable_port.0 = copier.port_def.as_ref().unwrap().0.clone();
-                        // copier.port_def = Some(mutable_port.clone());
                         let mut found = false;
                         for edge in &n_def.edges {
                            for connection in &edge.connections {
