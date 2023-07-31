@@ -118,8 +118,8 @@ pub struct ZFontStyle {
    pub size: f64,
    #[serde(skip_serializing_if = "String::is_empty")]
    pub family: String,
-   #[serde(skip_serializing_if = "Option::is_none")]
-   pub language: Option<String>, // Example: "en-US".
+   #[serde(skip_serializing_if = "ZOptionBox::is_default")]
+   pub language: ZOptionBox, // Example: "en-US".
 }
 
 impl Default for ZFontStyle {
@@ -127,8 +127,22 @@ impl Default for ZFontStyle {
       ZFontStyle {
          size: 10.0,
          family: "monospace".to_string(),
-         language: Some("en-US".to_string()),
+         language: ZOptionBox { v: Some(Box::new(ZPiece::Text("en-US".to_string()))) },
       }
+   }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
+pub struct ZTextStyle {
+   #[serde(skip_serializing_if = "is_default")]
+   pub font_style: ZFontStyle,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color: ZColor,
+}
+
+impl Default for ZTextStyle {
+   fn default() -> Self {
+      ZTextStyle { font_style: ZFontStyle::default(), color: ZColor::default() }
    }
 }
 
@@ -144,6 +158,7 @@ pub struct CoordReal2D(pub f64, pub f64);
 pub enum ZBigData {
    Color(ZColor),
    FontStyle(ZFontStyle),
+   TextStyle(ZTextStyle),
 }
 
 //  context.move_to(120.0, 60.0);
@@ -173,12 +188,40 @@ pub enum ZPiece {
    Big(ZBigData),
    Tuple(ZTupleData),
    //
+   OptionBox(ZOptionBox),
+   //
    // Renderer / library data will be box-dyn-any here.
 }
 
 impl Default for ZPiece {
    fn default() -> Self {
       ZPiece::Real(f64::default())
+   }
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct ZOptionBox {
+   pub v: Option<Box<ZPiece>>,
+}
+
+impl PartialEq for ZOptionBox {
+   fn eq(&self, other: &Self) -> bool {
+      if self.v.is_some() == other.v.is_some() {
+         if self.v.is_some() {
+            self.v.as_ref().unwrap() == other.v.as_ref().unwrap()
+         } else {
+            true
+         }
+      } else {
+         false
+      }
+   }
+}
+impl Eq for ZOptionBox {}
+
+impl ZOptionBox {
+   pub fn is_default(&self) -> bool {
+      self.v.is_none()
    }
 }
 
@@ -192,8 +235,11 @@ pub enum ZPieceType {
    //
    Color,
    FontStyle,
+   TextStyle,
    //
    Coord2D,
+   //
+   OptionBox,
    //
    // Renderer / library data will be box-dyn-any here.
 }
@@ -225,10 +271,12 @@ impl ZPieceType {
          ZPiece::Big(big_data) => match big_data {
             ZBigData::Color(_) => ZPieceType::Color,
             ZBigData::FontStyle(_) => ZPieceType::FontStyle,
+            ZBigData::TextStyle(_) => ZPieceType::TextStyle,
          },
          ZPiece::Tuple(tuple_data) => match tuple_data {
             ZTupleData::Coord2D(_) => ZPieceType::Coord2D,
          },
+         ZPiece::OptionBox(_) => ZPieceType::OptionBox,
       }
    }
 }
@@ -244,8 +292,11 @@ impl ZPiece {
          //
          ZPieceType::Color => ZPiece::Big(ZBigData::Color(ZColor::default())),
          ZPieceType::FontStyle => ZPiece::Big(ZBigData::FontStyle(ZFontStyle::default())),
+         ZPieceType::TextStyle => ZPiece::Big(ZBigData::TextStyle(ZTextStyle::default())),
          //
          ZPieceType::Coord2D => ZPiece::Tuple(ZTupleData::Coord2D(CoordReal2D::default())),
+         //
+         ZPieceType::OptionBox => ZPiece::OptionBox(ZOptionBox { v: None }),
       }
    }
 }
@@ -260,6 +311,13 @@ impl ZPiece {
       }
    }
 
+   pub fn get_mut_real(&mut self) -> Option<&mut f64> {
+      match self {
+         ZPiece::Real(v) => Some(v),
+         _default => None,
+      }
+   }
+
    pub fn get_integer(&self) -> Option<i64> {
       match self {
          ZPiece::Integer(v) => Some(*v),
@@ -267,12 +325,26 @@ impl ZPiece {
       }
    }
 
+   // pub fn get_mut_integer(&self) -> Option<&mut i64> {
+   //    match self {
+   //       ZPiece::Integer(v) => Some(&mut v),
+   //       _default => None,
+   //    }
+   // }
+
    pub fn get_unit(&self) -> Option<ZUnit> {
       match self {
          ZPiece::Unit(v) => Some(v.clone()),
          _default => None,
       }
    }
+
+   // pub fn get_mut_unit(&self) -> Option<&mut ZUnit> {
+   //    match self {
+   //       ZPiece::Unit(v) => Some(&mut v),
+   //       _default => None,
+   //    }
+   // }
 
    pub fn get_text(&self) -> Option<&String> {
       match self {
@@ -316,6 +388,34 @@ impl ZPiece {
       }
    }
 
+   pub fn get_text_style(&self) -> Option<&ZTextStyle> {
+      match self {
+         ZPiece::Big(ZBigData::TextStyle(c)) => Some(c),
+         _default => None,
+      }
+   }
+
+   pub fn get_mut_text_style(&mut self) -> Option<&mut ZTextStyle> {
+      match self {
+         ZPiece::Big(ZBigData::TextStyle(c)) => Some(c),
+         _default => None,
+      }
+   }
+
+   pub fn get_option_box(&self) -> Option<&ZOptionBox> {
+      match self {
+         ZPiece::OptionBox(c) => Some(c),
+         _default => None,
+      }
+   }
+
+   pub fn get_mut_option_box(&mut self) -> Option<&mut ZOptionBox> {
+      match self {
+         ZPiece::OptionBox(c) => Some(c),
+         _default => None,
+      }
+   }
+
    pub fn get_coord2d(&self) -> Option<&CoordReal2D> {
       match self {
          ZPiece::Tuple(ZTupleData::Coord2D(c)) => Some(c),
@@ -329,18 +429,4 @@ impl ZPiece {
          _default => None,
       }
    }
-
-   // Void,
-   // Real(f64),
-   // Integer(i32),
-   // Unit(ZUnit),
-   // Text(String),
-   // //
-   // Big(ZBigData),
-   // Tuple(ZTupleData),
-
-   // Color,
-   // FontStyle,
-   // //
-   // Coord2D,
 }

@@ -176,8 +176,8 @@ pub fn test_text_calculation(
    // Rust cannot do what we actually want, either for the language we
    // are pulling in, or for the default.
    let default_language_rust_copy: String = String::from(DEFAULT_LANGUAGE);
-   let language: &String = if font_style.language.is_some() {
-      font_style.language.as_ref().unwrap()
+   let language: &String = if font_style.language.v.is_some() {
+      font_style.language.v.as_ref().unwrap().as_ref().get_text().as_ref().unwrap()
    } else {
       &default_language_rust_copy
    };
