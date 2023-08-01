@@ -416,7 +416,8 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
          .build()
          .unwrap(),
    );
-   let deserialized_one_node = from_str::<ZGraphDef>(graphdef_one_node).unwrap();
+   let mut deserialized_one_node: ZGraphDef = from_str::<ZGraphDef>(graphdef_one_node).unwrap();
+   deserialized_one_node.precompile().unwrap();
    registry.register_new(
       ZNodeRegistrationBuilder::default()
          .name("Test circle compound".to_string())

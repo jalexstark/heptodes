@@ -18,8 +18,8 @@ use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZPieceType;
 use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
+use crate::jaywalk_graph::zgraph_graphdef::ZLinkPort;
 use crate::jaywalk_graph::zgraph_graphdef::ZNodeDef;
-use crate::jaywalk_graph::zgraph_graphdef::ZPortDef;
 use crate::jaywalk_graph::zgraph_node::PortDataCopier;
 use crate::jaywalk_graph::zgraph_node::ZNode;
 use crate::jaywalk_graph::zgraph_registry::ZNodeCategory;
@@ -56,7 +56,7 @@ impl ZNode {
 
    pub fn seed_user_graph_outputs_non_void(
       realized_node_wrapped: &Rc<RefCell<ZNode>>,
-      output_ports: &Vec<ZPortDef>,
+      output_ports: &Vec<ZLinkPort>,
       null_node: &Rc<RefCell<ZNode>>,
       floating_port_data: &PortDataVec,
    ) -> Result<(), ZGraphError> {
@@ -65,7 +65,7 @@ impl ZNode {
       // In ordinary mode of operation, for a user graph, we create one copier for each output.
       assert!(realized_node.data_copiers_dest_copy.is_empty());
       for port_def in output_ports {
-         if port_def.2 != "void" {
+         if !port_def.is_void {
             let expanded_graph_data_copier = Rc::new(RefCell::new(PortDataCopier {
                src_node: null_node.clone(),
                src_port_data: floating_port_data.clone(),
@@ -78,7 +78,7 @@ impl ZNode {
             // The "src copiers" are a temporary parking spot.
             realized_node.data_copiers_src_copy.push(expanded_graph_data_copier);
             realized_node.is_active = true;
-            eprintln!("Port attachment: {}", port_def.0);
+            eprintln!("Port attachment: {}", port_def.name);
          }
       }
       Ok(())
@@ -86,7 +86,7 @@ impl ZNode {
 
    pub fn seed_user_graph_outputs_void_only(
       realized_node_wrapped: &Rc<RefCell<ZNode>>,
-      output_ports: &Vec<ZPortDef>,
+      output_ports: &Vec<ZLinkPort>,
       null_node: &Rc<RefCell<ZNode>>,
       floating_port_data: &PortDataVec,
    ) -> Result<(), ZGraphError> {
@@ -94,7 +94,7 @@ impl ZNode {
 
       // In ordinary mode of operation, for a user graph, we create one copier for each output.
       for port_def in output_ports {
-         if port_def.2 == "void" {
+         if port_def.is_void {
             let expanded_graph_data_copier = Rc::new(RefCell::new(PortDataCopier {
                src_node: null_node.clone(),
                src_port_data: floating_port_data.clone(),
@@ -107,7 +107,7 @@ impl ZNode {
             // The "src copiers" are a temporary parking spot.
             realized_node.data_copiers_src_copy.push(expanded_graph_data_copier);
             realized_node.is_active = true;
-            eprintln!("Port (void) attachment: {}", port_def.0);
+            eprintln!("Port (void) attachment: {}", port_def.name);
          }
       }
       Ok(())
@@ -122,6 +122,8 @@ impl ZNode {
       floating_port_data: &PortDataVec,
    ) -> Result<(), ZGraphError> {
       let subnode: &mut ZNode = &mut self.subgraph_nodes[node_num].borrow_mut();
+
+      assert!(n_def.is_precompiled);
 
       assert!(subnode.data_copiers_dest_copy.is_empty());
       subnode.data_copiers_dest_copy.clear();
@@ -161,11 +163,13 @@ impl ZNode {
                } else {
                   PortDataCopier::FLOATING_SENTINEL
                },
-               port_def: Some(ZPortDef(
-                  connection.1.clone(),
-                  edge.src_node.clone(),
-                  connection.0.clone(),
-               )),
+               port_def: Some(ZLinkPort {
+                  name: connection.1.clone(),
+                  src_node_name: edge.src_node.clone(),
+                  src_port: connection.0.clone(),
+                  is_void: connection.0 == "void",
+                  ..Default::default()
+               }),
             }));
             subnode.data_copiers_dest_copy.push(edges_copier.clone());
 
@@ -226,8 +230,8 @@ impl ZNode {
 
             eprintln!(
                "copier port {}, {}",
-               copier.port_def.as_ref().unwrap().1,
-               copier.port_def.as_ref().unwrap().2
+               copier.port_def.as_ref().unwrap().src_node_name,
+               copier.port_def.as_ref().unwrap().src_port
             );
             assert!(!Rc::ptr_eq(&copier.src_node, null_node));
 
@@ -240,7 +244,7 @@ impl ZNode {
             }
             assert!(Rc::ptr_eq(wrapped_subnode, &copier.src_node));
             copier.src_port_data = subnode.data_ports_src_copy.clone();
-            let port_name: &String = &copier.port_def.as_ref().unwrap().2;
+            let port_name: &String = &copier.port_def.as_ref().unwrap().src_port;
 
             if port_name == "void" {
                // copier.src_index = PortDataCopier::VOID_SENTINEL;
@@ -305,17 +309,17 @@ impl ZNode {
             if Rc::ptr_eq(&copier.src_node, null_node) {
                eprintln!(
                   "Null src invalid this late {}, {}, {}",
-                  copier.port_def.as_ref().unwrap().0,
-                  copier.port_def.as_ref().unwrap().1,
-                  copier.port_def.as_ref().unwrap().2
+                  copier.port_def.as_ref().unwrap().name,
+                  copier.port_def.as_ref().unwrap().src_node_name,
+                  copier.port_def.as_ref().unwrap().src_port
                );
             }
             assert!(!Rc::ptr_eq(&copier.src_node, null_node));
 
             // assert!(Rc::ptr_eq(&self.subgraph_nodes[node_num], &copier.dest_node));
             copier.dest_port_data = subnode.data_ports_dest_copy.clone();
-            let dest_port_name: &String = &copier.port_def.as_ref().unwrap().0;
-            let src_port_name: &String = &copier.port_def.as_ref().unwrap().2;
+            let dest_port_name: &String = &copier.port_def.as_ref().unwrap().name;
+            let src_port_name: &String = &copier.port_def.as_ref().unwrap().src_port;
 
             if src_port_name == "void" {
                // copier.dest_index = PortDataCopier::VOID_SENTINEL;
@@ -384,7 +388,6 @@ impl ZNode {
       Ok(())
    }
 
-   /// BBB
    pub fn add_tree_dag_nodes(
       toposort_nodes: &mut LinkedList<Rc<RefCell<ZNode>>>,
       subgraph_node: &Rc<RefCell<ZNode>>,
@@ -433,12 +436,14 @@ impl ZNode {
    ) -> Result<(), ZGraphError> {
       ZNode::seed_user_graph_outputs_void_only(
          top_node,
-         &graph_def.output_ports,
+         &graph_def.output_ports_as_links,
          null_node,
          floating_port_data,
       )?;
 
       {
+         assert!(graph_def.is_precompiled);
+
          // Create vector of nodes for subgraph.
          let top_node_borrowed: &mut ZNode = &mut top_node.borrow_mut();
 
@@ -453,6 +458,8 @@ impl ZNode {
          let mut subgraph_node_map = HashMap::<String, usize>::default();
 
          for n_def in node_defs {
+            assert!(n_def.is_precompiled);
+
             top_node_borrowed.subgraph_nodes.push(Rc::new(RefCell::new(ZNode {
                name: n_def.name.clone(),
                node_state_data: None,
@@ -485,21 +492,21 @@ impl ZNode {
          let mut direct_in_out_copiers = Vec::<Rc<RefCell<PortDataCopier>>>::default();
          for external_copier in &top_node_borrowed.data_copiers_src_copy {
             let borrow_hold: &mut PortDataCopier = &mut external_copier.borrow_mut();
-            let port_def: &ZPortDef = borrow_hold.port_def.as_ref().unwrap();
+            let port_def: &ZLinkPort = borrow_hold.port_def.as_ref().unwrap();
 
             if borrow_hold.src_index == PortDataCopier::VOID_SENTINEL {
                // This copier is a true external "copy" of void from this subgraph's output.
                continue;
             }
-            if port_def.2 == "void" {
+            if port_def.is_void {
                // After settling source location (just follows) connection is fully settled.
                borrow_hold.src_index = PortDataCopier::VOID_SENTINEL;
             }
 
-            let connects_to_internal: bool = port_def.1 != "inputs";
+            let connects_to_internal: bool = port_def.src_node_name != "inputs";
             if connects_to_internal {
                // Port name, src node name, src port name.
-               let node_num: usize = *subgraph_node_map.get(&port_def.1).unwrap();
+               let node_num: usize = *subgraph_node_map.get(&port_def.src_node_name).unwrap();
                let src_node_znode: &Rc<RefCell<ZNode>> =
                   &top_node_borrowed.subgraph_nodes[node_num];
                {
@@ -525,6 +532,7 @@ impl ZNode {
 
          for node_num in (0..subgraph_size).rev() {
             let n_def = &node_defs[node_num];
+            assert!(n_def.is_precompiled);
 
             eprintln!("Processing subnode: {}", n_def.name);
 
@@ -568,30 +576,31 @@ impl ZNode {
                      let copier: &mut PortDataCopier = &mut copier_wrapped.borrow_mut();
                      eprintln!(
                         "Src from this node {}, {}, {}",
-                        copier.port_def.as_ref().unwrap().0,
-                        copier.port_def.as_ref().unwrap().1,
-                        copier.port_def.as_ref().unwrap().2,
+                        copier.port_def.as_ref().unwrap().name,
+                        copier.port_def.as_ref().unwrap().src_node_name,
+                        copier.port_def.as_ref().unwrap().src_port,
                      );
                      if copier.src_index != PortDataCopier::VOID_SENTINEL {
                         // Need to find port_def in top_node_borrowed.output_ports, figuring out voids, and replace
                         // copier.port_def.
-                        let output_ports: &Vec<ZPortDef> = &subnode_type.graph_def.output_ports;
-                        let mut found_port: Option<ZPortDef> = None;
+                        let output_ports: &Vec<ZLinkPort> =
+                           &subnode_type.graph_def.output_ports_as_links;
+                        let mut found_port: Option<ZLinkPort> = None;
                         for port in output_ports {
-                           if port.0 == copier.port_def.as_ref().unwrap().2 {
+                           if port.name == copier.port_def.as_ref().unwrap().src_port {
                               found_port = Some(port.clone());
                               break;
                            }
                         }
-                        let mutable_port: &mut ZPortDef = &mut found_port.unwrap();
-                        mutable_port.0 = copier.port_def.as_ref().unwrap().0.clone();
+                        let mutable_port: &mut ZLinkPort = &mut found_port.unwrap();
+                        mutable_port.name = copier.port_def.as_ref().unwrap().name.clone();
                         copier.port_def = Some(mutable_port.clone());
 
                         eprintln!(
                            "   ... remapped as from this node {}, {}, {}",
-                           copier.port_def.as_ref().unwrap().0,
-                           copier.port_def.as_ref().unwrap().1,
-                           copier.port_def.as_ref().unwrap().2,
+                           copier.port_def.as_ref().unwrap().name,
+                           copier.port_def.as_ref().unwrap().src_node_name,
+                           copier.port_def.as_ref().unwrap().src_port,
                         );
                      }
                      //
@@ -620,19 +629,19 @@ impl ZNode {
                      let copier: &mut PortDataCopier = &mut copier_wrapped.borrow_mut();
                      eprintln!(
                         "Dest (subgraph) this node {}, {}, {}",
-                        copier.port_def.as_ref().unwrap().0,
-                        copier.port_def.as_ref().unwrap().1,
-                        copier.port_def.as_ref().unwrap().2,
+                        copier.port_def.as_ref().unwrap().name,
+                        copier.port_def.as_ref().unwrap().src_node_name,
+                        copier.port_def.as_ref().unwrap().src_port,
                      );
 
                      if copier.dest_index == PortDataCopier::VOID_SENTINEL {
                         eprintln!(
                            "Subgraph sentinel copier {}, {}, {}",
-                           copier.port_def.as_ref().unwrap().0,
-                           copier.port_def.as_ref().unwrap().1,
-                           copier.port_def.as_ref().unwrap().2,
+                           copier.port_def.as_ref().unwrap().name,
+                           copier.port_def.as_ref().unwrap().src_node_name,
+                           copier.port_def.as_ref().unwrap().src_port,
                         );
-                        assert_eq!(copier.port_def.as_ref().unwrap().2, "void");
+                        assert_eq!(copier.port_def.as_ref().unwrap().src_port, "void");
                         top_node_borrowed.data_copiers_src_copy.push(copier_wrapped.clone());
                         count_of_pushed += 1;
                      } else {
@@ -640,7 +649,7 @@ impl ZNode {
                         for edge in &n_def.edges {
                            for connection in &edge.connections {
                               // Name among source nodes's outputs, name among dest node's inputs.
-                              if connection.1 != copier.port_def.as_ref().unwrap().2 {
+                              if connection.1 != copier.port_def.as_ref().unwrap().src_port {
                                  continue;
                               }
                               eprintln!(
@@ -687,11 +696,13 @@ impl ZNode {
                                     },
                                     copier.dest_index
                                  );
-                                 copier.port_def = Some(ZPortDef(
-                                    copier.port_def.as_ref().unwrap().0.clone(), // The port name is unchanged.
-                                    edge.src_node.clone(),
-                                    connection.0.clone(),
-                                 ));
+                                 copier.port_def = Some(ZLinkPort {
+                                    name: copier.port_def.as_ref().unwrap().name.clone(), // The port name is unchanged.
+                                    src_node_name: edge.src_node.clone(),
+                                    src_port: connection.0.clone(),
+                                    is_void: connection.0 == "void",
+                                    ..Default::default()
+                                 });
                                  if Rc::ptr_eq(src_node_znode, null_node) {
                                     eprintln!("      Pushing null-linked to outer node.");
                                     // DDD just always use self? Problem is we remove when should not.
@@ -711,9 +722,9 @@ impl ZNode {
 
                                  eprintln!(
                                     "   ... remapped as from this node {}, {}, {}",
-                                    copier.port_def.as_ref().unwrap().0,
-                                    copier.port_def.as_ref().unwrap().1,
-                                    copier.port_def.as_ref().unwrap().2,
+                                    copier.port_def.as_ref().unwrap().name,
+                                    copier.port_def.as_ref().unwrap().src_node_name,
+                                    copier.port_def.as_ref().unwrap().src_port,
                                  );
                               }
                               found = true;
@@ -723,7 +734,7 @@ impl ZNode {
                         if !found {
                            eprintln!(
                               "Unable to find connection for {} in \"{}\" subgraph",
-                              copier.port_def.as_ref().unwrap().2,
+                              copier.port_def.as_ref().unwrap().src_port,
                               top_node_borrowed.name
                            );
                            assert!(found);
@@ -773,6 +784,8 @@ impl ZNode {
       null_node: &Rc<RefCell<ZNode>>,
       floating_port_data: &PortDataVec,
    ) -> Result<(), ZGraphError> {
+      assert!(graph_def.is_precompiled);
+
       Self::build_out_subgraph(
          top_node,
          graph_def,
@@ -821,12 +834,15 @@ impl ZNode {
          //
          // Check consistency.
          let top_node_borrowed: &mut ZNode = &mut top_node.borrow_mut();
-         assert_eq!(graph_def.output_ports.len(), top_node_borrowed.data_copiers_dest_copy.len());
+         assert_eq!(
+            graph_def.output_ports_as_links.len(),
+            top_node_borrowed.data_copiers_dest_copy.len()
+         );
 
          for (i, wrapped_copier) in top_node_borrowed.data_copiers_dest_copy.iter().enumerate() {
-            let port_def = &graph_def.output_ports[i];
+            let port_def = &graph_def.output_ports_as_links[i];
             let copier: &mut PortDataCopier = &mut wrapped_copier.borrow_mut();
-            assert_eq!(port_def.0, copier.port_def.as_ref().unwrap().0);
+            assert_eq!(port_def.name, copier.port_def.as_ref().unwrap().name);
          }
       }
 
@@ -853,9 +869,9 @@ impl ZNode {
             if copier.src_index == PortDataCopier::FLOATING_SENTINEL {
                eprintln!(
                   "Floating still {}, {}, {}",
-                  copier.port_def.as_ref().unwrap().0,
-                  copier.port_def.as_ref().unwrap().1,
-                  copier.port_def.as_ref().unwrap().2
+                  copier.port_def.as_ref().unwrap().name,
+                  copier.port_def.as_ref().unwrap().src_node_name,
+                  copier.port_def.as_ref().unwrap().src_port
                );
             }
             assert_ne!(copier.src_index, PortDataCopier::FLOATING_SENTINEL);
@@ -878,7 +894,7 @@ impl ZNode {
 
             replacement_registration
                .ports_dest_copy
-               .push(PortPieceTyped(copier.port_def.as_ref().unwrap().0.clone(), piece_type));
+               .push(PortPieceTyped(copier.port_def.as_ref().unwrap().name.clone(), piece_type));
          }
          top_node_borrowed.node_type = Rc::new(replacement_registration);
       }
@@ -911,7 +927,10 @@ impl ZNode {
          for wrapped_copier in &top_node_borrowed.data_copiers_src_copy {
             let copier: &PortDataCopier = &wrapped_copier.borrow_mut();
             let &port_def = &copier.port_def.as_ref().unwrap();
-            eprintln!("direct copier: {}, {}, {}", port_def.0, port_def.1, port_def.2);
+            eprintln!(
+               "direct copier: {}, {}, {}",
+               port_def.name, port_def.src_node_name, port_def.src_port
+            );
          }
          // End: Debugging of unsourced copiers.
       }

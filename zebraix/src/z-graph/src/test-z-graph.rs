@@ -19,6 +19,7 @@
 // more meaningful tests.
 
 #![cfg(test)]
+#![allow(clippy::approx_constant)]
 
 use json5::from_str;
 use serde_json::to_string_pretty;
@@ -48,7 +49,8 @@ fn run_json_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
 
    let in_text = std::fs::read_to_string(input_full_path).unwrap();
 
-   let deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+   let mut deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+   deserialized.precompile().unwrap();
 
    let mut z_graph = ZMachine::new();
    let svg_renderer = RenderSvg::default();
@@ -107,7 +109,8 @@ fn run_aggregation_test(mint_dir: &str, input_filename: &str, output_filename: &
 
    let in_text = std::fs::read_to_string(input_full_path).unwrap();
 
-   let deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+   let mut deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+   deserialized.precompile().unwrap();
 
    let mut z_graph = ZMachine::new();
    let svg_renderer = RenderSvg::default();
@@ -151,9 +154,12 @@ fn run_aggregation_test(mint_dir: &str, input_filename: &str, output_filename: &
       let color: &ZColor = output_datavec[2].get_color().unwrap();
       assert_eq!(*color, ZColor::Rgb(0.0, 0.0, 0.7));
 
-      let boxed_language: &ZOptionBox = &output_datavec[3].get_option_box().unwrap();
-      let language: &String = &boxed_language.v.as_ref().unwrap().get_text().unwrap();
+      let boxed_language: &ZOptionBox = output_datavec[3].get_option_box().unwrap();
+      let language: &String = boxed_language.v.as_ref().unwrap().get_text().unwrap();
       assert_eq!(language, "en-US");
+
+      let coord_real = output_datavec[4].get_real().unwrap();
+      assert_eq!(coord_real, 60.0);
    }
 
    let raw_result = svg_renderer.finish_renderer(&mut z_graph).unwrap();
@@ -169,6 +175,76 @@ fn test_aggregation() {
       "aggregation_graph.json",
       "aggregation_graph.svg",
    );
+}
+
+fn run_tunnelling_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
+   let input_full_path = format!("test-files/golden-inputs/{}", input_filename);
+   let svg_golden = SvgGoldenTest::new(mint_dir, output_filename);
+
+   let in_text = std::fs::read_to_string(input_full_path).unwrap();
+
+   let mut deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+   deserialized.precompile().unwrap();
+
+   let mut z_graph = ZMachine::new();
+   let svg_renderer = RenderSvg::default();
+   register_all(&mut z_graph.registry);
+
+   z_graph.provide_graph_def(deserialized).unwrap();
+
+   z_graph.transition_to_deffed().unwrap();
+   svg_renderer.setup_render_to_stream(&mut z_graph, svg_golden.get_raw_writeable()).unwrap();
+   z_graph.transition_to_constructed().unwrap();
+
+   {
+      let realized_node: &mut ZNode = &mut z_graph.realized_node.borrow_mut();
+      let input_datavec: &mut Vec<ZPiece> = &mut realized_node.data_ports_src_copy.borrow_mut();
+      input_datavec[0] = ZPiece::Real(6.283185);
+   }
+
+   z_graph.transition_to_calculated().unwrap();
+   z_graph.transition_to_inked().unwrap();
+
+   {
+      let realized_node: &ZNode = &z_graph.realized_node.borrow();
+      let output_datavec: &Vec<ZPiece> = &realized_node.data_ports_dest_copy.borrow();
+      let output_real = match &output_datavec[0] {
+         &ZPiece::Real(v) => v,
+         _default => -1.0,
+      };
+      assert_eq!(output_real, 6.283185);
+      let text_style: &ZTextStyle = output_datavec[1].get_text_style().unwrap();
+      assert_eq!(
+         *text_style,
+         ZTextStyle {
+            color: ZColor::Rgb(0.0, 0.0, 0.7),
+            font_style: ZFontStyle {
+               family: "sans".to_string(),
+               language: ZOptionBox { v: Some(Box::new(ZPiece::Text("en-US".to_string()))) },
+               size: 10.0
+            }
+         }
+      );
+      let color: &ZColor = output_datavec[2].get_color().unwrap();
+      assert_eq!(*color, ZColor::Rgb(0.0, 0.0, 0.7));
+
+      let boxed_language: &ZOptionBox = output_datavec[3].get_option_box().unwrap();
+      let language: &String = boxed_language.v.as_ref().unwrap().get_text().unwrap();
+      assert_eq!(language, "en-US");
+
+      let coord_real = output_datavec[4].get_real().unwrap();
+      assert_eq!(coord_real, 60.0);
+   }
+
+   let raw_result = svg_renderer.finish_renderer(&mut z_graph).unwrap();
+   z_graph.transition_to_finished().unwrap();
+
+   svg_golden.handover_result(raw_result);
+}
+
+#[test]
+fn test_tunnelling() {
+   run_tunnelling_test("test-files/golden-svgs", "tunnelling_graph.json", "tunnelling_graph.svg");
 }
 
 // Retire once ZGraph subsumes ZebraixGraph.
@@ -239,7 +315,7 @@ fn test_sphinx() {
    run_one_test("sphinx.pb.txt", "sphinx_ranks.svg", &["--label_with_ranks"]);
 }
 
-fn run_idem_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
+fn run_idem_adjusted_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
    let mut json_golden = JsonGoldenTest::new(mint_dir, input_filename, output_filename);
 
    let in_text = json_golden.read_to_string();
@@ -260,7 +336,25 @@ fn run_idem_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
    json_golden.provide_result(&serialized);
 }
 
+fn run_idem_test(mint_dir: &str, input_filename: &str, output_filename: &str) {
+   let mut json_golden = JsonGoldenTest::new(mint_dir, input_filename, output_filename);
+   let in_text = json_golden.read_to_string();
+   let deserialized = from_str::<ZGraphDef>(&in_text).unwrap();
+   let serialized = to_string_pretty::<ZGraphDef>(&deserialized).unwrap();
+   json_golden.provide_result(&serialized);
+}
+
 #[test]
 fn test_idem_simple() {
-   run_idem_test("test-files/golden-inputs/", "simple_graph.json", "simple_graph.json");
+   run_idem_adjusted_test("test-files/golden-inputs/", "simple_graph.json", "simple_graph.json");
+}
+
+#[test]
+fn test_idem_aggregation() {
+   run_idem_test("test-files/golden-inputs/", "aggregation_graph.json", "aggregation_graph.json");
+}
+
+#[test]
+fn test_idem_tunnelling() {
+   run_idem_test("test-files/golden-inputs/", "tunnelling_graph.json", "tunnelling_graph.json");
 }
