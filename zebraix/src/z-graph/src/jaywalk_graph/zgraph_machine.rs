@@ -13,16 +13,13 @@
 // limitations under the License.
 
 use crate::jaywalk_graph::zgraph_base::PortDataVec;
-
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
-
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_graphdef::PresetPiece;
 use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use crate::jaywalk_graph::zgraph_node::PortDataCopier;
 use crate::jaywalk_graph::zgraph_node::ZNode;
-
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -128,6 +125,8 @@ impl ZMachine {
          return Err(ZGraphError::DuplicateGraphDef);
       }
 
+      assert!(graph_def.is_precompiled);
+
       self.graph_def = graph_def;
       self.has_graph_def = true;
       Ok(())
@@ -203,10 +202,11 @@ impl ZMachine {
    }
 
    fn build_from_graphdef(&mut self) -> Result<(), ZGraphError> {
+      assert!(self.graph_def.is_precompiled);
       ZNode::reregister_user_graph_input_porting(&self.realized_node, &self.graph_def.inputs)?;
       ZNode::seed_user_graph_outputs_non_void(
          &self.realized_node,
-         &self.graph_def.output_ports,
+         &self.graph_def.output_ports_as_links,
          &self.null_node,
          &self.floating_port_data,
       )?;
@@ -217,18 +217,16 @@ impl ZMachine {
       //    &self.floating_port_data,
       // )?;
 
-      {
-         // realized_node.data_copiers_dest_copy populated before.
-         //
-         // realized_node.data_copiers_src_copy populated by builder.
-         ZNode::realize_from_usergraph_graphdef(
-            &self.realized_node,
-            &self.graph_def,
-            &self.registry,
-            &self.null_node,
-            &self.floating_port_data,
-         )?;
-      }
+      // realized_node.data_copiers_dest_copy populated before.
+      //
+      // realized_node.data_copiers_src_copy populated by builder.
+      ZNode::realize_from_usergraph_graphdef(
+         &self.realized_node,
+         &self.graph_def,
+         &self.registry,
+         &self.null_node,
+         &self.floating_port_data,
+      )?;
 
       Ok(())
    }
@@ -255,7 +253,7 @@ impl ZNode {
 
          eprintln!(
             "Copying for {} src data = \"{:?}\", dest data = \"{:?}\"",
-            copier.port_def.as_ref().unwrap().0,
+            copier.port_def.as_ref().unwrap().name,
             src_port_data[copier.src_index],
             dest_port_data[copier.dest_index]
          );
@@ -264,7 +262,7 @@ impl ZNode {
 
          eprintln!(
             "Copying for {} src data = \"{:?}\", dest data = \"{:?}\"",
-            copier.port_def.as_ref().unwrap().0,
+            copier.port_def.as_ref().unwrap().name,
             src_port_data[copier.src_index],
             dest_port_data[copier.dest_index]
          );

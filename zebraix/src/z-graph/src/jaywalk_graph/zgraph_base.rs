@@ -118,7 +118,7 @@ pub struct ZFontStyle {
    pub size: f64,
    #[serde(skip_serializing_if = "String::is_empty")]
    pub family: String,
-   #[serde(skip_serializing_if = "ZOptionBox::is_default")]
+   #[serde(skip_serializing_if = "is_default", default)]
    pub language: ZOptionBox, // Example: "en-US".
 }
 
@@ -132,22 +132,13 @@ impl Default for ZFontStyle {
    }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Default)]
 pub struct ZTextStyle {
    #[serde(skip_serializing_if = "is_default")]
    pub font_style: ZFontStyle,
    #[serde(skip_serializing_if = "is_default")]
    pub color: ZColor,
 }
-
-impl Default for ZTextStyle {
-   fn default() -> Self {
-      ZTextStyle { font_style: ZFontStyle::default(), color: ZColor::default() }
-   }
-}
-
-// context.set_source_rgb(0.5, 0.0, 0.0);
-// Centre 160,120, radius 30
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct CoordReal2D(pub f64, pub f64);
@@ -199,7 +190,7 @@ impl Default for ZPiece {
    }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct ZOptionBox {
    pub v: Option<Box<ZPiece>>,
 }
@@ -218,12 +209,6 @@ impl PartialEq for ZOptionBox {
    }
 }
 impl Eq for ZOptionBox {}
-
-impl ZOptionBox {
-   pub fn is_default(&self) -> bool {
-      self.v.is_none()
-   }
-}
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub enum ZPieceType {
