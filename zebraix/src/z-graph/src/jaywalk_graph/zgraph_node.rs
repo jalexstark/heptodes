@@ -16,7 +16,7 @@ use crate::jaywalk_graph::zgraph_base::PortDataVec;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_graphdef::PresetPiece;
-use crate::jaywalk_graph::zgraph_graphdef::ZPortDef;
+use crate::jaywalk_graph::zgraph_graphdef::ZLinkPort;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistration;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -29,9 +29,7 @@ pub struct PortDataCopier {
    pub src_index: usize,
    pub dest_port_data: PortDataVec,
    pub dest_index: usize,
-   pub port_def: Option<ZPortDef>,
-   // #[derive(Clone, Serialize, Deserialize)]
-   // pub struct ZPortDef(pub String, pub String, pub String);
+   pub port_def: Option<ZLinkPort>,
 }
 
 impl PortDataCopier {

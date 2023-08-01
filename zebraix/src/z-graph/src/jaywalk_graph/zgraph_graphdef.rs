@@ -15,9 +15,11 @@
 use crate::jaywalk_graph::jaywalk_foundation::is_default;
 use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
 use crate::jaywalk_graph::zgraph_base::ZCanvas;
+use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use serde::{Deserialize, Serialize};
+use std::collections::LinkedList;
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ZGraphDefCategory {
@@ -91,8 +93,20 @@ pub struct PresetPiece(pub String, pub ZPiece);
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ZPortDef(pub String, pub String, pub String);
 
+#[derive(Clone, Deserialize, Default)]
+pub struct ZLinkPort {
+   pub name: String,
+   pub is_void: bool,
+   pub src_node_name: String,
+   pub src_port: String,
+   pub src_port_full: Option<String>,
+   pub src_subfields: LinkedList<String>,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ZNodeDef {
+   #[serde(skip_serializing, default)]
+   pub is_precompiled: bool,
    pub name: String,
    #[serde(skip_serializing_if = "is_default")]
    pub description: Option<String>,
@@ -115,6 +129,8 @@ pub struct ZNodeDef {
 
 #[derive(Clone, Serialize, Deserialize, Default)]
 pub struct ZGraphDef {
+   #[serde(skip_serializing, default)]
+   pub is_precompiled: bool,
    #[serde(default, skip_serializing_if = "is_default")]
    pub category: ZGraphDefCategory,
 
@@ -136,6 +152,40 @@ pub struct ZGraphDef {
    #[serde(default)]
    pub output_ports: Vec<ZPortDef>,
 
+   #[serde(skip_serializing, default)]
+   pub output_ports_as_links: Vec<ZLinkPort>,
+
    #[serde(skip_serializing_if = "Option::is_none")]
    pub canvas: Option<ZCanvas>,
+}
+
+impl ZNodeDef {
+   pub fn precompile(&mut self) {
+      assert!(!self.is_precompiled);
+      //
+      self.is_precompiled = true;
+   }
+}
+
+impl ZGraphDef {
+   pub fn precompile(&mut self) -> Result<&mut Self, ZGraphError> {
+      assert!(!self.is_precompiled);
+      assert!(self.output_ports_as_links.is_empty());
+      self.output_ports_as_links.clear();
+      for port_def in &self.output_ports {
+         self.output_ports_as_links.push(ZLinkPort {
+            name: port_def.0.clone(),
+            src_node_name: port_def.1.clone(),
+            src_port: port_def.2.clone(),
+            is_void: port_def.2 == "void",
+            ..Default::default()
+         });
+      }
+      self.is_precompiled = true;
+
+      for node in &mut self.nodes {
+         node.precompile();
+      }
+      Ok(self)
+   }
 }

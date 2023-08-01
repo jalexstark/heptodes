@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::jaywalk_graph::zgraph_base::CoordReal2D;
 use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
 use crate::jaywalk_graph::zgraph_base::ZColor;
 use crate::jaywalk_graph::zgraph_base::ZFontStyle;
@@ -34,7 +35,7 @@ pub fn text_style_agg_calculation(
    let font_style: &ZFontStyle = in_data[0].get_font_style().unwrap();
    let color: &ZColor = in_data[1].get_color().unwrap();
 
-   let text_style: &mut ZTextStyle = &mut out_data[0].get_mut_text_style().unwrap();
+   let text_style: &mut ZTextStyle = out_data[0].get_mut_text_style().unwrap();
    text_style.font_style = font_style.clone();
    text_style.color = color.clone();
 }
@@ -47,9 +48,9 @@ pub fn text_style_disagg_calculation(
 ) {
    let text_style: &ZTextStyle = in_data[0].get_text_style().unwrap();
 
-   let font_style: &mut ZFontStyle = &mut out_data[0].get_mut_font_style().unwrap();
+   let font_style: &mut ZFontStyle = out_data[0].get_mut_font_style().unwrap();
    *font_style = text_style.font_style.clone();
-   let color: &mut ZColor = &mut out_data[1].get_mut_color().unwrap();
+   let color: &mut ZColor = out_data[1].get_mut_color().unwrap();
    *color = text_style.color.clone();
 }
 
@@ -61,13 +62,26 @@ pub fn font_style_disagg_calculation(
 ) {
    let font_style: &ZFontStyle = in_data[0].get_font_style().unwrap();
 
-   let size: &mut f64 = &mut out_data[0].get_mut_real().unwrap();
+   let size: &mut f64 = out_data[0].get_mut_real().unwrap();
    *size = font_style.size;
-   let family: &mut String = &mut out_data[1].get_mut_text().unwrap();
+   let family: &mut String = out_data[1].get_mut_text().unwrap();
    *family = font_style.family.clone();
-   let language: &mut ZOptionBox = &mut out_data[2].get_mut_option_box().unwrap();
+   let language: &mut ZOptionBox = out_data[2].get_mut_option_box().unwrap();
    *language = font_style.language.clone();
-   // &font_style.language.as_ref().unwrap().as_ref().get_text()
+}
+
+pub fn coord2d_disagg_calculation(
+   _renderer_data_in: &mut ZRendererData,
+   _state_data: &mut ZNodeStateData,
+   in_data: &[ZPiece],
+   out_data: &mut [ZPiece],
+) {
+   let coord2d: &CoordReal2D = in_data[0].get_coord2d().unwrap();
+
+   let coord_0: &mut f64 = out_data[0].get_mut_real().unwrap();
+   *coord_0 = coord2d.0;
+   let coord_1: &mut f64 = out_data[1].get_mut_real().unwrap();
+   *coord_1 = coord2d.1;
 }
 
 pub fn register_builtin_library(registry: &mut ZRegistry) {
@@ -120,6 +134,19 @@ pub fn register_builtin_library(registry: &mut ZRegistry) {
             PortPieceTyped("size".to_string(), ZPieceType::Real),
             PortPieceTyped("family".to_string(), ZPieceType::Text),
             PortPieceTyped("language".to_string(), ZPieceType::OptionBox),
+         ])
+         .category(ZNodeCategory::Disaggregator)
+         .build()
+         .unwrap(),
+   );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default()
+         .name("coord2d_disagg".to_string())
+         .calculation_fn(coord2d_disagg_calculation)
+         .ports_dest_copy(vec![PortPieceTyped("coord".to_string(), ZPieceType::Coord2D)])
+         .ports_src_copy(vec![
+            PortPieceTyped("0".to_string(), ZPieceType::Real),
+            PortPieceTyped("1".to_string(), ZPieceType::Real),
          ])
          .category(ZNodeCategory::Disaggregator)
          .build()
