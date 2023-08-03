@@ -128,61 +128,108 @@ impl ZNode {
       assert!(subnode.data_copiers_dest_copy.is_empty());
       subnode.data_copiers_dest_copy.clear();
 
-      for edge in &n_def.edges {
-         eprintln!("   Adding subnode dependency on: {}", edge.src_node);
-         let is_internal_src_node: bool = edge.src_node != "inputs";
-         let src_node_znode: &Rc<RefCell<ZNode>> = if is_internal_src_node {
+      let mut src_node_name = String::default();
+      for link in &n_def.all_links {
+         if src_node_name != link.src_node_name {
+            src_node_name = link.src_node_name.clone();
+            eprintln!("   Adding subnode dependency on: {}", src_node_name);
+         }
+         let src_node_znode: &Rc<RefCell<ZNode>> = if !link.is_graph_input {
             let node_num: usize =
-               *self.subgraph_node_map.as_ref().unwrap().get(&edge.src_node).unwrap();
+               *self.subgraph_node_map.as_ref().unwrap().get(&src_node_name).unwrap();
             &self.subgraph_nodes[node_num]
          } else {
             eprintln!("      !! Edge source is not internal");
             null_node // DDD Really: not self?.
          };
 
-         for connection in &edge.connections {
-            // Name among source nodes's outputs, name among dest node's inputs.
-            eprintln!(
-               "      Adding data copier: {}:{} to {}:{}",
-               edge.src_node, connection.0, n_def.name, connection.1
-            );
+         eprintln!(
+            "      Adding data copier: {}:{} to {}:{}",
+            src_node_name, link.src_port, n_def.name, link.name
+         );
 
-            // Only leaf nodes actually create copiers (plus
-            // the very outer user-graph realization).
-            let edges_copier = Rc::new(RefCell::new(PortDataCopier {
-               src_node: src_node_znode.clone(),
-               src_port_data: floating_port_data.clone(),
-               src_index: if connection.0 == "void" {
-                  PortDataCopier::VOID_SENTINEL
-               } else {
-                  PortDataCopier::FLOATING_SENTINEL
-               },
-               dest_port_data: floating_port_data.clone(),
-               dest_index: if connection.0 == "void" {
-                  PortDataCopier::VOID_SENTINEL
-               } else {
-                  PortDataCopier::FLOATING_SENTINEL
-               },
-               port_def: Some(ZLinkPort {
-                  name: connection.1.clone(),
-                  src_node_name: edge.src_node.clone(),
-                  src_port: connection.0.clone(),
-                  is_void: connection.0 == "void",
-                  ..Default::default()
-               }),
-            }));
-            subnode.data_copiers_dest_copy.push(edges_copier.clone());
+         let sentinel_index = if link.is_void {
+            PortDataCopier::VOID_SENTINEL
+         } else {
+            PortDataCopier::FLOATING_SENTINEL
+         };
 
-            if is_internal_src_node {
-               let mut src_node_znode_bmut = src_node_znode.borrow_mut();
-               src_node_znode_bmut.data_copiers_src_copy.push(edges_copier);
-               src_node_znode_bmut.is_active = true;
-            } else {
-               self.data_copiers_src_copy.push(edges_copier);
-               self.is_active = true;
-            }
+         // Only leaf nodes actually create copiers (plus
+         // the very outer user-graph realization).
+         let edges_copier = Rc::new(RefCell::new(PortDataCopier {
+            src_node: src_node_znode.clone(),
+            src_port_data: floating_port_data.clone(),
+            src_index: sentinel_index,
+            dest_port_data: floating_port_data.clone(),
+            dest_index: sentinel_index,
+            port_def: Some(link.clone()),
+         }));
+         subnode.data_copiers_dest_copy.push(edges_copier.clone());
+
+         if !link.is_graph_input {
+            let mut src_node_znode_bmut = src_node_znode.borrow_mut();
+            src_node_znode_bmut.data_copiers_src_copy.push(edges_copier);
+            src_node_znode_bmut.is_active = true;
+         } else {
+            self.data_copiers_src_copy.push(edges_copier);
+            self.is_active = true;
          }
       }
+      // for edge in &n_def.edges {
+      //    eprintln!("   Adding subnode dependency on: {}", edge.src_node);
+      //    let is_internal_src_node: bool = edge.src_node != "inputs";
+      //    let src_node_znode: &Rc<RefCell<ZNode>> = if is_internal_src_node {
+      //       let node_num: usize =
+      //          *self.subgraph_node_map.as_ref().unwrap().get(&edge.src_node).unwrap();
+      //       &self.subgraph_nodes[node_num]
+      //    } else {
+      //       eprintln!("      !! Edge source is not internal");
+      //       null_node // DDD Really: not self?.
+      //    };
+
+      //    for connection in &edge.connections {
+      //       // Name among source nodes's outputs, name among dest node's inputs.
+      //       eprintln!(
+      //          "      Adding data copier: {}:{} to {}:{}",
+      //          edge.src_node, connection.0, n_def.name, connection.1
+      //       );
+
+      //       // Only leaf nodes actually create copiers (plus
+      //       // the very outer user-graph realization).
+      //       let edges_copier = Rc::new(RefCell::new(PortDataCopier {
+      //          src_node: src_node_znode.clone(),
+      //          src_port_data: floating_port_data.clone(),
+      //          src_index: if connection.0 == "void" {
+      //             PortDataCopier::VOID_SENTINEL
+      //          } else {
+      //             PortDataCopier::FLOATING_SENTINEL
+      //          },
+      //          dest_port_data: floating_port_data.clone(),
+      //          dest_index: if connection.0 == "void" {
+      //             PortDataCopier::VOID_SENTINEL
+      //          } else {
+      //             PortDataCopier::FLOATING_SENTINEL
+      //          },
+      //          port_def: Some(ZLinkPort {
+      //             name: connection.1.clone(),
+      //             src_node_name: edge.src_node.clone(),
+      //             src_port: connection.0.clone(),
+      //             is_void: connection.0 == "void",
+      //             ..Default::default()
+      //          }),
+      //       }));
+      //       subnode.data_copiers_dest_copy.push(edges_copier.clone());
+
+      //       if is_internal_src_node {
+      //          let mut src_node_znode_bmut = src_node_znode.borrow_mut();
+      //          src_node_znode_bmut.data_copiers_src_copy.push(edges_copier);
+      //          src_node_znode_bmut.is_active = true;
+      //       } else {
+      //          self.data_copiers_src_copy.push(edges_copier);
+      //          self.is_active = true;
+      //       }
+      //    }
+      // }
       Ok(())
    }
 
@@ -233,6 +280,7 @@ impl ZNode {
                copier.port_def.as_ref().unwrap().src_node_name,
                copier.port_def.as_ref().unwrap().src_port
             );
+            // At this stage no copier should have unresolved source.
             assert!(!Rc::ptr_eq(&copier.src_node, null_node));
 
             if !Rc::ptr_eq(wrapped_subnode, &copier.src_node) {
@@ -246,8 +294,7 @@ impl ZNode {
             copier.src_port_data = subnode.data_ports_src_copy.clone();
             let port_name: &String = &copier.port_def.as_ref().unwrap().src_port;
 
-            if port_name == "void" {
-               // copier.src_index = PortDataCopier::VOID_SENTINEL;
+            if copier.port_def.as_ref().unwrap().is_void {
                assert_eq!(copier.src_index, PortDataCopier::VOID_SENTINEL);
             } else {
                let gotten = port_name_map.get(port_name);
@@ -319,9 +366,9 @@ impl ZNode {
             // assert!(Rc::ptr_eq(&self.subgraph_nodes[node_num], &copier.dest_node));
             copier.dest_port_data = subnode.data_ports_dest_copy.clone();
             let dest_port_name: &String = &copier.port_def.as_ref().unwrap().name;
-            let src_port_name: &String = &copier.port_def.as_ref().unwrap().src_port;
+            // let src_port_name: &String = &copier.port_def.as_ref().unwrap().src_port;
 
-            if src_port_name == "void" {
+            if copier.port_def.as_ref().unwrap().is_void {
                // copier.dest_index = PortDataCopier::VOID_SENTINEL;
                assert_eq!(copier.dest_index, PortDataCopier::VOID_SENTINEL);
             } else {
@@ -594,6 +641,7 @@ impl ZNode {
                         }
                         let mutable_port: &mut ZLinkPort = &mut found_port.unwrap();
                         mutable_port.name = copier.port_def.as_ref().unwrap().name.clone();
+                        // No need to re-process link-port because only name is changed.
                         copier.port_def = Some(mutable_port.clone());
 
                         eprintln!(
@@ -641,96 +689,177 @@ impl ZNode {
                            copier.port_def.as_ref().unwrap().src_node_name,
                            copier.port_def.as_ref().unwrap().src_port,
                         );
-                        assert_eq!(copier.port_def.as_ref().unwrap().src_port, "void");
+                        assert!(copier.port_def.as_ref().unwrap().is_void);
                         top_node_borrowed.data_copiers_src_copy.push(copier_wrapped.clone());
                         count_of_pushed += 1;
                      } else {
                         let mut found = false;
-                        for edge in &n_def.edges {
-                           for connection in &edge.connections {
-                              // Name among source nodes's outputs, name among dest node's inputs.
-                              if connection.1 != copier.port_def.as_ref().unwrap().src_port {
-                                 continue;
-                              }
+
+                        for link in &n_def.all_links {
+                           // Name among source nodes's outputs, name among dest node's inputs.
+                           if link.name != copier.port_def.as_ref().unwrap().src_port {
+                              continue;
+                           }
+                           eprintln!(
+                              "      Relocating subgraph inbound data copier: {}:{} to {}:{}",
+                              link.src_node_name, link.src_port, n_def.name, link.name
+                           );
+
+                           {
                               eprintln!(
-                                 "      Relocating subgraph inbound data copier: {}:{} to {}:{}",
-                                 edge.src_node, connection.0, n_def.name, connection.1
+                                 "           note subnode dependency on: {}",
+                                 link.src_node_name
                               );
+                              let src_node_znode: &Rc<RefCell<ZNode>> = if !link.is_graph_input {
+                                 let node_num: usize = *top_node_borrowed
+                                    .subgraph_node_map
+                                    .as_ref()
+                                    .unwrap()
+                                    .get(&link.src_node_name)
+                                    .unwrap();
+                                 assert!(!Rc::ptr_eq(
+                                    &top_node_borrowed.subgraph_nodes[node_num],
+                                    null_node
+                                 ));
+                                 &top_node_borrowed.subgraph_nodes[node_num]
+                              } else {
+                                 eprintln!("      !!-- Edge source is not internal");
+                                 null_node // DDD Really: not self?.
+                              };
 
                               {
-                                 eprintln!(
-                                    "           note subnode dependency on: {}",
-                                    edge.src_node
-                                 );
-                                 let is_internal_src_node: bool = edge.src_node != "inputs";
-                                 let src_node_znode: &Rc<RefCell<ZNode>> = if is_internal_src_node {
-                                    let node_num: usize = *top_node_borrowed
-                                       .subgraph_node_map
-                                       .as_ref()
-                                       .unwrap()
-                                       .get(&edge.src_node)
-                                       .unwrap();
-                                    &top_node_borrowed.subgraph_nodes[node_num]
+                                 let sentinel_index = if link.is_void {
+                                    PortDataCopier::VOID_SENTINEL
                                  } else {
-                                    eprintln!("      !!-- Edge source is not internal");
-                                    null_node // DDD Really: not self?.
+                                    PortDataCopier::FLOATING_SENTINEL
                                  };
-
-                                 // DDD Replace with surgery of existing.
-
-                                 copier.src_node = src_node_znode.clone();
-                                 // copier.src_node = top_node.clone();
-                                 assert_eq!(
-                                    if connection.0 == "void" {
-                                       PortDataCopier::VOID_SENTINEL
-                                    } else {
-                                       PortDataCopier::FLOATING_SENTINEL
-                                    },
-                                    copier.src_index
-                                 );
-                                 assert_eq!(
-                                    if connection.0 == "void" {
-                                       PortDataCopier::VOID_SENTINEL
-                                    } else {
-                                       PortDataCopier::FLOATING_SENTINEL
-                                    },
-                                    copier.dest_index
-                                 );
-                                 copier.port_def = Some(ZLinkPort {
-                                    name: copier.port_def.as_ref().unwrap().name.clone(), // The port name is unchanged.
-                                    src_node_name: edge.src_node.clone(),
-                                    src_port: connection.0.clone(),
-                                    is_void: connection.0 == "void",
-                                    ..Default::default()
-                                 });
-                                 if Rc::ptr_eq(src_node_znode, null_node) {
-                                    eprintln!("      Pushing null-linked to outer node.");
-                                    // DDD just always use self? Problem is we remove when should not.
-                                    top_node_borrowed
-                                       .data_copiers_src_copy
-                                       .push(copier_wrapped.clone());
-                                    count_of_pushed += 1;
-                                    // subnode.data_copiers_src_copy.push(copier_wrapped.clone());
-                                 } else {
-                                    src_node_znode
-                                       .borrow_mut()
-                                       .data_copiers_src_copy
-                                       .push(copier_wrapped.clone());
-                                    count_of_pushed += 1;
-                                    src_node_znode.borrow_mut().is_active = true;
-                                 }
-
-                                 eprintln!(
-                                    "   ... remapped as from this node {}, {}, {}",
-                                    copier.port_def.as_ref().unwrap().name,
-                                    copier.port_def.as_ref().unwrap().src_node_name,
-                                    copier.port_def.as_ref().unwrap().src_port,
-                                 );
+                                 assert_eq!(copier.src_index, sentinel_index);
+                                 assert_eq!(copier.dest_index, sentinel_index);
                               }
-                              found = true;
-                              break;
+                              copier.src_node = src_node_znode.clone();
+                              let mut new_link = link.clone();
+                              new_link.name = copier.port_def.as_ref().unwrap().name.clone();
+                              // No need to re-process link if only name is changed.
+                              copier.port_def = Some(new_link);
+                              // See assertion above, and prefer link.is_graph_input when enough test examples.
+                              if Rc::ptr_eq(src_node_znode, null_node) {
+                                 eprintln!("      Pushing null-linked to outer node.");
+                                 // DDD just always use self? Problem is we remove when should not.
+                                 top_node_borrowed
+                                    .data_copiers_src_copy
+                                    .push(copier_wrapped.clone());
+                                 count_of_pushed += 1;
+                              } else {
+                                 src_node_znode
+                                    .borrow_mut()
+                                    .data_copiers_src_copy
+                                    .push(copier_wrapped.clone());
+                                 count_of_pushed += 1;
+                                 src_node_znode.borrow_mut().is_active = true;
+                              }
+
+                              eprintln!(
+                                 "   ... remapped as from this node {}, {}, {}",
+                                 copier.port_def.as_ref().unwrap().name,
+                                 copier.port_def.as_ref().unwrap().src_node_name,
+                                 copier.port_def.as_ref().unwrap().src_port,
+                              );
                            }
+                           found = true;
+                           break;
                         }
+
+                        // for edge in &n_def.edges {
+                        //    for connection in &edge.connections {
+                        //       // Name among source nodes's outputs, name among dest node's inputs.
+                        //       if connection.1 != copier.port_def.as_ref().unwrap().src_port {
+                        //          continue;
+                        //       }
+                        //       eprintln!(
+                        //          "      Relocating subgraph inbound data copier: {}:{} to {}:{}",
+                        //          edge.src_node, connection.0, n_def.name, connection.1
+                        //       );
+
+                        //       {
+                        //          eprintln!(
+                        //             "           note subnode dependency on: {}",
+                        //             edge.src_node
+                        //          );
+                        //          let is_internal_src_node: bool = edge.src_node != "inputs";
+                        //          let src_node_znode: &Rc<RefCell<ZNode>> = if is_internal_src_node {
+                        //             let node_num: usize = *top_node_borrowed
+                        //                .subgraph_node_map
+                        //                .as_ref()
+                        //                .unwrap()
+                        //                .get(&edge.src_node)
+                        //                .unwrap();
+                        //             &top_node_borrowed.subgraph_nodes[node_num]
+                        //          } else {
+                        //             eprintln!("      !!-- Edge source is not internal");
+                        //             null_node // DDD Really: not self?.
+                        //          };
+
+                        //          // DDD Replace with surgery of existing.
+
+                        //          copier.src_node = src_node_znode.clone();
+                        //          // copier.src_node = top_node.clone();
+                        //          assert_eq!(
+                        //             if connection.0 == "void" {
+                        //                PortDataCopier::VOID_SENTINEL
+                        //             } else {
+                        //                PortDataCopier::FLOATING_SENTINEL
+                        //             },
+                        //             copier.src_index
+                        //          );
+                        //          assert_eq!(
+                        //             if connection.0 == "void" {
+                        //                PortDataCopier::VOID_SENTINEL
+                        //             } else {
+                        //                PortDataCopier::FLOATING_SENTINEL
+                        //             },
+                        //             copier.dest_index
+                        //          );
+                        //          copier.port_def = Some(ZLinkPort {
+                        //             name: copier.port_def.as_ref().unwrap().name.clone(), // The port name is unchanged.
+                        //             src_node_name: edge.src_node.clone(),
+                        //             src_port: connection.0.clone(),
+                        //             is_void: connection.0 == "void",
+                        //             is_graph_input: edge.src_node == "inputs",
+                        //             ..Default::default()
+                        //          });
+                        //          if Rc::ptr_eq(src_node_znode, null_node) {
+                        //             eprintln!("      Pushing null-linked to outer node.");
+                        //             // DDD just always use self? Problem is we remove when should not.
+                        //             top_node_borrowed
+                        //                .data_copiers_src_copy
+                        //                .push(copier_wrapped.clone());
+                        //             count_of_pushed += 1;
+                        //             // subnode.data_copiers_src_copy.push(copier_wrapped.clone());
+                        //          } else {
+                        //             src_node_znode
+                        //                .borrow_mut()
+                        //                .data_copiers_src_copy
+                        //                .push(copier_wrapped.clone());
+                        //             count_of_pushed += 1;
+                        //             src_node_znode.borrow_mut().is_active = true;
+                        //          }
+
+                        //          eprintln!(
+                        //             "   ... remapped as from this node {}, {}, {}",
+                        //             copier.port_def.as_ref().unwrap().name,
+                        //             copier.port_def.as_ref().unwrap().src_node_name,
+                        //             copier.port_def.as_ref().unwrap().src_port,
+                        //          );
+                        //       }
+                        //       found = true;
+                        //       break;
+                        //    }
+                        // }
+
+                        //
+
+                        //
+
                         if !found {
                            eprintln!(
                               "Unable to find connection for {} in \"{}\" subgraph",
@@ -739,7 +868,7 @@ impl ZNode {
                            );
                            assert!(found);
                         }
-                     } // if void sentinal
+                     } // if void sentinel
                   }
                   assert_eq!(count_of_pushed, count_of_src_copy);
                }
@@ -747,30 +876,21 @@ impl ZNode {
          }
       }
 
+      // Not true: void copiers are left attached to nested subgraph sources.
+      // if !is_toplevel {
+      //    let top_node_borrowed: &ZNode = &top_node.borrow();
+      //    assert!(top_node_borrowed.data_copiers_src_copy.is_empty());
+      // }
+
       if is_toplevel {
-         // CCC Top-level only.
-         //
-         // This could be applied to any subgraph, but the remaining copiers-src should be empty.
+         // This could be applied to any subgraph, but the remaining copiers-src should be empty or void.
 
          let top_node_borrowed: &ZNode = &top_node.borrow();
          for copier in &top_node_borrowed.data_copiers_src_copy {
             let new_src_node = &mut copier.borrow_mut();
             assert!(Rc::ptr_eq(&new_src_node.src_node, null_node));
+            assert!(new_src_node.port_def.as_ref().unwrap().is_graph_input);
             new_src_node.src_node = top_node.clone();
-
-            // if port_def.2 != "void" {
-            //    // Port name, src node name, src port name.
-            //    let node_num: usize = *subgraph_node_map.get(&port_def.1).unwrap();
-            //    let src_node_znode: &Rc<RefCell<ZNode>> =
-            //       &top_node_borrowed.subgraph_nodes[node_num];
-            //    {
-            //       let mut src_node_znode_bmut = src_node_znode.borrow_mut();
-            //       // Note that this clones the reference to the copier.
-            //       src_node_znode_bmut.data_copiers_src_copy.push(external_copier.clone());
-            //       src_node_znode_bmut.is_active = true;
-            //    }
-            //    borrow_hold.src_node = src_node_znode.clone();
-            // }
          }
       }
 
@@ -875,6 +995,15 @@ impl ZNode {
                );
             }
             assert_ne!(copier.src_index, PortDataCopier::FLOATING_SENTINEL);
+            assert!(!Rc::ptr_eq(&copier.src_node, null_node));
+            assert_eq!(
+               Rc::ptr_eq(&copier.src_node, top_node),
+               copier.port_def.as_ref().unwrap().is_graph_input
+            );
+            assert_eq!(
+               copier.src_index == PortDataCopier::VOID_SENTINEL,
+               copier.port_def.as_ref().unwrap().is_void
+            );
             let piece_type = if copier.src_index == PortDataCopier::VOID_SENTINEL {
                // This is a legitimate path.
                ZPieceType::Void

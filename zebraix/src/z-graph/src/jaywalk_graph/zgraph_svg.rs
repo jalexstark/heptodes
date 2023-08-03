@@ -362,13 +362,10 @@ pub fn register_renderer_library(registry: &mut ZRegistry) {
     {
       "name": "actual_circle",
       "element": "Test circle",
-      "edges": [
-        { "src_node": "inputs",
-          "connections": [
-            [ "sg_color", "color" ],
-            [ "sg_center", "center" ],
-            [ "sg_radius", "radius" ]
-          ] }
+      "links": [
+            [ "color", "inputs", "sg_color" ],
+            [ "center", "inputs", "sg_center" ],
+            [ "radius", "inputs", "sg_radius" ]
       ]
     },
     { "name": "inner preset int",

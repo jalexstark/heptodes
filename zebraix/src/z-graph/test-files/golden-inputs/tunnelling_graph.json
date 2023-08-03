@@ -34,62 +34,47 @@
     {
       "name": "test text",
       "element": "Test text",
-      "edges": [
-        {  "src_node": "test text data",
-           "connections": [
-             [ "color", "color" ],
-             [ "location", "location" ],
-             [ "text", "text" ],
-             [ "font style", "font style" ]
-           ] }
+      "links": [
+             [ "color", "test text data", "color" ],
+             [ "location", "test text data", "location" ],
+             [ "text", "test text data", "text" ],
+             [ "font style", "test text data", "font style" ]
       ]
     },
     {
       "name": "manual aggregation",
       "element": "text_style_agg",
-      "edges": [
-        {  "src_node": "test text data",
-           "connections": [
-             [ "color", "color" ],
-             [ "font style", "font style" ]
-           ] }
+      "links": [
+             [ "color", "test text data", "color" ],
+             [ "font style", "test text data", "font style" ]
       ]
     },
     {
       "name": "manual disaggregation",
       "element": "text_style_disagg",
-      "edges": [
-        {  "src_node": "manual aggregation",
-           "connections": [
-             [ "text style", "text style" ]
-           ] }
+      "links": [
+             [ "text style", "manual aggregation", "text style" ]
       ]
     },
     {
       "name": "manual more disagg",
       "element": "font_style_disagg",
-      "edges": [
-        {  "src_node": "manual disaggregation",
-           "connections": [
-             [ "font style", "font style" ]
-           ] }
+      "links": [
+             [ "font style", "manual disaggregation", "font style" ]
       ]
     },
     {
       "name": "coord disagg",
       "element": "coord2d_disagg",
-      "edges": [
-        {  "src_node": "test text data",
-           "connections": [
-             [ "location", "coord" ]
-           ] }
+      "links": [
+             [ "coord", "test text data", "location" ]
       ]
     }
   ],
   "output_ports": [
     [ "passthrough_real", "inputs", "real_input" ],
     [ "manual agg pull", "manual aggregation", "text style" ],
-    [ "manual disagg pull", "manual disaggregation", "color" ],
+    [ "manual disagg pull", "manual disaggregation", "color.text style" ],
     [ "manual language pull", "manual more disagg", "language" ],
     [ "coord disagg pull", "coord disagg", "1" ],
     [ "text dependency", "test text", "void" ]
