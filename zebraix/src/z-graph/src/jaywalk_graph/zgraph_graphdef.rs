@@ -21,6 +21,42 @@ use crate::jaywalk_graph::zgraph_base::ZPiece;
 use serde::{Deserialize, Serialize};
 use std::collections::LinkedList;
 
+#[derive(Clone, Serialize, Deserialize, Default)]
+pub struct ZLinkPort {
+   pub name: String,
+   #[serde(skip_serializing_if = "is_default", default)]
+   pub is_void: bool,
+   #[serde(skip_serializing_if = "is_default", default)]
+   pub is_graph_input: bool,
+   pub src_node_name: String,
+   pub src_port: String,
+   #[serde(skip_serializing_if = "is_default")]
+   pub src_port_full: Option<String>,
+   #[serde(skip_serializing_if = "LinkedList::is_empty", default)]
+   pub src_subfields: LinkedList<String>,
+}
+
+impl ZLinkPort {
+   // It is not necessary to re-process a link if only the name is changed.
+   #[inline(always)]
+   fn finish(&mut self) {
+      assert!(self.src_port_full.is_none());
+      assert!(self.src_subfields.is_empty());
+      let ports_seq: Vec<&str> = self.src_port.split('.').collect();
+      if ports_seq.len() > 1 {
+         self.src_port_full = Some(self.src_port.clone());
+         self.src_subfields.clear();
+         for s in &ports_seq[1..] {
+            self.src_subfields.push_back(s.to_string());
+         }
+         self.src_port = ports_seq[0].to_string();
+      }
+
+      self.is_void = self.src_port == "void";
+      self.is_graph_input = self.src_node_name == "inputs";
+   }
+}
+
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ZGraphDefCategory {
    // GraphDef is complete, connecting input and output, and expanded
@@ -76,13 +112,6 @@ pub struct ZEdgeDef {
    pub connections: Vec<Connection>, // Input-output.
 }
 
-// #[derive(Serialize, Deserialize)]
-// pub struct ZEdgeDataDef {
-//    #[serde(skip_serializing_if = "is_mult_ident_f64")]
-//    #[serde(default = "mult_ident_f64")]
-//    pub field_c: f64,
-// }
-
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PresetPiece(pub String, pub ZPiece);
 
@@ -93,16 +122,6 @@ pub struct PresetPiece(pub String, pub ZPiece);
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ZPortDef(pub String, pub String, pub String);
 
-#[derive(Clone, Deserialize, Default)]
-pub struct ZLinkPort {
-   pub name: String,
-   pub is_void: bool,
-   pub src_node_name: String,
-   pub src_port: String,
-   pub src_port_full: Option<String>,
-   pub src_subfields: LinkedList<String>,
-}
-
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ZNodeDef {
    #[serde(skip_serializing, default)]
@@ -111,12 +130,17 @@ pub struct ZNodeDef {
    #[serde(skip_serializing_if = "is_default")]
    pub description: Option<String>,
 
-   // #[serde(skip_serializing_if = "is_default")]
-   // #[serde(default)]
    pub element: ZNodeTypeFinder,
 
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
    pub edges: Vec<ZEdgeDef>,
+
+   #[serde(skip_serializing_if = "Vec::is_empty", default)]
+   pub links: Vec<ZPortDef>,
+
+   // all_links basicaly concatenates the link definitions in links and edges.
+   #[serde(skip_serializing, default)]
+   pub all_links: Vec<ZLinkPort>,
 
    // Input, output and preset nodes only. Others come from registered elements.
    #[serde(skip_serializing_if = "Vec::is_empty", default)]
@@ -163,6 +187,28 @@ impl ZNodeDef {
    pub fn precompile(&mut self) {
       assert!(!self.is_precompiled);
       //
+      assert!(self.all_links.is_empty());
+      for port_def in &self.links {
+         self.all_links.push(ZLinkPort {
+            name: port_def.0.clone(),
+            src_node_name: port_def.1.clone(),
+            src_port: port_def.2.clone(),
+            ..Default::default()
+         });
+      }
+      for edge in &self.edges {
+         for connection in &edge.connections {
+            self.all_links.push(ZLinkPort {
+               name: connection.1.clone(),
+               src_node_name: edge.src_node.clone(),
+               src_port: connection.0.clone(),
+               ..Default::default()
+            });
+         }
+      }
+      for link in &mut self.all_links {
+         link.finish();
+      }
       self.is_precompiled = true;
    }
 }
@@ -173,13 +219,14 @@ impl ZGraphDef {
       assert!(self.output_ports_as_links.is_empty());
       self.output_ports_as_links.clear();
       for port_def in &self.output_ports {
-         self.output_ports_as_links.push(ZLinkPort {
+         let mut link = ZLinkPort {
             name: port_def.0.clone(),
             src_node_name: port_def.1.clone(),
             src_port: port_def.2.clone(),
-            is_void: port_def.2 == "void",
             ..Default::default()
-         });
+         };
+         link.finish();
+         self.output_ports_as_links.push(link);
       }
       self.is_precompiled = true;
 
