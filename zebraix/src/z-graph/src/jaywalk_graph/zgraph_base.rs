@@ -55,6 +55,14 @@ pub enum ZNodeTypeFinder {
    ByString(String),
 }
 
+impl ZNodeTypeFinder {
+   pub fn get_descriptive_name(&self) -> String {
+      match self {
+         Self::ByString(s) => s.clone(),
+      }
+   }
+}
+
 #[derive(Debug)]
 pub enum ZGraphError {
    IncorrectTypestateTransition,

@@ -74,7 +74,7 @@
   "output_ports": [
     [ "passthrough_real", "inputs", "real_input" ],
     [ "manual agg pull", "manual aggregation", "text style" ],
-    [ "manual disagg pull", "manual disaggregation", "color.text style" ],
+    [ "manual disagg pull", "manual aggregation", "text style.color" ],
     [ "manual language pull", "manual more disagg", "language" ],
     [ "coord disagg pull", "coord disagg", "1" ],
     [ "text dependency", "test text", "void" ]
