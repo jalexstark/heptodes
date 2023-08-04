@@ -55,6 +55,49 @@ impl ZLinkPort {
       self.is_void = self.src_port == "void";
       self.is_graph_input = self.src_node_name == "inputs";
    }
+
+   pub fn has_subfield(&self) -> bool {
+      !self.src_subfields.is_empty()
+   }
+
+   pub fn src_port_full_name(&self) -> String {
+      if self.src_port_full.is_some() {
+         self.src_port_full.as_ref().unwrap().clone()
+      } else {
+         self.src_port.clone()
+      }
+   }
+
+   #[must_use]
+   pub fn pop(&mut self) -> String {
+      assert!(!self.src_subfields.is_empty());
+      let popped_name: String = self.src_subfields.pop_front().unwrap();
+      self.src_port = popped_name.clone();
+      assert_ne!(popped_name, "void", "It is illegal for a sub-field name to be \"void\".");
+
+      popped_name
+   }
+
+   // The front of the downstream should have already been popped. The merge further removes the
+   // downstream `src_port`, replacing it with the upstream `src_port`. Indeed, all of the
+   // source is taken from the upstream link.
+   //
+   // It is also permissible for the upstream to be a sub-field selection, in which case the
+   // upstream chain becomes the front of a merged stream.
+   pub fn merge_upstream_into_down(upstream: &ZLinkPort, downstream: &mut ZLinkPort) {
+      // downstream.name = unchanged;
+      downstream.src_node_name = upstream.src_node_name.clone();
+      downstream.src_port = upstream.src_port.clone();
+      let mut new_port_full = upstream.src_port_full_name().clone();
+      new_port_full.push_str(&downstream.src_port_full.as_ref().unwrap()[..]);
+      downstream.src_port_full = Some(new_port_full);
+      for upper_field in upstream.src_subfields.iter().rev() {
+         downstream.src_subfields.push_front(upper_field.clone());
+      }
+      downstream.is_void = upstream.is_void;
+      downstream.is_graph_input = upstream.is_graph_input;
+      assert!(!downstream.is_void, "It is illegal for source of sub-field to link to void.");
+   }
 }
 
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
