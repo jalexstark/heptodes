@@ -91,26 +91,28 @@ impl ZRegistry {
    }
 
    pub fn find(&self, finder: &ZNodeTypeFinder) -> Result<&Rc<ZNodeRegistration>, ZRegistryError> {
-      match finder {
-         ZNodeTypeFinder::ByString(s) => {
-            let search = self.node_registrations.get(s);
-            if let Some(node_registration) = search {
-               Ok(node_registration)
-            } else {
-               Err(ZRegistryError::ZRegistryNotFound)
-            }
-         }
+      let search = match finder {
+         ZNodeTypeFinder::ByString(s) => self.node_registrations.get(s),
+         ZNodeTypeFinder::NullNodeType => self.node_registrations.get("Null"),
+         ZNodeTypeFinder::SubGraphNodeType => self.node_registrations.get("Subgraph"),
+      };
+      if let Some(node_registration) = search {
+         Ok(node_registration)
+      } else {
+         Err(ZRegistryError::ZRegistryNotFound)
       }
    }
 
+   // Consider retiring, after introduction of specific ZNodeTypeFinder enums.
    pub fn get_null_noderegistration(&self) -> &Rc<ZNodeRegistration> {
-      let null_finder = ZNodeTypeFinder::ByString("Null".to_string());
+      let null_finder = ZNodeTypeFinder::NullNodeType;
       let null_node_reg: &Rc<ZNodeRegistration> = self.find(&null_finder).unwrap();
       null_node_reg
    }
 
+   // Consider retiring, after introduction of specific ZNodeTypeFinder enums.
    pub fn get_subgraph_noderegistration(&self) -> &Rc<ZNodeRegistration> {
-      let subgraph_finder = ZNodeTypeFinder::ByString("Subgraph".to_string());
+      let subgraph_finder = ZNodeTypeFinder::SubGraphNodeType;
       let subgraph_node_reg: &Rc<ZNodeRegistration> = self.find(&subgraph_finder).unwrap();
       subgraph_node_reg
    }

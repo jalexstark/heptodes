@@ -14,11 +14,13 @@
 
 use crate::jaywalk_graph::zgraph_base::PortDataVec;
 use crate::jaywalk_graph::zgraph_base::ZGraphError;
+use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_graphdef::PresetPiece;
 use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use crate::jaywalk_graph::zgraph_node::PortDataCopier;
+use crate::jaywalk_graph::zgraph_node::VoidFilter;
 use crate::jaywalk_graph::zgraph_node::ZNode;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 use std::cell::RefCell;
@@ -44,12 +46,6 @@ pub struct ZMachine {
    pub has_graph_def: bool,
 
    pub graph_def: ZGraphDef,
-   // // Mirroring ZGraphDef.
-   // pub category: ZGraphDefCategory,
-   // pub name: String,
-   // pub description: Option<String>,
-   // pub nodes: JVec<ZNodeDef>,
-   // pub edges: JVec<ZEdgeDef>,
    pub renderer_data: ZRendererData,
 
    pub realized_node: Rc<RefCell<ZNode>>,
@@ -65,38 +61,13 @@ pub struct ZMachine {
 impl ZMachine {
    pub fn new() -> Self {
       let registry = ZRegistry::default();
-      let null_node_type = registry.get_null_noderegistration().clone();
-      let subgraph_node_type = registry.get_subgraph_noderegistration().clone();
-
-      let null_node = Rc::new(RefCell::new(ZNode {
-         name: "Null node".to_string(),
-         node_state_data: None,
-         node_type: null_node_type,
-         node_type_finder: None,
-         data_copiers_src_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
-         data_copiers_dest_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
-         data_ports_src_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
-         data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
-         subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
-         subgraph_node_map: None,
-         is_active: false,
-         preset_data: Vec::<PresetPiece>::new(),
-      }));
-
-      let realized_node = Rc::new(RefCell::new(ZNode {
-         name: "User graph".to_string(),
-         node_state_data: None,
-         node_type: subgraph_node_type,
-         node_type_finder: None,
-         data_copiers_src_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
-         data_copiers_dest_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
-         data_ports_src_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
-         data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
-         subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
-         subgraph_node_map: None,
-         is_active: false,
-         preset_data: Vec::<PresetPiece>::new(),
-      }));
+      let null_node = ZNode::new_null_node("Null node", &registry);
+      let realized_node = ZNode::new_basic_node(
+         "User graph",
+         &Vec::<PresetPiece>::new(),
+         &ZNodeTypeFinder::SubGraphNodeType,
+         &registry,
+      );
 
       // floating_port_data is a sentinel, used to indicate that a
       // connection is floating.
@@ -204,18 +175,13 @@ impl ZMachine {
    fn build_from_graphdef(&mut self) -> Result<(), ZGraphError> {
       assert!(self.graph_def.is_precompiled);
       ZNode::reregister_user_graph_input_porting(&self.realized_node, &self.graph_def.inputs)?;
-      ZNode::seed_user_graph_outputs_non_void(
+      ZNode::seed_user_graph_outputs(
+         VoidFilter::NonVoid,
          &self.realized_node,
          &self.graph_def.output_ports_as_links,
          &self.null_node,
          &self.floating_port_data,
       )?;
-      // ZNode::seed_user_graph_outputs_void_only(
-      //    &self.realized_node,
-      //    &self.graph_def.output_ports,
-      //    &self.null_node,
-      //    &self.floating_port_data,
-      // )?;
 
       // realized_node.data_copiers_dest_copy populated before.
       //
