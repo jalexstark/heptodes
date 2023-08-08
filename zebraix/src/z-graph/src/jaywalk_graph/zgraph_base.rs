@@ -37,14 +37,6 @@ pub enum Types {
    TextLine,
 }
 
-// #[derive(Serialize, Deserialize)]
-// pub enum ZDataByType {
-//    Void = 0,
-//    Dirty,
-//    Derived,
-//    Fit,
-// }
-
 pub type PortDataVec = Rc<RefCell<Vec<ZPiece>>>;
 pub type ZNodeStateData = Option<Box<dyn Any>>;
 pub type ZRendererData = Option<Box<dyn Any>>;
@@ -53,12 +45,16 @@ pub type ZRendererData = Option<Box<dyn Any>>;
 #[serde(untagged)]
 pub enum ZNodeTypeFinder {
    ByString(String),
+   NullNodeType,
+   SubGraphNodeType,
 }
 
 impl ZNodeTypeFinder {
-   pub fn get_descriptive_name(&self) -> String {
+   pub fn get_descriptive_name(&self) -> &str {
       match self {
-         Self::ByString(s) => s.clone(),
+         Self::ByString(s) => &s[..],
+         Self::NullNodeType => "Null",
+         Self::SubGraphNodeType => "Subgraph",
       }
    }
 }
@@ -151,7 +147,6 @@ pub struct ZTextStyle {
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub struct CoordReal2D(pub f64, pub f64);
 
-//  context.move_to(120.0, 60.0);
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 #[serde(tag = "type")]
 pub enum ZBigData {
@@ -160,7 +155,6 @@ pub enum ZBigData {
    TextStyle(ZTextStyle),
 }
 
-//  context.move_to(120.0, 60.0);
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq)]
 pub enum ZTupleData {
    Coord2D(CoordReal2D),

@@ -78,18 +78,23 @@ impl ZLinkPort {
       popped_name
    }
 
-   // The front of the downstream should have already been popped. The merge further removes the
-   // downstream `src_port`, replacing it with the upstream `src_port`. Indeed, all of the
-   // source is taken from the upstream link.
+   // The front of the downstream should have already been popped as needed. The merge further
+   // removes the downstream `src_port`, replacing it with the upstream `src_port`. Indeed, all
+   // of the source is taken from the upstream link.
    //
    // It is also permissible for the upstream to be a sub-field selection, in which case the
    // upstream chain becomes the front of a merged stream.
+   //
+   // This could be greatly simplified whenever the downstream linkport does not have subfield
+   // spec.
    pub fn merge_upstream_into_down(upstream: &ZLinkPort, downstream: &mut ZLinkPort) {
+      assert!(!upstream.is_void);
+      assert!(!downstream.is_void);
       // downstream.name = unchanged;
       downstream.src_node_name = upstream.src_node_name.clone();
       downstream.src_port = upstream.src_port.clone();
-      let mut new_port_full = upstream.src_port_full_name().clone();
-      new_port_full.push_str(&downstream.src_port_full.as_ref().unwrap()[..]);
+      let mut new_port_full = upstream.src_port_full_name();
+      new_port_full.push_str(&downstream.src_port_full_name()[..]);
       downstream.src_port_full = Some(new_port_full);
       for upper_field in upstream.src_subfields.iter().rev() {
          downstream.src_subfields.push_front(upper_field.clone());

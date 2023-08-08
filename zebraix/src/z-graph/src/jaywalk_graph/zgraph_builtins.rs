@@ -17,14 +17,17 @@ use crate::jaywalk_graph::zgraph_base::PortPieceTyped;
 use crate::jaywalk_graph::zgraph_base::ZColor;
 use crate::jaywalk_graph::zgraph_base::ZFontStyle;
 use crate::jaywalk_graph::zgraph_base::ZNodeStateData;
+use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZOptionBox;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZPieceType;
 use crate::jaywalk_graph::zgraph_base::ZRendererData;
 use crate::jaywalk_graph::zgraph_base::ZTextStyle;
 use crate::jaywalk_graph::zgraph_registry::ZNodeCategory;
+use crate::jaywalk_graph::zgraph_registry::ZNodeRegistration;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistrationBuilder;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
+use std::rc::Rc;
 
 pub fn text_style_agg_calculation(
    _renderer_data_in: &mut ZRendererData,
@@ -152,4 +155,42 @@ pub fn register_builtin_library(registry: &mut ZRegistry) {
          .build()
          .unwrap(),
    );
+}
+
+impl ZPieceType {
+   pub fn get_disaggregator_registration_for_piece_type(
+      registry: &ZRegistry,
+      piece_type: &ZPieceType,
+   ) -> Option<Rc<ZNodeRegistration>> {
+      let disagg_name: &str = match piece_type {
+         ZPieceType::Void => "Null",
+         ZPieceType::Integer => "Null",
+         ZPieceType::Real => "Null",
+         ZPieceType::Unit => "Null",
+         ZPieceType::Text => "Null",
+         //
+         ZPieceType::Color => "Null",
+         ZPieceType::FontStyle => "font_style_disagg",
+         ZPieceType::TextStyle => "text_style_disagg",
+         //
+         ZPieceType::Coord2D => "coord2d_disagg",
+         //
+         ZPieceType::OptionBox => "Null",
+      };
+
+      if disagg_name == "Null" {
+         eprintln!("Unable to handle disaggregation of {:?} at present", piece_type);
+         return None;
+      }
+
+      let finder = ZNodeTypeFinder::ByString(disagg_name.to_string());
+
+      let gotten = registry.find(&finder);
+      assert!(
+         gotten.is_ok(),
+         "Could not find element type in registry, element name \"{}\"",
+         finder.get_descriptive_name()
+      );
+      Some(gotten.unwrap().clone())
+   }
 }
