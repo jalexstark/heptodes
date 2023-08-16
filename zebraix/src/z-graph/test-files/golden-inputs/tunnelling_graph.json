@@ -69,6 +69,14 @@
       "links": [
              [ "coord", "test text data", "location" ]
       ]
+    },
+    {
+      "name": "hard aggregation",
+      "element": "text_style_agg_test_hard_node",
+      "links": [
+             [ "color", "test text data", "color" ],
+             [ "font style", "test text data", "font style" ]
+      ]
     }
   ],
   "output_ports": [
@@ -77,6 +85,7 @@
     [ "manual disagg pull", "manual aggregation", "text style.color" ],
     [ "manual language pull", "manual more disagg", "language" ],
     [ "coord disagg pull", "coord disagg", "1" ],
+    [ "manual disagg hard pull", "hard aggregation", "text style.color" ],
     [ "text dependency", "test text", "void" ]
   ],
   "canvas": {
