@@ -155,42 +155,55 @@ pub fn register_builtin_library(registry: &mut ZRegistry) {
          .build()
          .unwrap(),
    );
+   registry.register_new(
+      ZNodeRegistrationBuilder::default()
+         .name("text_style_agg_test_hard_node".to_string())
+         .calculation_fn(text_style_agg_calculation)
+         .ports_dest_copy(vec![
+            PortPieceTyped("font style".to_string(), ZPieceType::FontStyle),
+            PortPieceTyped("color".to_string(), ZPieceType::Color),
+         ])
+         .ports_src_copy(vec![PortPieceTyped("text style".to_string(), ZPieceType::TextStyle)])
+         // Leave as default, hard type. .category(ZNodeCategory::Aggregator)
+         .build()
+         .unwrap(),
+   );
 }
 
-impl ZPieceType {
-   pub fn get_disaggregator_registration_for_piece_type(
-      registry: &ZRegistry,
-      piece_type: &ZPieceType,
-   ) -> Option<Rc<ZNodeRegistration>> {
-      let disagg_name: &str = match piece_type {
-         ZPieceType::Void => "Null",
-         ZPieceType::Integer => "Null",
-         ZPieceType::Real => "Null",
-         ZPieceType::Unit => "Null",
-         ZPieceType::Text => "Null",
-         //
-         ZPieceType::Color => "Null",
-         ZPieceType::FontStyle => "font_style_disagg",
-         ZPieceType::TextStyle => "text_style_disagg",
-         //
-         ZPieceType::Coord2D => "coord2d_disagg",
-         //
-         ZPieceType::OptionBox => "Null",
-      };
+// impl ZPieceType {
+pub fn get_disaggregator_registration_for_piece_type(
+   registry: &ZRegistry,
+   piece_type: &ZPieceType,
+) -> Option<(Rc<ZNodeRegistration>, ZNodeTypeFinder)> {
+   let disagg_name: &str = match piece_type {
+      ZPieceType::Void => "Null",
+      ZPieceType::Integer => "Null",
+      ZPieceType::Real => "Null",
+      ZPieceType::Unit => "Null",
+      ZPieceType::Text => "Null",
+      //
+      ZPieceType::Color => "Null",
+      ZPieceType::FontStyle => "font_style_disagg",
+      ZPieceType::TextStyle => "text_style_disagg",
+      //
+      ZPieceType::Coord2D => "coord2d_disagg",
+      //
+      ZPieceType::OptionBox => "Null",
+   };
 
-      if disagg_name == "Null" {
-         eprintln!("Unable to handle disaggregation of {:?} at present", piece_type);
-         return None;
-      }
-
-      let finder = ZNodeTypeFinder::ByString(disagg_name.to_string());
-
-      let gotten = registry.find(&finder);
-      assert!(
-         gotten.is_ok(),
-         "Could not find element type in registry, element name \"{}\"",
-         finder.get_descriptive_name()
-      );
-      Some(gotten.unwrap().clone())
+   if disagg_name == "Null" {
+      eprintln!("Unable to handle disaggregation of {:?} at present", piece_type);
+      return None;
    }
+
+   let finder = ZNodeTypeFinder::ByString(disagg_name.to_string());
+
+   let gotten = registry.find(&finder);
+   assert!(
+      gotten.is_ok(),
+      "Could not find element type in registry, element name \"{}\"",
+      finder.get_descriptive_name()
+   );
+   Some((gotten.unwrap().clone(), finder))
 }
+// }

@@ -30,13 +30,28 @@ pub struct ZLinkPort {
    pub is_graph_input: bool,
    pub src_node_name: String,
    pub src_port: String,
+   // Probably src_port_full is not needed.
    #[serde(skip_serializing_if = "is_default")]
    pub src_port_full: Option<String>,
+   #[serde(skip_serializing_if = "is_default")]
+   pub src_node_full: Option<String>,
    #[serde(skip_serializing_if = "LinkedList::is_empty", default)]
    pub src_subfields: LinkedList<String>,
 }
 
 impl ZLinkPort {
+   pub fn create_basic(name: &str, src_node_name: &str, src_port: &str) -> Self {
+      let mut new_self = Self {
+         name: name.to_string(),
+         src_node_name: src_node_name.to_string(),
+         src_port: src_port.to_string(),
+         ..Default::default()
+      };
+      new_self.finish();
+
+      new_self
+   }
+
    // It is not necessary to re-process a link if only the name is changed.
    #[inline(always)]
    fn finish(&mut self) {
@@ -68,12 +83,29 @@ impl ZLinkPort {
       }
    }
 
+   pub fn src_node_full_name(&self) -> String {
+      if self.src_node_full.is_some() {
+         self.src_node_full.as_ref().unwrap().clone()
+      } else {
+         self.src_node_name.clone()
+      }
+   }
+
    #[must_use]
    pub fn pop(&mut self) -> String {
       assert!(!self.src_subfields.is_empty());
       let popped_name: String = self.src_subfields.pop_front().unwrap();
       self.src_port = popped_name.clone();
       assert_ne!(popped_name, "void", "It is illegal for a sub-field name to be \"void\".");
+
+      let mut full_name: String = if self.src_node_full.is_some() {
+         self.src_node_full.as_mut().unwrap().clone()
+      } else {
+         self.src_node_name.clone()
+      };
+      full_name.push_str("##");
+      full_name.push_str(&popped_name[..]);
+      self.src_node_full = Some(full_name);
 
       popped_name
    }
@@ -93,9 +125,16 @@ impl ZLinkPort {
       // downstream.name = unchanged;
       downstream.src_node_name = upstream.src_node_name.clone();
       downstream.src_port = upstream.src_port.clone();
+
       let mut new_port_full = upstream.src_port_full_name();
+      new_port_full.push_str("##");
       new_port_full.push_str(&downstream.src_port_full_name()[..]);
       downstream.src_port_full = Some(new_port_full);
+      let mut new_node_full = upstream.src_node_full_name();
+      new_node_full.push_str("##");
+      new_node_full.push_str(&downstream.src_node_full_name()[..]);
+      downstream.src_node_full = Some(new_node_full);
+
       for upper_field in upstream.src_subfields.iter().rev() {
          downstream.src_subfields.push_front(upper_field.clone());
       }
@@ -199,6 +238,27 @@ pub struct ZNodeDef {
    pub preset_data: Vec<PresetPiece>,
 }
 
+impl ZNodeDef {
+   pub fn create_basic(
+      name: String,
+      description: Option<String>,
+      finder: ZNodeTypeFinder,
+      all_links: Vec<ZLinkPort>,
+   ) -> Self {
+      ZNodeDef {
+         name,
+         description,
+         element: finder,
+         all_links,
+         is_precompiled: false,
+         edges: Vec::<ZEdgeDef>::default(),
+         links: Vec::<ZPortDef>::default(),
+         ports: Vec::<PortPieceTyped>::default(),
+         preset_data: Vec::<PresetPiece>::default(),
+      }
+   }
+}
+
 #[derive(Clone, Serialize, Deserialize, Default)]
 pub struct ZGraphDef {
    #[serde(skip_serializing, default)]
@@ -235,25 +295,29 @@ impl ZNodeDef {
    pub fn precompile(&mut self) {
       assert!(!self.is_precompiled);
       //
-      assert!(self.all_links.is_empty());
-      for port_def in &self.links {
-         self.all_links.push(ZLinkPort {
-            name: port_def.0.clone(),
-            src_node_name: port_def.1.clone(),
-            src_port: port_def.2.clone(),
-            ..Default::default()
-         });
-      }
-      for edge in &self.edges {
-         for connection in &edge.connections {
+      if self.all_links.is_empty() {
+         for port_def in &self.links {
             self.all_links.push(ZLinkPort {
-               name: connection.1.clone(),
-               src_node_name: edge.src_node.clone(),
-               src_port: connection.0.clone(),
+               name: port_def.0.clone(),
+               src_node_name: port_def.1.clone(),
+               src_port: port_def.2.clone(),
                ..Default::default()
             });
          }
+         for edge in &self.edges {
+            for connection in &edge.connections {
+               self.all_links.push(ZLinkPort {
+                  name: connection.1.clone(),
+                  src_node_name: edge.src_node.clone(),
+                  src_port: connection.0.clone(),
+                  ..Default::default()
+               });
+            }
+         }
+      } else {
+         assert!(!self.links.is_empty() || !self.edges.is_empty());
       }
+
       for link in &mut self.all_links {
          link.finish();
       }

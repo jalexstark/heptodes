@@ -18,6 +18,7 @@ use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_graphdef::PresetPiece;
 use crate::jaywalk_graph::zgraph_graphdef::ZLinkPort;
+use crate::jaywalk_graph::zgraph_graphdef::ZNodeDef;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistration;
 use crate::jaywalk_graph::ZRegistry;
 use std::cell::RefCell;
@@ -29,6 +30,11 @@ pub enum VoidFilter {
    All,
    VoidOnly,
    NonVoid,
+}
+
+pub enum ZNodeMapIndex {
+   GraphDefIndex(usize),
+   AuxiliaryIndex(usize),
 }
 
 // Floatable version of edge copier
@@ -96,7 +102,9 @@ pub struct ZNode {
    pub data_ports_dest_copy: PortDataVec,
 
    pub subgraph_nodes: Vec<Rc<RefCell<ZNode>>>, // Prolly init with 0 reserve.
-   pub subgraph_node_map: Option<HashMap<String, usize>>,
+   pub auxiliary_nodes: Vec<Rc<RefCell<ZNode>>>,
+   pub auxiliary_node_defs: Vec<Rc<RefCell<ZNodeDef>>>,
+   pub subgraph_node_map: Option<HashMap<String, ZNodeMapIndex>>,
    pub disaggregation_nodes: Vec<Option<Rc<RefCell<ZNode>>>>,
 
    pub is_active: bool,
@@ -125,9 +133,36 @@ impl ZNode {
          data_ports_src_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
          data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
          subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
+         auxiliary_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
+         auxiliary_node_defs: Vec::<Rc<RefCell<ZNodeDef>>>::default(),
          subgraph_node_map: None,
          is_active: false,
          preset_data: preset_data.to_vec(),
+         disaggregation_nodes: Vec::<Option<Rc<RefCell<ZNode>>>>::default(),
+      }))
+   }
+
+   pub fn new_active_node(
+      name: &str,
+      finder: &ZNodeTypeFinder, // Use a simple finder, not a string.
+      registration: Rc<ZNodeRegistration>,
+   ) -> Rc<RefCell<ZNode>> {
+      Rc::new(RefCell::new(ZNode {
+         name: name.to_string(),
+         node_state_data: None,
+         node_type: registration,
+         node_type_finder: Some(finder.clone()),
+         data_copiers_src_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+         data_copiers_dest_copy: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+         data_copiers_src_void_port: Vec::<Rc<RefCell<PortDataCopier>>>::default(),
+         data_ports_src_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
+         data_ports_dest_copy: Rc::new(RefCell::new(Vec::<ZPiece>::default())),
+         subgraph_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
+         auxiliary_nodes: Vec::<Rc<RefCell<ZNode>>>::default(),
+         auxiliary_node_defs: Vec::<Rc<RefCell<ZNodeDef>>>::default(),
+         subgraph_node_map: None,
+         is_active: true,
+         preset_data: Vec::<PresetPiece>::default(),
          disaggregation_nodes: Vec::<Option<Rc<RefCell<ZNode>>>>::default(),
       }))
    }

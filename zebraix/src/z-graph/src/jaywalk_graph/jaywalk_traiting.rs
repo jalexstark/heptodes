@@ -78,7 +78,7 @@ impl Serialize for JKey {
    where
       S: Serializer,
    {
-      (self.0 as i32).serialize(serializer)
+      self.0.serialize(serializer)
    }
 }
 
