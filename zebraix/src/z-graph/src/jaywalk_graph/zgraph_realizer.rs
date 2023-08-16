@@ -19,18 +19,21 @@ use crate::jaywalk_graph::zgraph_base::ZGraphError;
 use crate::jaywalk_graph::zgraph_base::ZNodeTypeFinder;
 use crate::jaywalk_graph::zgraph_base::ZPiece;
 use crate::jaywalk_graph::zgraph_base::ZPieceType;
+use crate::jaywalk_graph::zgraph_builtins::get_disaggregator_registration_for_piece_type;
 use crate::jaywalk_graph::zgraph_graphdef::ZGraphDef;
 use crate::jaywalk_graph::zgraph_graphdef::ZLinkPort;
 use crate::jaywalk_graph::zgraph_graphdef::ZNodeDef;
 use crate::jaywalk_graph::zgraph_node::PortDataCopier;
 use crate::jaywalk_graph::zgraph_node::VoidFilter;
 use crate::jaywalk_graph::zgraph_node::ZNode;
+use crate::jaywalk_graph::zgraph_node::ZNodeMapIndex;
 use crate::jaywalk_graph::zgraph_registry::ZNodeCategory;
 use crate::jaywalk_graph::zgraph_registry::ZNodeRegistration;
 use crate::jaywalk_graph::zgraph_registry::ZRegistry;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::LinkedList;
+
 use std::rc::Rc;
 
 #[inline(always)]
@@ -83,7 +86,7 @@ impl ZNode {
    pub fn create_inbound_copiers_for_leaf_node(
       &mut self,
       node_num: usize,
-      node_defs: &Vec<ZNodeDef>,
+      node_defs: &[ZNodeDef],
       _registry: &ZRegistry,
       null_node: &Rc<RefCell<ZNode>>,
       floating_port_data: &PortDataVec,
@@ -314,12 +317,35 @@ impl ZNode {
       Ok(())
    }
 
+   pub fn add_tree_dag_nodes_tail_phase(
+      toposort_nodes: &mut LinkedList<Rc<RefCell<ZNode>>>,
+      subgraph_node: &Rc<RefCell<ZNode>>,
+      subgraph_node_borrowed: &mut ZNode,
+   ) {
+      //
+      toposort_nodes.push_back(subgraph_node.clone());
+      //
+
+      // let subgraph_node_borrowed: &mut ZNode = &mut subgraph_node.borrow_mut();
+
+      for disagg_node in &subgraph_node_borrowed.disaggregation_nodes {
+         if disagg_node.is_some() {
+            let disagg_node_unborrowed: &Rc<RefCell<ZNode>> = disagg_node.as_ref().unwrap();
+            let disagg_node_borrowed: &mut ZNode = &mut disagg_node_unborrowed.borrow_mut();
+            Self::add_tree_dag_nodes_tail_phase(
+               toposort_nodes,
+               disagg_node_unborrowed,
+               disagg_node_borrowed,
+            );
+         }
+      }
+   }
+
    pub fn add_tree_dag_nodes(
       toposort_nodes: &mut LinkedList<Rc<RefCell<ZNode>>>,
       subgraph_node: &Rc<RefCell<ZNode>>,
    ) {
       let subgraph_node_borrowed: &mut ZNode = &mut subgraph_node.borrow_mut();
-
       let subgraph_size = subgraph_node_borrowed.subgraph_nodes.len();
 
       for node_num in 0..subgraph_size {
@@ -336,6 +362,7 @@ impl ZNode {
                !subnode.data_copiers_src_copy.is_empty()
                   || !subnode.data_copiers_src_void_port.is_empty()
                   || !subnode.subgraph_nodes.is_empty()
+                  || !subnode.auxiliary_nodes.is_empty()
             );
             if !subnode.is_active {
                continue;
@@ -345,13 +372,18 @@ impl ZNode {
          }
 
          if is_leaf_node_outside {
-            toposort_nodes.push_back(subnode_unborrowed.clone());
+            let subnode_borrowed: &mut ZNode = &mut subnode_unborrowed.borrow_mut();
+            Self::add_tree_dag_nodes_tail_phase(
+               toposort_nodes,
+               subnode_unborrowed,
+               subnode_borrowed,
+            );
          } else {
             ZNode::add_tree_dag_nodes(toposort_nodes, subnode_unborrowed);
          }
       }
 
-      toposort_nodes.push_back(subgraph_node.clone());
+      Self::add_tree_dag_nodes_tail_phase(toposort_nodes, subgraph_node, subgraph_node_borrowed);
    }
 
    pub fn get_or_find_node_type<'a>(
@@ -394,9 +426,12 @@ impl ZNode {
       enclosing_data_copiers_src_copy: &mut Vec<Rc<RefCell<PortDataCopier>>>,
       enclosing_data_copiers_src_void_port: &mut Vec<Rc<RefCell<PortDataCopier>>>,
       enclosing_is_active: &mut bool,
-      subgraph_node_map: &HashMap<std::string::String, usize>,
+      subgraph_node_map: &mut HashMap<String, ZNodeMapIndex>,
       subgraph_nodes: &Vec<Rc<RefCell<ZNode>>>,
+      auxiliary_nodes: &mut Vec<Rc<RefCell<ZNode>>>,
       subgraph_node_defs: &Vec<ZNodeDef>,
+      auxiliary_node_defs: &mut Vec<Rc<RefCell<ZNodeDef>>>,
+      floating_port_data: &PortDataVec,
       registry: &ZRegistry,
    ) {
       let port_def: &ZLinkPort = copier_borrowed.port_def.as_ref().unwrap();
@@ -417,13 +452,24 @@ impl ZNode {
             *enclosing_is_active = true;
          }
       } else {
-         let node_num: usize = *subgraph_node_map.get(&port_def.src_node_name).unwrap();
-         let src_node_znode: &Rc<RefCell<ZNode>> = &subgraph_nodes[node_num];
-         let n_def = &subgraph_node_defs[node_num];
+         let node_num: &ZNodeMapIndex = subgraph_node_map.get(&port_def.src_node_name).unwrap();
+         // let mut wrapper_holder: Option<Rc<RefCell<ZNodeDef>>> = None;
+         let (src_node_znode, n_def_wrapped): (Rc<RefCell<ZNode>>, Rc<RefCell<ZNodeDef>>) =
+            match node_num {
+               ZNodeMapIndex::GraphDefIndex(index) => (
+                  subgraph_nodes[*index].clone(),
+                  Rc::new(RefCell::new(subgraph_node_defs[*index].clone())),
+               ),
+               ZNodeMapIndex::AuxiliaryIndex(index) => {
+                  (auxiliary_nodes[*index].clone(), auxiliary_node_defs[*index].clone())
+               }
+            };
+         let n_def: &ZNodeDef = &n_def_wrapped.borrow();
+         // let src_node_znode: &ZNode = &src_node_znode_wrapped.borrow();
 
          if port_def.has_subfield() {
             let attachment_node_reg: Rc<ZNodeRegistration> =
-               Self::get_or_find_node_type(src_node_znode, n_def, registry);
+               Self::get_or_find_node_type(&src_node_znode, n_def, registry);
 
             if attachment_node_reg.category == ZNodeCategory::Aggregator {
                let upstream_ports: &Vec<ZLinkPort> = &n_def.all_links;
@@ -442,7 +488,51 @@ impl ZNode {
                }
                assert!(found);
             } else {
-               panic!("not yet implemented to auto-insert disaggs {}", attachment_node_reg.name);
+               // panic!("not yet implemented to auto-insert disaggs {}", attachment_node_reg.name);
+
+               // pub fn reattach_copier(
+               //    copier_wrapped: &Rc<RefCell<PortDataCopier>>,
+               //    copier_borrowed: &mut PortDataCopier,
+               //    enclosing_data_copiers_src_copy: &mut Vec<Rc<RefCell<PortDataCopier>>>,
+               //    enclosing_data_copiers_src_void_port: &mut Vec<Rc<RefCell<PortDataCopier>>>,
+               //    enclosing_is_active: &mut bool,
+               //    subgraph_node_map: &mut HashMap<String, ZNodeMapIndex>,
+               //    subgraph_nodes: &Vec<Rc<RefCell<ZNode>>>,
+               //    auxiliary_nodes: &Vec<Rc<RefCell<ZNode>>>,
+               //    subgraph_node_defs: &Vec<ZNodeDef>,
+               //    auxiliary_node_defs: &Vec<ZNodeDef>,
+               //    floating_port_data: &PortDataVec,
+               //    registry: &ZRegistry,
+               // ) {
+               let producer: &mut ZNode = &mut src_node_znode.borrow_mut();
+               let port_def: &mut ZLinkPort = copier_borrowed.port_def.as_mut().unwrap();
+               Self::get_or_create_disaggregator(
+                  producer,
+                  &src_node_znode,
+                  port_def,
+                  subgraph_node_map,
+                  auxiliary_nodes,
+                  auxiliary_node_defs,
+                  floating_port_data,
+                  registry,
+               )
+
+               // let upstream_ports: &Vec<ZLinkPort> = &n_def.all_links;
+               // let port_def: &mut ZLinkPort = copier_borrowed.port_def.as_mut().unwrap();
+               // // Handle port name by reference to match code elsewhere.
+               // let target_port_name_str = port_def.pop();
+               // let target_port_name = &target_port_name_str;
+
+               // src_node_znode.get_or_create_disaggregator(
+               // aggregate_gen_node: &Rc<RefCell<ZNode>>
+               // aggregate_gen_node_reg :ZNodeRegistration
+               //  &mut  port_def,
+               //    subgraph_node_map: &mut HashMap<String, ZNodeMapIndex>,
+               // floating_port_data,
+               // registry,
+               // ) -> &ZNode {
+
+               // Make sure to insert new node into enclosing subgraph's subgraph node map.
             }
 
             // This is a tail recursive call with same arguments. The effect is iterative,
@@ -456,7 +546,10 @@ impl ZNode {
                enclosing_is_active,
                subgraph_node_map,
                subgraph_nodes,
+               auxiliary_nodes,
                subgraph_node_defs,
+               auxiliary_node_defs,
+               floating_port_data,
                registry,
             );
             // Explicit return to ensure that this is tail recursive and not accidentally
@@ -477,7 +570,6 @@ impl ZNode {
                // Note that this clones the reference to the copier.
                src_node_znode_bmut.data_copiers_src_copy.push(copier_wrapped.clone());
             }
-            // *src_node_copier_borrowed = src_node_znode.clone();
          }
       }
    }
@@ -545,6 +637,122 @@ impl ZNode {
       }
    }
 
+   #[allow(clippy::too_many_arguments)]
+   pub fn get_or_create_disaggregator(
+      producer: &mut ZNode,
+      producer_unborrowed: &Rc<RefCell<ZNode>>,
+      port_def: &mut ZLinkPort,
+      subgraph_node_map: &mut HashMap<String, ZNodeMapIndex>,
+      auxiliary_nodes: &mut Vec<Rc<RefCell<ZNode>>>,
+      auxiliary_node_defs: &mut Vec<Rc<RefCell<ZNodeDef>>>,
+      floating_port_data: &PortDataVec,
+      registry: &ZRegistry,
+      //   ) -> Rc<RefCell<ZNode>> {
+   ) {
+      //
+      let node_registration: &ZNodeRegistration = &producer.node_type;
+      // let data_copiers_src_copy: &Vec<Rc<RefCell<PortDataCopier>>> = &ZNode.data_copiers_src_copy;
+      let ports_src_copy: &Vec<PortPieceTyped> = &node_registration.ports_src_copy;
+
+      if producer.disaggregation_nodes.is_empty() {
+         producer.disaggregation_nodes.resize(ports_src_copy.len(), None);
+      }
+
+      // Requires that copier be non-void.
+      //
+      // Copier src_node_name must equal producer's name.
+
+      let original_target_src_node_name = port_def.src_node_name.clone();
+      let mut augmented_src_node_name = port_def.src_node_name.clone();
+
+      // Handle port name by reference to match code elsewhere.
+      let target_port_name_str = port_def.src_port.clone();
+      let target_port_name = &target_port_name_str;
+      let _discarded_because_reattach_called_iteratively = port_def.pop();
+
+      // // Handle port name by reference to match code elsewhere.
+      // let target_port_name_str = port_def.pop();
+      // let target_port_name = &target_port_name_str;
+
+      augmented_src_node_name.push_str("##");
+      augmented_src_node_name.push_str(&target_port_name[..]);
+      port_def.src_node_name = augmented_src_node_name.clone();
+
+      let mut found = false;
+      let mut found_index: usize = 0;
+      for (i, port_piece_pair) in ports_src_copy.iter().enumerate() {
+         // eprintln!("Trying match candidate, target: {}, {}", port_piece_pair.0, *target_port_name);
+         if port_piece_pair.0 == *target_port_name {
+            found = true;
+            found_index = i;
+            // Ought to verify data type in port_piece_pair.1.
+            break;
+         }
+      }
+      assert!(found);
+
+      if producer.disaggregation_nodes[found_index].is_some() {
+         assert_eq!(
+            &producer.disaggregation_nodes[found_index].as_ref().unwrap().borrow().name,
+            &augmented_src_node_name
+         );
+      } else {
+         // (a) Construct disagg node.
+         // (b) Insert new fully-completed LinkPort from producer to disagg single input.
+         // (c) New node name is concatenation of producer and port name. Original LinkPort is
+         // updated to this.
+         // (d) LinkPort can just pop. Merge of new upstream linkport would be trivial.
+
+         let (disaggregator_registration_rc, finder): (Rc<ZNodeRegistration>, ZNodeTypeFinder) =
+            get_disaggregator_registration_for_piece_type(registry, &ports_src_copy[found_index].1)
+               .unwrap();
+         let disaggregator_registration = &disaggregator_registration_rc;
+
+         let interlink_port_def = ZLinkPort::create_basic(
+            &disaggregator_registration.ports_dest_copy[0].0, // name.
+            &original_target_src_node_name,                   // src_node_name.
+            target_port_name,                                 // src_port.
+         );
+
+         let input_to_disagg_copier = Rc::new(RefCell::new(PortDataCopier {
+            src_node: producer_unborrowed.clone(),
+            src_port_data: floating_port_data.clone(),
+            src_index: found_index,
+            dest_port_data: floating_port_data.clone(),
+            dest_index: 0,
+            port_def: Some(interlink_port_def.clone()),
+         }));
+
+         let realized_node: Rc<RefCell<ZNode>> = ZNode::new_active_node(
+            &augmented_src_node_name,
+            &finder,
+            disaggregator_registration_rc,
+         );
+
+         producer.data_copiers_src_copy.push(input_to_disagg_copier.clone());
+         realized_node.borrow_mut().data_copiers_dest_copy.push(input_to_disagg_copier);
+
+         let all_links = vec![interlink_port_def];
+         let realized_nodedef = ZNodeDef::create_basic(
+            augmented_src_node_name.clone(),
+            Some("Automatically inserted disaggregator".to_string()),
+            finder,
+            all_links,
+         );
+
+         let node_map_size = auxiliary_nodes.len();
+         assert_eq!(auxiliary_node_defs.len(), node_map_size);
+         assert!(!subgraph_node_map.contains_key(&augmented_src_node_name));
+         subgraph_node_map
+            .insert(augmented_src_node_name.clone(), ZNodeMapIndex::AuxiliaryIndex(node_map_size));
+         auxiliary_nodes.push(realized_node.clone());
+         auxiliary_node_defs.push(Rc::new(RefCell::new(realized_nodedef)));
+         producer.is_active = true;
+
+         producer.disaggregation_nodes[found_index] = Some(realized_node);
+      }
+   }
+
    pub fn build_out_subgraph(
       top_node: &Rc<RefCell<ZNode>>,
       graph_def: &ZGraphDef,
@@ -580,7 +788,7 @@ impl ZNode {
          let mut node_map_size: usize = enclosing_borrowed.subgraph_nodes.len();
          assert_eq!(node_map_size, 0);
          enclosing_borrowed.subgraph_nodes.reserve_exact(subgraph_size);
-         let mut subgraph_node_map = HashMap::<String, usize>::default();
+         let mut subgraph_node_map = HashMap::<String, ZNodeMapIndex>::default();
 
          for n_def in node_defs {
             assert!(n_def.is_precompiled);
@@ -593,7 +801,8 @@ impl ZNode {
             ));
 
             assert!(!subgraph_node_map.contains_key(&n_def.name));
-            subgraph_node_map.insert(n_def.name.clone(), node_map_size);
+            subgraph_node_map
+               .insert(n_def.name.clone(), ZNodeMapIndex::GraphDefIndex(node_map_size));
             node_map_size += 1;
          }
          assert_eq!(node_map_size, subgraph_size);
@@ -605,7 +814,7 @@ impl ZNode {
       {
          let enclosing_borrowed: &mut ZNode = &mut top_node.borrow_mut();
          let node_defs: &Vec<ZNodeDef> = &graph_def.nodes;
-         let &mut subgraph_node_map = &mut enclosing_borrowed.subgraph_node_map.as_ref().unwrap();
+         let subgraph_node_map = &mut enclosing_borrowed.subgraph_node_map.as_mut().unwrap();
 
          let copiers_src_copy_moved = enclosing_borrowed.data_copiers_src_copy.clone();
          enclosing_borrowed.data_copiers_src_copy.clear();
@@ -622,7 +831,10 @@ impl ZNode {
                &mut enclosing_borrowed.is_active,
                subgraph_node_map,
                &enclosing_borrowed.subgraph_nodes,
+               &mut enclosing_borrowed.auxiliary_nodes,
                node_defs,
+               &mut enclosing_borrowed.auxiliary_node_defs,
+               floating_port_data,
                registry,
             );
          }
@@ -738,9 +950,12 @@ impl ZNode {
                   &mut enclosing_borrowed.data_copiers_src_copy,
                   &mut enclosing_borrowed.data_copiers_src_void_port,
                   &mut enclosing_borrowed.is_active,
-                  enclosing_borrowed.subgraph_node_map.as_ref().unwrap(),
+                  enclosing_borrowed.subgraph_node_map.as_mut().unwrap(),
                   &enclosing_borrowed.subgraph_nodes,
-                  &node_defs,
+                  &mut enclosing_borrowed.auxiliary_nodes,
+                  node_defs,
+                  &mut enclosing_borrowed.auxiliary_node_defs,
+                  floating_port_data,
                   registry,
                );
             }
@@ -844,6 +1059,8 @@ impl ZNode {
 
          for (i, wrapped_copier) in enclosing_borrowed.data_copiers_dest_copy.iter().enumerate() {
             let port_def = &graph_def.output_ports_as_links[i];
+            // assert!(!port_def.is_void);
+            eprintln!("OUTPUT PORT: {}", port_def.name);
             let copier: &mut PortDataCopier = &mut wrapped_copier.borrow_mut();
             assert_eq!(port_def.name, copier.port_def.as_ref().unwrap().name);
          }
