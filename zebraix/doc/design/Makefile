@@ -9,8 +9,10 @@ all:	depdirs $(TARGETS)
 
 include ../../../patinon/common/styling/RequiredStyles.mk
 
+# --self-contained does not work together with --mathjax!
+
 $(HTMLTARGETS):	%.html: %.md $(PANDOC_HTML_DEPS)
-	pandoc --toc --standalone --to html5 --self-contained ../styling/header-html.html --metadata-file ../styling/defs-html.yaml -c crested.css \
+	pandoc --toc --standalone --to html5 ../styling/header-html.html --metadata-file ../styling/defs-html.yaml -c crested.css \
 	--mathjax="${MATHJAX_URL}?config=TeX-AMS_HTML" -f markdown -t html --number-sections $< -o $@
 
 $(PDFTARGETS):	%.pdf:	%.md $(PANDOC_PDF_DEPS)
