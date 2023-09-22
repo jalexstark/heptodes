@@ -17,8 +17,10 @@ Molecule-intermediate.md:	$(ATOMS)
 $(MDINTERMEDIATES): %-intermediate.md:	%-raw.md
 	awk '/INCLUDE-FILE:/ { system("sed -e " "sX^#X##X\\;/.*--\\ Standalone\\ only\\ --.*/d " $$2); next } { print }' $< > $@
 
+# --self-contained does not work together with --mathjax!
+
 $(HTMLTARGETS):	%.html: %-intermediate.md $(PANDOC_HTML_DEPS)
-	pandoc --toc --standalone --to html5 --self-contained ../styling/header-html.html --metadata-file ../styling/defs-html.yaml -c crested.css \
+	pandoc --toc --standalone --to html5 ../styling/header-html.html --metadata-file ../styling/defs-html.yaml -c crested.css \
 	--mathjax="${MATHJAX_URL}?config=TeX-AMS_HTML" -f markdown -t html --number-sections $< -o $@
 
 $(PDFTARGETS):	%.pdf:	%-intermediate.md $(PANDOC_PDF_DEPS)
