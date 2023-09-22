@@ -1,0 +1,99 @@
+{
+  "name": "A test graph",
+  "inputs": [
+    [ "real_input", "Real" ]
+  ],
+  "nodes": [
+    {
+      "name": "test text data",
+      "element": "Preset data",
+      "preset_data": [
+        [
+          "color",
+          {
+            "type": "Color",
+            "Rgb": [ 0.0, 0.0, 0.7 ]
+          }
+        ],
+        [
+          "location",
+          {
+            "Coord2D": [ 120.0, 60.0 ]
+          }
+        ],
+        [ "text", "Hello world! pygq" ],
+        [ "font style",
+          { "type": "FontStyle",
+            "size": 10.0,
+            "family": "sans",
+            "language": { "v": "en-US" }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "test text",
+      "element": "Test text",
+      "links": [
+             [ "color", "test text data", "color" ],
+             [ "location", "test text data", "location" ],
+             [ "text", "test text data", "text" ],
+             [ "font style", "test text data", "font style" ]
+      ]
+    },
+    {
+      "name": "manual aggregation",
+      "element": "text_style_agg",
+      "links": [
+             [ "color", "test text data", "color" ],
+             [ "font style", "test text data", "font style" ]
+      ]
+    },
+    {
+      "name": "manual disaggregation",
+      "element": "text_style_disagg",
+      "links": [
+             [ "text style", "manual aggregation", "text style" ]
+      ]
+    },
+    {
+      "name": "manual more disagg",
+      "element": "font_style_disagg",
+      "links": [
+             [ "font style", "manual disaggregation", "font style" ]
+      ]
+    },
+    {
+      "name": "coord disagg",
+      "element": "coord2d_disagg",
+      "links": [
+             [ "coord", "test text data", "location" ]
+      ]
+    },
+    {
+      "name": "hard aggregation",
+      "element": "text_style_agg_test_hard_node",
+      "links": [
+             [ "color", "test text data", "color" ],
+             [ "font style", "test text data", "font style" ]
+      ]
+    }
+  ],
+  "output_ports": [
+    [ "passthrough_real", "inputs", "real_input" ],
+    [ "manual agg pull", "manual aggregation", "text style" ],
+    [ "manual disagg pull", "manual aggregation", "text style.color" ],
+    [ "manual language pull", "manual more disagg", "language" ],
+    [ "coord disagg pull", "coord disagg", "1" ],
+    [ "manual disagg hard pull", "hard aggregation", "text style.color" ],
+    [ "text dependency", "test text", "void" ]
+  ],
+  "canvas": {
+    "width": 320.0,
+    "height": 240.0,
+    "x_offset": 40.0,
+    "y_offset": 50.0,
+    "unit": "Pt",
+    "direction": "Downwards"
+  }
+}

@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -96,6 +96,8 @@ use std::collections::HashMap;
 // for now.  If we later serialize we should renumber keys based on
 // primary and obverse ranks so that there is a canonical keying
 // suitable for diffing.
+
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct Node {
    // None of the following are derived from a base.
@@ -192,6 +194,7 @@ pub struct Node {
    pub dislike_override: bool,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct Edge {
    // Parent and child nodes are by primary rank. This does not work
@@ -265,6 +268,7 @@ pub struct Edge {
 
 // TODO: Subtype keys and keyed vectors.
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct JaywalkGraph {
    pub nodes: JVec<Node>,
@@ -326,7 +330,8 @@ pub struct JaywalkGraph {
    pub active_edge_keys: Vec<JKey>, // May have finalized order in future.
 }
 
-#[derive(Serialize, Deserialize)]
+// Mark as: Not yet completely migrated.
+#[derive(Serialize, Deserialize, Default)]
 pub struct RenderFont {
    #[serde(default)]
    pub font_family: String,
@@ -334,12 +339,7 @@ pub struct RenderFont {
    pub font_size: JaywalkAffine, // Affine calculation or maybe pure optional scaling.
 }
 
-impl Default for RenderFont {
-   fn default() -> Self {
-      return RenderFont { font_family: String::default(), font_size: JaywalkAffine::default() };
-   }
-}
-
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct RenderNode {
    #[serde(default)]
@@ -381,7 +381,8 @@ pub struct RenderNode {
    pub key: JKey,
 }
 
-#[derive(Serialize, Deserialize)]
+// Mark as: Not yet completely migrated.
+#[derive(Serialize, Deserialize, Default)]
 pub struct RenderArrow {
    #[serde(default)]
    pub finish: Finish,
@@ -420,24 +421,8 @@ pub struct RenderArrow {
    pub edge_position: JaywalkAffine,
 }
 
-impl Default for RenderArrow {
-   fn default() -> Self {
-      return RenderArrow {
-         finish: Finish::default(),
-         arrow_type: ArrowType::default(),
-         length: JaywalkAffine::default(),
-         width: JaywalkAffine::default(),
-         curly_tip_point: Coord::default(),
-         curly_side_point: Coord::default(),
-         // multi_sep: JaywalkAffine::default(),
-         tip_to_anchor: JaywalkAffine::default(),
-         multi_render: Vec::<RenderArrow>::default(),
-         edge_position: JaywalkAffine::default(),
-      };
-   }
-}
-
-#[derive(Serialize, Deserialize)]
+// Mark as: Not yet completely migrated.
+#[derive(Serialize, Deserialize, Default)]
 pub struct RenderEdge {
    #[serde(default)]
    pub name: String,
@@ -465,6 +450,7 @@ pub struct RenderEdge {
    pub font: RenderFont,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct LayoutTransformation {
    // #[serde(default)]
@@ -493,7 +479,7 @@ pub struct LayoutTransformation {
 
 impl Default for LayoutTransformation {
    fn default() -> Self {
-      return LayoutTransformation {
+      LayoutTransformation {
          rotation: Anchorage::default(),
          alpha: mult_ident_f64(),
          beta: add_ident_f64(),
@@ -502,10 +488,11 @@ impl Default for LayoutTransformation {
          n_stretch: add_ident_f64(),
          trans_matrix: TMatrix::default(),
          combined_transformation: TMatrix::default(),
-      };
+      }
    }
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct JaywalkRender {
    // The layout of, and keys into, these vectors must match the
@@ -539,6 +526,7 @@ pub struct JaywalkRender {
    pub transform: LayoutTransformation,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct ZebraixGraph<'a> {
    #[serde(default)]
@@ -550,6 +538,7 @@ pub struct ZebraixGraph<'a> {
 
 // ==================================
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct Zebraix2DPoint {
    #[serde(default = "add_ident_f64")]
@@ -558,6 +547,7 @@ pub struct Zebraix2DPoint {
    pub y: f64,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct Zebraix2DMultPoint {
    #[serde(default = "mult_ident_f64")]
@@ -566,6 +556,7 @@ pub struct Zebraix2DMultPoint {
    pub y: f64,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct Zebraix2DMat {
    #[serde(default = "mult_ident_f64")]
@@ -578,6 +569,7 @@ pub struct Zebraix2DMat {
    pub d: f64,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct Zebraix2DAffine {
    #[serde(default)]
@@ -588,6 +580,7 @@ pub struct Zebraix2DAffine {
 
 // Affine transform with additional matrix for, say, margin
 // contribution.
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct Zebraix2DDualAffine {
    #[serde(default)]
@@ -597,12 +590,14 @@ pub struct Zebraix2DDualAffine {
 }
 
 // Affine transform defined as sequence of points / value pairs.
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct Zebraix2DSeqAffine {
    #[serde(default)]
    pub pairs: Vec<Zebraix2DPoint>,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct Zebraix2DNamedAffine {
    #[serde(default)]
@@ -615,6 +610,7 @@ pub struct Zebraix2DNamedAffine {
    pub dual: Zebraix2DDualAffine,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct ZebraixNameIndex {
    #[serde(default)]
@@ -623,24 +619,28 @@ pub struct ZebraixNameIndex {
    pub index: i32,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct ZebraixStraight {
    #[serde(default)]
    pub point: [ZebraixNameIndex; 2],
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct ZebraixCubic {
    #[serde(default)]
    pub point: [ZebraixNameIndex; 4],
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct ZebraixRatQuadPlain {
    #[serde(default)]
    pub point: [ZebraixNameIndex; 4],
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct ZebraixRatQuadCorner {
    #[serde(default)]
@@ -649,6 +649,7 @@ pub struct ZebraixRatQuadCorner {
    pub corner_cosine: f64,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum ZebraixPolySegment {
    Straight(ZebraixStraight),
@@ -659,15 +660,16 @@ pub enum ZebraixPolySegment {
 
 impl Default for ZebraixPolySegment {
    fn default() -> Self {
-      return ZebraixPolySegment::Straight(<ZebraixStraight as Default>::default());
+      ZebraixPolySegment::Straight(<ZebraixStraight as Default>::default())
    }
 }
 
 fn empty_vec() -> &'static Vec<Zebraix2DNamedAffine> {
    static EMPTY_VEC: Vec<Zebraix2DNamedAffine> = Vec::<Zebraix2DNamedAffine>::new();
-   return &EMPTY_VEC;
+   &EMPTY_VEC
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum PolyLineForm {
    Open = 0,
@@ -676,10 +678,11 @@ pub enum PolyLineForm {
 
 impl Default for PolyLineForm {
    fn default() -> Self {
-      return PolyLineForm::Open;
+      PolyLineForm::Open
    }
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize, DefaultFromSerde)]
 pub struct ZebraixPolySpline<'a> {
    #[serde(skip, default = "empty_vec")]

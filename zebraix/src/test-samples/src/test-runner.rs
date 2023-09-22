@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ use std::path::Path;
 
 use jaywalk_base::jaywalk_graph::ZebraixGraph;
 
-fn run_json_test(input_filename: &str, output_filename: &str, args: &Vec<&str>) {
+fn run_json_test(input_filename: &str, output_filename: &str, args: &[&str]) {
    let mut string_args = Vec::new();
 
    string_args.reserve(args.len());
@@ -59,7 +59,7 @@ fn run_json_test(input_filename: &str, output_filename: &str, args: &Vec<&str>) 
 
 #[test]
 fn test_json_sphinx() {
-   run_json_test("sphinx.json", "sphinx_ranks.svg", &vec!["--label_with_ranks"]);
+   run_json_test("sphinx.json", "sphinx_ranks.svg", &["--label_with_ranks"]);
 }
 
 // Check if two SVG files, with given path names, have meaningful difference.
@@ -131,7 +131,7 @@ fn filtered_write_sample_to_file<W: Write>(mut out_stream: W) {
          writeln!(out_stream, r#"<g id="surfaceXXXX">"#).unwrap();
       } else {
          out_stream.write_all(line.as_bytes()).unwrap();
-         out_stream.write(b"\n").unwrap();
+         out_stream.write_all(b"\n").unwrap();
       }
    }
 }
@@ -144,7 +144,7 @@ fn filtered_write_sample_to_file<W: Write>(mut out_stream: W) {
 //   * Create layout.
 //   * Write to SVG. (outer function)
 
-fn run_one_test(input_filename: &str, output_filename: &str, args: &Vec<&str>) {
+fn run_one_test(input_filename: &str, output_filename: &str, args: &[&str]) {
    let mut string_args = Vec::new();
 
    string_args.reserve(args.len());
@@ -168,7 +168,7 @@ fn run_one_test(input_filename: &str, output_filename: &str, args: &Vec<&str>) {
 
 #[test]
 fn test_sphinx() {
-   run_one_test("sphinx.pb.txt", "sphinx_ranks.svg", &vec!["--label_with_ranks"]);
+   run_one_test("sphinx.pb.txt", "sphinx_ranks.svg", &["--label_with_ranks"]);
 }
 
 // SVG_TESTS = [
@@ -368,7 +368,7 @@ fn filtered_write_spline_test_to_file<W: Write>(mut out_stream: W, spline_def: &
          writeln!(out_stream, r#"<g id="surfaceXXXX">"#).unwrap();
       } else {
          out_stream.write_all(line.as_bytes()).unwrap();
-         out_stream.write(b"\n").unwrap();
+         out_stream.write_all(b"\n").unwrap();
       }
    }
 }

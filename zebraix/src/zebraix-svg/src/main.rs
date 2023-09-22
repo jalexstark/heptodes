@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@ extern crate getopts;
 extern crate render_svg;
 
 use getopts::Options;
-use render_svg::write_sample_to_file;
+
 use std::env;
-use std::fs::OpenOptions;
-use zebraix_serde::gen_serde::generated_with_native::zebraix_graph;
+
+// use zebraix_serde::gen_serde::generated_with_native::zebraix_graph;
 
 fn print_usage(program: &str, opts: Options) {
    let brief = format!("Usage: {} FILE [options]", program);
@@ -36,7 +36,7 @@ fn main() {
    let matches = match opts.parse(&args[1..]) {
       Ok(m) => m,
       Err(f) => {
-         panic!(f.to_string())
+         panic!("{}", f.to_string())
       }
    };
    if matches.opt_present("h") {
@@ -51,18 +51,18 @@ fn main() {
       return;
    };
 
-   let mut n = zebraix_graph::Node::new();
-   n.set_prime_rank(25);
+   // let mut n = zebraix_graph::Node::new();
+   // n.set_prime_rank(25);
 
-   assert_eq!(n.get_prime_rank(), 25);
+   // assert_eq!(n.get_prime_rank(), 25);
 
-   let file = OpenOptions::new()
-      .write(true)
-      .create(true)
-      .truncate(true)
-      .open("pango_cairo_experiment.svg")
-      .unwrap();
-   write_sample_to_file(file).unwrap();
+   // let file = OpenOptions::new()
+   //    .write(true)
+   //    .create(true)
+   //    .truncate(true)
+   //    .open("pango_cairo_experiment.svg")
+   //    .unwrap();
+   // write_sample_to_file(file).unwrap();
 
    println!("Hello, world!");
 }

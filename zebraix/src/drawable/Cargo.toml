@@ -1,0 +1,20 @@
+[package]
+name = "jaywalk_drawable"
+version = "0.1.0"
+authors = ["Alex Stark <alex@withheld.org>"]
+edition = "2018"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"]}
+json5 = "0.4.1"
+serde_default = "0.1.0"
+
+[[test]]
+name = "basic-drawable-tests"
+path = "src/drawable_graph/draw_tests.rs"
+
+# [dev-dependencies]
+# SVG or other differ here.
+
+[dev-dependencies]
+goldenfile = "1.1"

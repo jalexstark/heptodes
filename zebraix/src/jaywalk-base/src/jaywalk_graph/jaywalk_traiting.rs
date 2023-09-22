@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,24 +40,24 @@ use crate::jaywalk_graph::jaywalk_foundation::INT32_MISSING_VAL;
 use crate::jaywalk_graph::jaywalk_foundation::MULTIPLICATIVE_ID_F64;
 
 pub fn absent_int32() -> i32 {
-   return INT32_MISSING_VAL;
+   INT32_MISSING_VAL
 }
 
 pub fn absent_f64() -> f64 {
-   return FLOAT_MISSING_VAL;
+   FLOAT_MISSING_VAL
 }
 
 pub fn add_ident_f64() -> f64 {
-   return ADDITIVE_ID_F64;
+   ADDITIVE_ID_F64
 }
 
 pub fn mult_ident_f64() -> f64 {
-   return MULTIPLICATIVE_ID_F64;
+   MULTIPLICATIVE_ID_F64
 }
 
 impl Default for JKey {
    fn default() -> Self {
-      return JKey(INT32_MISSING_VAL);
+      JKey(INT32_MISSING_VAL)
    }
 }
 
@@ -80,15 +80,15 @@ impl<'de> Deserialize<'de> for JKey {
    {
       let result = i32::deserialize(deserializer);
       match result {
-         Ok(v) => return Ok(JKey(v)),
-         Err(e) => return Err(e),
+         Ok(v) => Ok(JKey(v)),
+         Err(e) => Err(e),
       }
    }
 }
 
 impl<T> Default for JVec<T> {
    fn default() -> Self {
-      return JVec(<Vec<T> as Default>::default());
+      JVec(<Vec<T> as Default>::default())
    }
 }
 
@@ -111,56 +111,55 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for JVec<T> {
    {
       let result = Vec::<T>::deserialize(deserializer);
       match result {
-         Ok(v) => return Ok(JVec::<T>(v)),
-         Err(e) => return Err(e),
+         Ok(v) => Ok(JVec::<T>(v)),
+         Err(e) => Err(e),
       }
    }
 }
 
 impl<T> JVec<T> {
    pub fn len(&self) -> usize {
-      return self.0.len();
+      self.0.len()
+   }
+
+   pub fn is_empty(&self) -> bool {
+      self.0.is_empty()
    }
 }
 
 impl Default for Coord {
    fn default() -> Self {
-      return Coord(ADDITIVE_ID_F64, ADDITIVE_ID_F64);
+      Coord(ADDITIVE_ID_F64, ADDITIVE_ID_F64)
    }
 }
 
 impl Default for TMatrix {
    fn default() -> Self {
-      return TMatrix(
-         MULTIPLICATIVE_ID_F64,
-         ADDITIVE_ID_F64,
-         ADDITIVE_ID_F64,
-         MULTIPLICATIVE_ID_F64,
-      );
+      TMatrix(MULTIPLICATIVE_ID_F64, ADDITIVE_ID_F64, ADDITIVE_ID_F64, MULTIPLICATIVE_ID_F64)
    }
 }
 
 impl Default for Yna {
    fn default() -> Self {
-      return Yna::Auto;
+      Yna::Auto
    }
 }
 
 impl Default for Yon {
    fn default() -> Self {
-      return Yon::No;
+      Yon::No
    }
 }
 
 impl Default for StateMark {
    fn default() -> Self {
-      return StateMark::Unfit;
+      StateMark::Unfit
    }
 }
 
 impl Default for Bidirection {
    fn default() -> Self {
-      return Bidirection::Auto;
+      Bidirection::Auto
    }
 }
 
@@ -178,38 +177,29 @@ impl JaywalkAffine {
 
 impl Default for JaywalkAffine {
    fn default() -> Self {
-      return JaywalkAffine {
+      JaywalkAffine {
          offset: JaywalkAffine::default_value_offset(),
          scale: JaywalkAffine::default_value_scale(),
          value: f64::default(),
-      };
+      }
    }
 }
 
 impl Default for Finish {
    fn default() -> Self {
-      return Finish::Auto;
+      Finish::Auto
    }
 }
 
 impl Default for LineType {
    fn default() -> Self {
-      return LineType::Auto;
-   }
-}
-
-impl Default for LineStyle {
-   fn default() -> Self {
-      return LineStyle {
-         line_type: LineType::default(),
-         pattern_length: JaywalkAffine::default(),
-      };
+      LineType::Auto
    }
 }
 
 impl Default for Octant {
    fn default() -> Self {
-      return Octant::Auto;
+      Octant::Auto
    }
 }
 
@@ -223,23 +213,23 @@ impl Anchorage {
 
 impl Default for Anchorage {
    fn default() -> Self {
-      return Anchorage {
+      Anchorage {
          octant: Octant::default(),
          orig_degrees: Option::<f64>::default(),
          degrees: Anchorage::default_value_degrees(),
-      };
+      }
    }
 }
 
 impl Default for Shape {
    fn default() -> Self {
-      return Shape::Auto;
+      Shape::Auto
    }
 }
 
 impl Default for ArrowType {
    fn default() -> Self {
-      return ArrowType::Auto;
+      ArrowType::Auto
    }
 }
 

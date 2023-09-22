@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ pub fn write_sample_to_file<W: Write + 'static>(
 
    // Create a single context, instead of using create_layout.  This
    // demonstrates avoiding lots of Pango contexts.
-   let text_context = pangocairo::create_context(&context).unwrap();
+   let text_context = pangocairo::create_context(&context);
    let text_layout = pango::Layout::new(&text_context);
 
    let k_label_font_size = 14.0;
@@ -56,7 +56,7 @@ pub fn write_sample_to_file<W: Write + 'static>(
    pangocairo::show_layout(&context, &text_layout);
 
    surface.flush();
-   return surface.finish_output_stream();
+   surface.finish_output_stream()
 }
 
 #[cfg(test)]
@@ -88,7 +88,7 @@ pub fn write_spline_test_to_file<W: Write + 'static>(
    context.arc(160.0, 120.0, 30.0, 0.0 * PI, 2.0 * PI);
    context.stroke().unwrap();
 
-   let text_context = pangocairo::create_context(&context).unwrap();
+   let text_context = pangocairo::create_context(&context);
    let text_layout = pango::Layout::new(&text_context);
 
    let k_label_font_size = 14.0;
@@ -106,5 +106,5 @@ pub fn write_spline_test_to_file<W: Write + 'static>(
    pangocairo::show_layout(&context, &text_layout);
 
    surface.flush();
-   return surface.finish_output_stream();
+   surface.finish_output_stream()
 }

@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,12 +24,15 @@ pub const ADDITIVE_ID_F64: f64 = 0.0f64;
 pub struct JKey(pub i32);
 pub struct JVec<T>(pub Vec<T>);
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct Coord(pub f64, pub f64);
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct TMatrix(pub f64, pub f64, pub f64, pub f64);
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum StateMark {
    Unfit = 0,
@@ -38,6 +41,7 @@ pub enum StateMark {
    Fit,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum Yna {
    Auto = 0,
@@ -45,6 +49,7 @@ pub enum Yna {
    No,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum Yon {
    No = 0,
@@ -52,6 +57,7 @@ pub enum Yon {
    Yes,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum Bidirection {
    Auto = 0,
@@ -63,6 +69,7 @@ pub enum Bidirection {
 
 // Cascade is [m_2 & c_2 \\ 0 & 1] * [m_1 & c_1 \\ 0 & 1], and so
 // combined scale = m_2 * m_1 and combined offset = m_2 * c_1 + c_2.
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct JaywalkAffine {
    #[serde(default = "JaywalkAffine::default_value_scale")]
@@ -77,6 +84,7 @@ pub struct JaywalkAffine {
    pub value: f64,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum Finish {
    Auto,
@@ -85,6 +93,7 @@ pub enum Finish {
    BG,   // Closed outline, background fill.
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum LineType {
    Auto,
@@ -95,7 +104,8 @@ pub enum LineType {
 }
 
 // For now, just fixed patterns. In future a pattern vector could override.
-#[derive(Serialize, Deserialize)]
+// Mark as: Not yet completely migrated.
+#[derive(Serialize, Deserialize, Default)]
 pub struct LineStyle {
    // DANGER: Field default is tied to implementation of struct default.
    #[serde(default)]
@@ -105,6 +115,7 @@ pub struct LineStyle {
    pub pattern_length: JaywalkAffine, // Affine calculation based on resolved line width.
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum Octant {
    Auto = 0,
@@ -121,6 +132,7 @@ pub enum Octant {
    //   // would align with, say the centre of "+" and "=".
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub struct Anchorage {
    // DANGER: Field default is tied to implementation of struct default.
@@ -134,6 +146,7 @@ pub struct Anchorage {
    pub degrees: f64,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum Shape {
    Auto = 0,
@@ -142,6 +155,7 @@ pub enum Shape {
    // Vanish = 3,
 }
 
+// Mark as: Not yet completely migrated.
 #[derive(Serialize, Deserialize)]
 pub enum ArrowType {
    Auto,
@@ -149,6 +163,7 @@ pub enum ArrowType {
    Curly,  // Single curly.
 }
 
+// Mark as: Not yet completely migrated.
 // #[derive(Serialize, Deserialize)]
 // pub enum TransformType {
 //     Auto,
