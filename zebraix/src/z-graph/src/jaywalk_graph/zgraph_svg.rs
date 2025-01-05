@@ -157,6 +157,31 @@ fn sample_text_metrics(renderer_data_in: &mut ZRendererData) {
    renderer_data
       .debug_lines
       .push(DebugLine::SimpleString(format!("Text spacing = {h}", h = text_layout.line_spacing())));
+
+   let layout_line: &pango::LayoutLine = &text_layout.line(0).unwrap();
+   renderer_data.debug_lines.push(DebugLine::SimpleString(format!(
+      "First layout line height = {h}",
+      h = layout_line.height()
+   )));
+   renderer_data.debug_lines.push(DebugLine::SimpleString(format!(
+      "First layout line length = {h}",
+      h = layout_line.length()
+   )));
+   let (layout_ink_rect, layout_logical_rect) = layout_line.extents();
+   renderer_data.debug_lines.push(DebugLine::SimpleString(format!(
+      "Layout ink extents (x, y, w, h) = {x}, {y}, {w}, {h}",
+      x = layout_ink_rect.x(),
+      y = layout_ink_rect.y(),
+      w = layout_ink_rect.width(),
+      h = layout_ink_rect.height()
+   )));
+   renderer_data.debug_lines.push(DebugLine::SimpleString(format!(
+      "Layout logical extents (x, y, w, h) = {x}, {y}, {w}, {h}",
+      x = layout_logical_rect.x(),
+      y = layout_logical_rect.y(),
+      w = layout_logical_rect.width(),
+      h = layout_logical_rect.height()
+   )));
 }
 
 pub fn test_text_calculation(
