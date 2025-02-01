@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="320" height="240" viewBox="0 0 320 240">
+<defs>
+<g>
+</g>
+</defs>
+<path fill="none" stroke-width="2" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-miterlimit="10" d="M 190 120 C 190 136.570312 176.570312 150 160 150 C 143.429688 150 130 136.570312 130 120 C 130 103.429688 143.429688 90 160 90 C 176.570312 90 190 103.429688 190 120 " transform="matrix(1, 0, 0, 1, 40, 50)"/>
+</svg>

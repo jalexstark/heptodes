@@ -1,0 +1,7 @@
+{
+ "top-level": {
+     "entry": "value",
+     "nested": {   "array": ["Tutti", "Frutty"]
+                 }
+         }
+}
