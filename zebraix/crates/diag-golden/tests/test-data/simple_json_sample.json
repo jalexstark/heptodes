@@ -1,0 +1,9 @@
+
+      {
+    "top-level": {
+        "entry": "value",
+		"nested": {	"GlossSeeAlso": ["GML", "XML"]
+                          },
+        "another": 8
+            }
+      }

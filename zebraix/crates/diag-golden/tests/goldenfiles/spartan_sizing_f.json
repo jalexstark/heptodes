@@ -1,0 +1,11 @@
+{
+  "sizing_scheme": "SquareCenter",
+  "base_width": 300.0,
+  "base_height": 450.0,
+  "axes_range": [
+    -2.0,
+    -1.5,
+    2.0,
+    1.5
+  ]
+}

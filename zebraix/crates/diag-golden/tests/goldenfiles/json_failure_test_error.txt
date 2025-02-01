@@ -1,0 +1,10 @@
+  left: `"{\n  \"k\": 1\n}"`
+ right: `"{\n  \"k\": 0\n}"`
+
+Differences (-left|+right):
+ {
+-  "k": 1
++  "k": 0
+ }
+
+
