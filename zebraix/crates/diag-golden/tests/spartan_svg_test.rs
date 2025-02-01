@@ -12,12 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate goldenfile;
+// Try use crate::... instead of use diag_golden::... ?
+
+// extern crate goldenfile;
 
 use cairo::SvgSurface;
 use cairo::SvgUnit::Pt;
-use diag_golden::CairoSpartanRender;
+use diag_golden::AxesSpec;
+use diag_golden::AxesStyle;
+use diag_golden::CairoSpartanCombo;
 use diag_golden::JsonGoldenTest;
+use diag_golden::LineChoice;
+use diag_golden::LinesDrawable;
+use diag_golden::OneOfDrawable;
+use diag_golden::QualfiedDrawable;
 use diag_golden::SizingScheme;
 use diag_golden::SpartanDiagram;
 use diag_golden::SvgGoldenTest;
@@ -28,7 +36,7 @@ use std::io::Write;
 // After dependency to test_utils is added, use type-def for the result box.
 fn write_full_sample_to_write<W: Write + 'static>(
    out_stream: W,
-   cairo_spartan: &mut CairoSpartanRender,
+   cairo_spartan: &mut CairoSpartanCombo,
 ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
    assert!(cairo_spartan.spartan.is_ready());
 
@@ -46,42 +54,42 @@ fn write_full_sample_to_write<W: Write + 'static>(
    // 1.0 is a regular thickness, definitely not thick, 2.0 definitely thick, 0.6 thin but
    // firm.
 
-   cairo_spartan.save_set_path_transform(&context);
+   cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    context.move_to(-0.1 + 0.12, -0.25);
    context.arc(-0.1, -0.25, 0.12, 0.0 * PI, 2.0 * PI);
-   cairo_spartan.restore_transform(&context);
+   cairo_spartan.render_controller.restore_transform(&context);
    context.stroke().unwrap();
 
-   cairo_spartan.save_set_path_transform(&context);
+   cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    context.move_to(0.0, 0.0);
    context.line_to(0.5, 0.3);
    context.move_to(0.0, 0.5);
    context.line_to(0.45, 0.0);
-   cairo_spartan.restore_transform(&context);
+   cairo_spartan.render_controller.restore_transform(&context);
    context.stroke().unwrap();
-   cairo_spartan.save_set_path_transform(&context);
+   cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    context.move_to(0.45, 0.0);
    context.set_line_width(0.45);
    context.set_dash(&[4.5, 3.5], 0.0);
    context.line_to(-0.4, -0.35);
-   cairo_spartan.restore_transform(&context);
+   cairo_spartan.render_controller.restore_transform(&context);
    context.stroke().unwrap();
    context.set_line_width(1.0);
    context.set_dash(&[], 0.0);
 
    // Draw a point-like circle.
-   cairo_spartan.save_set_path_transform(&context);
+   cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    let (cx, cy) = context.user_to_device(0.2, -0.7);
-   cairo_spartan.restore_transform(&context);
+   cairo_spartan.render_controller.restore_transform(&context);
    context.move_to(cx + 2.4, cy);
    context.arc(cx, cy, 2.4, 0.0 * PI, 2.0 * PI);
    context.close_path();
    context.stroke().unwrap();
 
    // Draw a plus-like symbol.
-   cairo_spartan.save_set_path_transform(&context);
+   cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    let (cx, cy) = context.user_to_device(0.25, -0.7);
-   cairo_spartan.restore_transform(&context);
+   cairo_spartan.render_controller.restore_transform(&context);
    let plus_delta = 2.4 * 1.32;
    context.move_to(cx, cy - plus_delta);
    context.line_to(cx, cy + plus_delta);
@@ -91,9 +99,9 @@ fn write_full_sample_to_write<W: Write + 'static>(
    context.stroke().unwrap();
 
    // Draw a times-like symbol.
-   cairo_spartan.save_set_path_transform(&context);
+   cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    let (cx, cy) = context.user_to_device(0.15, -0.7);
-   cairo_spartan.restore_transform(&context);
+   cairo_spartan.render_controller.restore_transform(&context);
    let times_delta = 2.4 * 1.32 * (0.5 as f64).sqrt();
    context.move_to(cx - times_delta, cy - times_delta);
    context.line_to(cx + times_delta, cy + times_delta);
@@ -118,9 +126,9 @@ fn write_full_sample_to_write<W: Write + 'static>(
 
    context.set_source_rgb(0.0, 0.0, 1.0);
 
-   cairo_spartan.save_set_path_transform(&context);
+   cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    context.move_to(0.3, -0.2);
-   cairo_spartan.restore_transform(&context);
+   cairo_spartan.render_controller.restore_transform(&context);
    pangocairo::show_layout(&context, &text_layout);
 
    surface.flush();
@@ -129,7 +137,7 @@ fn write_full_sample_to_write<W: Write + 'static>(
 
 #[test]
 fn simple_full_spartan_test() {
-   let mut cairo_spartan = CairoSpartanRender::new();
+   let mut cairo_spartan = CairoSpartanCombo::new();
    cairo_spartan.spartan.sizing_scheme = SizingScheme::Fill;
    cairo_spartan.spartan.axes_range = vec![-0.5, -0.5, 1.5, 3.5];
    cairo_spartan.spartan.prepare();
@@ -148,18 +156,20 @@ fn simple_full_spartan_test() {
    }
 }
 
+#[derive(Default)]
 struct TestSizing {
    sizing_scheme: SizingScheme,
    canvas_size: [f64; 2],
    axes_range: Vec<f64>,
    padding: Vec<f64>,
    debug_box: [f64; 4],
+   axes_spec: AxesSpec,
 }
 
 // After dependency to test_utils is added, use type-def for the result box.
 fn write_sample_to_write<W: Write + 'static>(
    out_stream: W,
-   cairo_spartan: &mut CairoSpartanRender,
+   cairo_spartan: &mut CairoSpartanCombo,
    sizing: &TestSizing,
 ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
    assert!(cairo_spartan.spartan.is_ready());
@@ -169,51 +179,63 @@ fn write_sample_to_write<W: Write + 'static>(
    cairo_spartan.spartan.axes_range = sizing.axes_range.clone();
    cairo_spartan.spartan.padding = sizing.padding.clone();
 
-   let mut surface = SvgSurface::for_stream(
-      cairo_spartan.spartan.prep.canvas_size[0],
-      cairo_spartan.spartan.prep.canvas_size[1],
-      out_stream,
-   )
-   .unwrap();
+   let canvas_size = &cairo_spartan.spartan.prep.canvas_size;
+   let mut surface = SvgSurface::for_stream(canvas_size[0], canvas_size[1], out_stream).unwrap();
    surface.set_document_unit(Pt);
 
    let context = cairo::Context::new(&surface).unwrap();
-   context.set_line_width(1.0);
-   // 1.0 is a regular thickness, definitely not thick, 2.0 definitely thick, 0.6 thin but
-   // firm.
 
-   cairo_spartan.save_set_path_transform(&context);
-   context.move_to(sizing.debug_box[0], sizing.debug_box[1]);
-   context.line_to(sizing.debug_box[0], sizing.debug_box[3]);
-   context.move_to(sizing.debug_box[2], sizing.debug_box[1]);
-   context.line_to(sizing.debug_box[2], sizing.debug_box[3]);
-   cairo_spartan.restore_transform(&context);
-   context.stroke().unwrap();
+   {
+      let pattern_layer = 0;
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Lines(LinesDrawable {
+            start: vec![[sizing.debug_box[0], sizing.debug_box[1]]],
+            end: vec![[sizing.debug_box[0], sizing.debug_box[3]]],
+            offsets: vec![[0.0, 0.0], [sizing.debug_box[2] - sizing.debug_box[0], 0.0]],
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
+   {
+      let pattern_layer = 0;
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Lines(LinesDrawable {
+            line_choice: LineChoice::Light,
+            start: vec![
+               [sizing.debug_box[0], sizing.debug_box[3]],
+               [sizing.debug_box[2], sizing.debug_box[3]],
+            ],
+            end: vec![
+               [sizing.debug_box[2], sizing.debug_box[1]],
+               [sizing.debug_box[0], sizing.debug_box[1]],
+            ],
+            offsets: vec![[0.0, 0.0]],
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
 
-   cairo_spartan.save_set_path_transform(&context);
-   context.set_line_width(0.45);
-   context.set_dash(&[4.5, 3.5], 0.0);
-   context.move_to(sizing.debug_box[0], sizing.debug_box[3]);
-   context.line_to(sizing.debug_box[2], sizing.debug_box[1]);
-   context.move_to(sizing.debug_box[2], sizing.debug_box[3]);
-   context.line_to(sizing.debug_box[0], sizing.debug_box[1]);
-   cairo_spartan.restore_transform(&context);
-   context.stroke().unwrap();
-   context.set_line_width(1.0);
-   context.set_dash(&[], 0.0);
+   cairo_spartan.render_controller.render_drawables(&cairo_spartan.spartan, &context);
 
    surface.flush();
    surface.finish_output_stream()
 }
 
 fn spartan_sizing(filestem: &str, sizing: &TestSizing) {
-   let mut cairo_spartan = CairoSpartanRender::new();
+   let mut cairo_spartan = CairoSpartanCombo::new();
    cairo_spartan.spartan.sizing_scheme = sizing.sizing_scheme;
    cairo_spartan.spartan.base_width = sizing.canvas_size[0];
    cairo_spartan.spartan.base_height = sizing.canvas_size[1];
    cairo_spartan.spartan.axes_range = sizing.axes_range.clone();
    cairo_spartan.spartan.padding = sizing.padding.clone();
+
    cairo_spartan.spartan.prepare();
+
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    {
       let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", filestem);
@@ -239,6 +261,7 @@ fn spartan_sizing_a_test() {
       axes_range: vec![r],
       padding: vec![0.0],
       debug_box: [-r * 0.5, -r * 0.5, r * 0.5, r * 0.5],
+      ..Default::default()
    };
    spartan_sizing("spartan_sizing_a", &sizing);
 }
@@ -253,13 +276,14 @@ fn spartan_sizing_b_test() {
       axes_range: vec![r],
       padding: vec![0.1, 0.2, 0.15, 0.05],
       debug_box: [-r, -r, r, r],
+      ..Default::default()
    };
    spartan_sizing("spartan_sizing_b", &sizing);
 }
 
 #[test]
 fn spartan_sizing_c_test() {
-   // range (-2.0, 2.0), mixed padding.
+   // range (-2.0, 2.0), no padding.
    let r = 2.0;
    let sizing = TestSizing {
       sizing_scheme: SizingScheme::SquareShrink,
@@ -267,26 +291,27 @@ fn spartan_sizing_c_test() {
       axes_range: vec![r],
       padding: vec![],
       debug_box: [-r, -r, r, r],
+      ..Default::default()
    };
    spartan_sizing("spartan_sizing_c", &sizing);
 }
 
 #[test]
 fn spartan_sizing_d_test() {
-   // range (-2.0, 2.0), mixed padding.
    let sizing = TestSizing {
       sizing_scheme: SizingScheme::SquareShrink,
       canvas_size: [300.0, 450.0],
       axes_range: vec![-2.0, -1.5, 2.0, 1.5],
       padding: vec![],
       debug_box: [-2.0, -1.5, 2.0, 1.5],
+      ..Default::default()
    };
    spartan_sizing("spartan_sizing_d", &sizing);
 }
 
 #[test]
 fn spartan_sizing_e_test() {
-   // range (-2.0, 2.0), mixed padding.
+   // range (-2.0, 2.0), no padding.
    let r = 2.0;
    let sizing = TestSizing {
       sizing_scheme: SizingScheme::SquareCenter,
@@ -294,21 +319,62 @@ fn spartan_sizing_e_test() {
       axes_range: vec![r],
       padding: vec![],
       debug_box: [-r, -r, r, r],
+      ..Default::default()
    };
    spartan_sizing("spartan_sizing_e", &sizing);
 }
 
 #[test]
 fn spartan_sizing_f_test() {
-   // range (-2.0, 2.0), mixed padding.
    let sizing = TestSizing {
       sizing_scheme: SizingScheme::SquareCenter,
       canvas_size: [300.0, 450.0],
       axes_range: vec![-2.0, -1.5, 2.0, 1.5],
       padding: vec![],
       debug_box: [-2.0, -1.5, 2.0, 1.5],
+      ..Default::default()
    };
    spartan_sizing("spartan_sizing_f", &sizing);
+}
+
+#[test]
+fn spartan_sizing_g_test() {
+   // range (-2.0, 2.0), mixed padding.
+   let r = 2.0;
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 300.0],
+      axes_range: vec![r],
+      padding: vec![0.06],
+      debug_box: [-0.5 * r, -0.5 * r, 0.5 * r, 0.5 * r],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [0.4, 0.6],
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+   spartan_sizing("spartan_sizing_g", &sizing);
+}
+
+#[test]
+fn spartan_sizing_h_test() {
+   // range (-2.0, 2.0), mixed padding.
+   let r = 2.0;
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::Fill,
+      canvas_size: [400.0, 300.0],
+      axes_range: vec![r],
+      padding: vec![0.03, 0.08],
+      debug_box: [-0.5 * r, -0.5 * r, 0.5 * r, 0.5 * r],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Cross,
+         grid_interval: [0.4, 0.75],
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+   spartan_sizing("spartan_sizing_h", &sizing);
 }
 
 struct RatQuad {
