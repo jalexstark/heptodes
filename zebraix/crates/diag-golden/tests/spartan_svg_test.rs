@@ -25,6 +25,8 @@ use diag_golden::JsonGoldenTest;
 use diag_golden::LineChoice;
 use diag_golden::LinesDrawable;
 use diag_golden::OneOfDrawable;
+use diag_golden::PointChoice;
+use diag_golden::PointsDrawable;
 use diag_golden::QualfiedDrawable;
 use diag_golden::SizingScheme;
 use diag_golden::SpartanDiagram;
@@ -112,7 +114,7 @@ fn write_full_sample_to_write<W: Write + 'static>(
 
    // Create a single context, instead of using create_layout.  This
    // demonstrates avoiding lots of Pango contexts.
-   let text_context = pangocairo::create_context(&context);
+   let text_context = pangocairo::functions::create_context(&context);
    let text_layout = pango::Layout::new(&text_context);
 
    let k_label_font_size = 12.0;
@@ -129,7 +131,7 @@ fn write_full_sample_to_write<W: Write + 'static>(
    cairo_spartan.render_controller.save_set_path_transform(&cairo_spartan.spartan.prep, &context);
    context.move_to(0.3, -0.2);
    cairo_spartan.render_controller.restore_transform(&context);
-   pangocairo::show_layout(&context, &text_layout);
+   pangocairo::functions::show_layout(&context, &text_layout);
 
    surface.flush();
    surface.finish_output_stream()
@@ -170,20 +172,22 @@ struct TestSizing {
 fn write_sample_to_write<W: Write + 'static>(
    out_stream: W,
    cairo_spartan: &mut CairoSpartanCombo,
-   sizing: &TestSizing,
 ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
    assert!(cairo_spartan.spartan.is_ready());
+   cairo_spartan.render_controller.render_to_stream(out_stream, &cairo_spartan.spartan)
+}
+
+fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
+   let mut cairo_spartan = CairoSpartanCombo::new();
    cairo_spartan.spartan.sizing_scheme = sizing.sizing_scheme;
    cairo_spartan.spartan.base_width = sizing.canvas_size[0];
    cairo_spartan.spartan.base_height = sizing.canvas_size[1];
    cairo_spartan.spartan.axes_range = sizing.axes_range.clone();
    cairo_spartan.spartan.padding = sizing.padding.clone();
 
-   let canvas_size = &cairo_spartan.spartan.prep.canvas_size;
-   let mut surface = SvgSurface::for_stream(canvas_size[0], canvas_size[1], out_stream).unwrap();
-   surface.set_document_unit(Pt);
+   cairo_spartan.spartan.prepare();
 
-   let context = cairo::Context::new(&surface).unwrap();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    {
       let pattern_layer = 0;
@@ -219,24 +223,10 @@ fn write_sample_to_write<W: Write + 'static>(
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
 
-   cairo_spartan.render_controller.render_drawables(&cairo_spartan.spartan, &context);
-
-   surface.flush();
-   surface.finish_output_stream()
+   cairo_spartan
 }
 
-fn spartan_sizing(filestem: &str, sizing: &TestSizing) {
-   let mut cairo_spartan = CairoSpartanCombo::new();
-   cairo_spartan.spartan.sizing_scheme = sizing.sizing_scheme;
-   cairo_spartan.spartan.base_width = sizing.canvas_size[0];
-   cairo_spartan.spartan.base_height = sizing.canvas_size[1];
-   cairo_spartan.spartan.axes_range = sizing.axes_range.clone();
-   cairo_spartan.spartan.padding = sizing.padding.clone();
-
-   cairo_spartan.spartan.prepare();
-
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
-
+fn run_json_svg(filestem: &str, cairo_spartan: &mut CairoSpartanCombo) {
    {
       let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", filestem);
       let serialized = to_string_pretty::<SpartanDiagram>(&cairo_spartan.spartan).unwrap();
@@ -245,10 +235,14 @@ fn spartan_sizing(filestem: &str, sizing: &TestSizing) {
 
    {
       let svg_golden = SvgGoldenTest::new("tests/goldenfiles/", filestem);
-      let raw_result =
-         write_sample_to_write(svg_golden.get_raw_writeable(), &mut cairo_spartan, sizing);
+      let raw_result = write_sample_to_write(svg_golden.get_raw_writeable(), cairo_spartan);
       svg_golden.handover_result(raw_result.unwrap());
    }
+}
+
+fn spartan_sizing(filestem: &str, sizing: &TestSizing) {
+   let mut cairo_spartan = build_diagram(sizing);
+   run_json_svg(filestem, &mut cairo_spartan);
 }
 
 #[test]
@@ -375,6 +369,114 @@ fn spartan_sizing_h_test() {
       ..Default::default()
    };
    spartan_sizing("spartan_sizing_h", &sizing);
+}
+
+fn scale_coord_vec(v: &Vec<[f64; 2]>, s: f64) -> Vec<[f64; 2]> {
+   let mut result = v.clone();
+   for i in 0..v.len() {
+      result[i] = [v[i][0] * s, v[i][1] * s];
+   }
+   result
+}
+
+#[test]
+fn spartan_sizing_i_test() {
+   // Points illustration.
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [500.0, 500.0],
+      axes_range: vec![5.0],
+      padding: vec![0.05],
+      // axes_spec: AxesSpec {
+      //    axes_style: AxesStyle::Cross,
+      //    grid_interval: [0.4, 0.75],
+      //    ..Default::default()
+      // },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = build_diagram(&sizing);
+
+   {
+      let pattern_layer = 0;
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Lines(LinesDrawable {
+            start: vec![[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+            end: vec![[5.0, 5.0], [0.0, 5.0], [-2.5, 5.0]],
+            offsets: vec![[0.0, 0.0]],
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
+   {
+      let pattern_layer = 0;
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Lines(LinesDrawable {
+            line_choice: LineChoice::Light,
+            start: vec![[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
+            end: vec![[5.0, -5.0], [0.0, -5.0], [-2.5, -5.0]],
+            offsets: vec![[0.0, 0.0]],
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
+
+   let pattern_vec =
+      vec![[1.0, 1.0], [0.0, 1.0], [-0.5, 1.0], [1.0, -1.0], [0.0, -1.0], [-0.5, -1.0]];
+
+   let pattern_layer = 0;
+   {
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            centers: pattern_vec.clone(),
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
+
+   {
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: PointChoice::Times,
+            centers: scale_coord_vec(&pattern_vec, 2.0),
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
+
+   {
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: PointChoice::Plus,
+            centers: scale_coord_vec(&pattern_vec, 3.0),
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
+
+   {
+      let qualified_drawable = QualfiedDrawable {
+         layer: pattern_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: PointChoice::Dot,
+            centers: scale_coord_vec(&pattern_vec, 4.0),
+            ..Default::default()
+         }),
+      };
+      cairo_spartan.spartan.drawables.push(qualified_drawable);
+   }
+
+   run_json_svg("spartan_sizing_i", &mut cairo_spartan);
 }
 
 struct RatQuad {

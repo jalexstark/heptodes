@@ -67,11 +67,14 @@
 
 use cairo::Context;
 use cairo::Matrix;
+use cairo::SvgSurface;
+use cairo::SvgUnit::Pt;
 use goldenfile::Mint;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use serde_json::to_string_pretty;
 use serde_json::Value;
+use std::f64::consts::PI;
 use std::fs;
 use std::io;
 use std::io::BufRead;
@@ -630,41 +633,130 @@ impl CairoSpartanRender {
       context.set_matrix(self.saved_matrix);
    }
 
+   fn draw_lines_set(
+      &mut self,
+      context: &Context,
+      drawable: &LinesDrawable,
+      prep: &SpartanPreparation,
+   ) {
+      match drawable.line_choice {
+         LineChoice::Ordinary => {
+            // 1.0 is a regular thickness, definitely not thick, 2.0 definitely thick, 0.6 thin but
+            // firm.
+            context.set_line_width(1.0);
+            context.set_dash(&[], 0.0);
+         }
+         LineChoice::Light => {
+            context.set_line_width(0.45);
+            context.set_dash(&[4.5, 3.5], 0.0);
+         }
+      }
+      self.save_set_path_transform(prep, context);
+      assert_eq!(drawable.start.len(), drawable.end.len());
+      for i in 0..drawable.start.len() {
+         for offset in &drawable.offsets {
+            context.move_to(drawable.start[i][0] + offset[0], drawable.start[i][1] + offset[1]);
+            context.line_to(drawable.end[i][0] + offset[0], drawable.end[i][1] + offset[1]);
+         }
+      }
+      self.restore_transform(context);
+      context.stroke().unwrap();
+   }
+
+   fn draw_points_set(
+      &mut self,
+      context: &Context,
+      drawable: &PointsDrawable,
+      prep: &SpartanPreparation,
+   ) {
+      context.set_line_width(1.0);
+      context.set_dash(&[], 0.0);
+      match drawable.point_choice {
+         PointChoice::Circle => {
+            for center in &drawable.centers {
+               self.save_set_path_transform(prep, context);
+               let (cx, cy) = context.user_to_device(center[0], center[1]);
+               self.restore_transform(context);
+               context.move_to(cx + 2.8, cy);
+               context.arc(cx, cy, 2.8, 0.0 * PI, 2.0 * PI);
+               context.close_path();
+            }
+         }
+         PointChoice::Dot => {
+            for center in &drawable.centers {
+               self.save_set_path_transform(prep, context);
+               let (cx, cy) = context.user_to_device(center[0], center[1]);
+               self.restore_transform(context);
+               #[allow(clippy::suboptimal_flops)]
+               context.move_to(cx + 2.8 * 0.92, cy);
+               #[allow(clippy::suboptimal_flops)]
+               context.arc(cx, cy, 2.8 * 0.92, 0.0 * PI, 2.0 * PI);
+               context.fill().unwrap();
+               context.close_path();
+            }
+         }
+         PointChoice::Plus => {
+            for center in &drawable.centers {
+               self.save_set_path_transform(prep, context);
+               let (cx, cy) = context.user_to_device(center[0], center[1]);
+               self.restore_transform(context);
+               let plus_delta = 2.8 * 1.48;
+               context.move_to(cx, cy - plus_delta);
+               context.line_to(cx, cy + plus_delta);
+               context.move_to(cx + plus_delta, cy);
+               context.line_to(cx - plus_delta, cy);
+               context.close_path();
+            }
+         }
+         PointChoice::Times => {
+            for center in &drawable.centers {
+               self.save_set_path_transform(prep, context);
+               let (cx, cy) = context.user_to_device(center[0], center[1]);
+               self.restore_transform(context);
+               let times_delta = 2.8 * 1.48 * (0.5_f64).sqrt();
+               context.move_to(cx - times_delta, cy - times_delta);
+               context.line_to(cx + times_delta, cy + times_delta);
+               context.move_to(cx + times_delta, cy - times_delta);
+               context.line_to(cx - times_delta, cy + times_delta);
+               context.close_path();
+            }
+         }
+      }
+      context.stroke().unwrap();
+   }
+
    #[allow(clippy::missing_panics_doc)]
    pub fn render_drawables(&mut self, spartan: &SpartanDiagram, context: &Context) {
       for qualified_drawable in &spartan.drawables {
          match &qualified_drawable.drawable {
             OneOfDrawable::Lines(drawable) => {
-               match drawable.line_choice {
-                  LineChoice::Ordinary => {
-                     // 1.0 is a regular thickness, definitely not thick, 2.0 definitely thick, 0.6 thin but
-                     // firm.
-                     context.set_line_width(1.0);
-                     context.set_dash(&[], 0.0);
-                  }
-                  LineChoice::Light => {
-                     context.set_line_width(0.45);
-                     context.set_dash(&[4.5, 3.5], 0.0);
-                  }
-               }
-               self.save_set_path_transform(&spartan.prep, context);
-               assert_eq!(drawable.start.len(), drawable.end.len());
-               for i in 0..drawable.start.len() {
-                  for offset in &drawable.offsets {
-                     context.move_to(
-                        drawable.start[i][0] + offset[0],
-                        drawable.start[i][1] + offset[1],
-                     );
-                     context
-                        .line_to(drawable.end[i][0] + offset[0], drawable.end[i][1] + offset[1]);
-                  }
-               }
-               self.restore_transform(context);
-               context.stroke().unwrap();
+               self.draw_lines_set(context, drawable, &spartan.prep);
+            }
+            OneOfDrawable::Points(drawable) => {
+               self.draw_points_set(context, drawable, &spartan.prep);
             }
             OneOfDrawable::Nothing => {}
          }
       }
+   }
+
+   #[allow(clippy::missing_errors_doc)]
+   #[allow(clippy::missing_panics_doc)]
+   pub fn render_to_stream<W: Write + 'static>(
+      &mut self,
+      out_stream: W,
+      spartan: &SpartanDiagram,
+   ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
+      let canvas_size = &spartan.prep.canvas_size;
+      let mut surface = SvgSurface::for_stream(canvas_size[0], canvas_size[1], out_stream).unwrap();
+      surface.set_document_unit(Pt);
+
+      let context = cairo::Context::new(&surface).unwrap();
+
+      self.render_drawables(spartan, &context);
+
+      surface.flush();
+      surface.finish_output_stream()
    }
 }
 
@@ -729,9 +821,9 @@ impl AxesSpec {
       let left_numbering_location: Option<f64>;
       let right_numbering_location: Option<f64>;
 
-      let edge_coincidence: f64 = match self.axes_style {
-         AxesStyle::BoxCross | AxesStyle::Box => -1.0,
-         AxesStyle::Cross | AxesStyle::None => 1.0,
+      let is_boxy: bool = match self.axes_style {
+         AxesStyle::BoxCross | AxesStyle::Box => true,
+         AxesStyle::Cross | AxesStyle::None => false,
       };
 
       if horiz_interval == 0.0 {
@@ -762,19 +854,23 @@ impl AxesSpec {
          assert!(final_left_location > mid_range);
          assert!(final_right_location < mid_range);
          #[allow(clippy::while_float)]
-         while left_scan > edge_coincidence.mul_add(-x_tolerance, one_range[0]) {
-            vertical_light
-               .offsets
-               .push([left_scan * offset_pattern[0], left_scan * offset_pattern[1]]);
+         while left_scan > one_range[0] - x_tolerance {
+            if !is_boxy || (left_scan > one_range[0] + x_tolerance) {
+               vertical_light
+                  .offsets
+                  .push([left_scan * offset_pattern[0], left_scan * offset_pattern[1]]);
+            }
             assert!(vertical_light.offsets.len() < 100);
             final_left_location = left_scan;
             left_scan -= horiz_interval;
          }
          #[allow(clippy::while_float)]
-         while right_scan < edge_coincidence.mul_add(x_tolerance, one_range[1]) {
-            vertical_light
-               .offsets
-               .push([right_scan * offset_pattern[0], right_scan * offset_pattern[1]]);
+         while right_scan < one_range[1] + x_tolerance {
+            if !is_boxy || (right_scan < one_range[1] - x_tolerance) {
+               vertical_light
+                  .offsets
+                  .push([right_scan * offset_pattern[0], right_scan * offset_pattern[1]]);
+            }
             assert!(vertical_light.offsets.len() < 100);
             final_right_location = right_scan;
             right_scan += horiz_interval;
@@ -855,8 +951,8 @@ impl AxesSpec {
          AxesStyle::Box | AxesStyle::None => {}
       }
 
-      // Grid lines, horizontal interval, vertical lines.
       {
+         // Grid lines, horizontal interval, vertical lines.
          let (left_numbering_location, right_numbering_location) = self.add_grid_lines(
             &mut vertical_light,
             [range[0], range[2]],
@@ -872,6 +968,7 @@ impl AxesSpec {
          );
       }
       {
+         // Grid lines, vertical interval, horizontal lines.
          let (bottom_numbering_location, top_numbering_location) = self.add_grid_lines(
             &mut horizontal_light,
             [range[1], range[3]],
@@ -918,6 +1015,15 @@ pub enum LineChoice {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum PointChoice {
+   #[default]
+   Circle,
+   Dot,
+   Plus,
+   Times,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ColorChoice {
    #[default]
    Black,
@@ -940,11 +1046,22 @@ pub struct LinesDrawable {
    pub offsets: Vec<[f64; 2]>,
 }
 
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct PointsDrawable {
+   #[serde(skip_serializing_if = "is_default")]
+   pub point_choice: PointChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color_choice: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub centers: Vec<[f64; 2]>,
+}
+
 #[derive(Serialize, Debug, Default, PartialEq)]
 pub enum OneOfDrawable {
    #[default]
    Nothing,
    Lines(LinesDrawable),
+   Points(PointsDrawable),
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
