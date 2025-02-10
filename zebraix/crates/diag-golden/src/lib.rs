@@ -105,14 +105,14 @@ pub type SvgGoldenBoxedContent = Box<dyn core::any::Any>;
 impl SvgGoldenTest {
    #[allow(clippy::missing_panics_doc)]
    #[must_use]
-   pub fn new(mint_dir: &str, golden_filestem: &str) -> SvgGoldenTest {
+   pub fn new(mint_dir: &str, golden_filestem: &str) -> Self {
       let mut mint = Mint::new(mint_dir);
       let full_golden_filename = format!("{golden_filestem}.svg");
       let out_stream = mint.new_goldenfile(full_golden_filename.clone()).unwrap();
 
-      SvgGoldenTest {
+      Self {
          _mint_dir: mint_dir.to_string(),
-         _output_filename: full_golden_filename.to_string(),
+         _output_filename: full_golden_filename,
          _mint: mint,
          out_stream,
       }
@@ -120,7 +120,7 @@ impl SvgGoldenTest {
 
    // input_filestem can also create
    pub fn read_to_string(&mut self, input_filestem: &str) -> String {
-      let full_input_path_string = input_filestem.to_string().clone() + ".svg";
+      let full_input_path_string = input_filestem.to_string() + ".svg";
       let full_input_path = Path::new(&full_input_path_string);
 
       check_panic_with_path(
@@ -134,13 +134,13 @@ impl SvgGoldenTest {
    pub fn writeln_as_bytes(&mut self, result: &str) {
       // let bytes_amount = self.out_stream.write(result.as_bytes()).unwrap();
       // assert!(bytes_amount == result.as_bytes().len());
-      SvgGoldenTest::filter_result(Box::new(result.as_bytes()), &self.out_stream);
+      Self::filter_result(Box::new(result.as_bytes()), &self.out_stream);
       let bytes_amount_nl = self.out_stream.write(b"\n").unwrap();
       assert!(bytes_amount_nl == 1);
    }
 
    #[must_use]
-   pub fn get_raw_writeable(&self) -> SvgGoldenWriteable {
+   pub const fn get_raw_writeable(&self) -> SvgGoldenWriteable {
       Vec::<u8>::new()
    }
 
@@ -187,7 +187,7 @@ pub struct JsonGoldenTest {
 
 #[allow(clippy::missing_panics_doc)]
 impl JsonGoldenTest {
-   pub fn new(mint_dir: &str, golden_filestem: &str) -> JsonGoldenTest {
+   pub fn new(mint_dir: &str, golden_filestem: &str) -> Self {
       let mut mint = Mint::new(mint_dir);
       let full_golden_filename = format!("{golden_filestem}.json");
       // let out_stream = mint.new_goldenfile(output_filename).unwrap();
@@ -195,9 +195,9 @@ impl JsonGoldenTest {
          .new_goldenfile_with_differ(full_golden_filename.clone(), Box::new(Self::custom_diff))
          .unwrap();
 
-      JsonGoldenTest {
+      Self {
          mint_dir: mint_dir.to_string(),
-         _output_filename: full_golden_filename.to_string(),
+         _output_filename: full_golden_filename,
          _mint: mint,
          out_stream,
       }
@@ -205,7 +205,7 @@ impl JsonGoldenTest {
 
    // input_filestem can also create
    pub fn read_to_string(&mut self, input_filestem: &str) -> String {
-      let full_input_path_string = input_filestem.to_string().clone() + ".json";
+      let full_input_path_string = input_filestem.to_string() + ".json";
       let full_input_path = Path::new(&full_input_path_string);
 
       check_panic_with_path(
@@ -380,11 +380,8 @@ pub struct SpartanDiagram {
 
 impl SpartanDiagram {
    #[must_use]
-   pub fn new() -> SpartanDiagram {
-      SpartanDiagram {
-         // scale: 1.0,
-         ..Default::default()
-      }
+   pub fn new() -> Self {
+      Self::default()
    }
 
    #[must_use]
@@ -392,12 +389,12 @@ impl SpartanDiagram {
       (v - w).abs() < 0.0001
    }
    #[must_use]
-   pub fn is_ready(&self) -> bool {
+   pub const fn is_ready(&self) -> bool {
       matches!(self.typestate, SpartanTypestate::Ready)
    }
 
    #[must_use]
-   fn default_base_width() -> f64 {
+   const fn default_base_width() -> f64 {
       400.0
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -407,7 +404,7 @@ impl SpartanDiagram {
    }
 
    #[must_use]
-   fn default_base_height() -> f64 {
+   const fn default_base_height() -> f64 {
       300.0
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -417,7 +414,7 @@ impl SpartanDiagram {
    }
 
    #[must_use]
-   fn default_base_font_size() -> f64 {
+   const fn default_base_font_size() -> f64 {
       12.0
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -427,7 +424,7 @@ impl SpartanDiagram {
    }
 
    #[must_use]
-   fn default_base_point_size() -> f64 {
+   const fn default_base_point_size() -> f64 {
       15.0
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -437,7 +434,7 @@ impl SpartanDiagram {
    }
 
    #[must_use]
-   fn default_base_line_width() -> f64 {
+   const fn default_base_line_width() -> f64 {
       1.1
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -447,7 +444,7 @@ impl SpartanDiagram {
    }
 
    #[must_use]
-   fn default_annotation_linear_scale() -> f64 {
+   const fn default_annotation_linear_scale() -> f64 {
       0.5
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -457,7 +454,7 @@ impl SpartanDiagram {
    }
 
    #[must_use]
-   fn default_annotation_area_scale() -> f64 {
+   const fn default_annotation_area_scale() -> f64 {
       0.7
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -467,7 +464,7 @@ impl SpartanDiagram {
    }
 
    #[must_use]
-   fn default_annotation_offset() -> [f64; 2] {
+   const fn default_annotation_offset() -> [f64; 2] {
       [0.4, 0.6]
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -486,6 +483,7 @@ impl SpartanDiagram {
       }
    }
 
+   #[allow(clippy::too_many_lines)]
    #[allow(clippy::missing_panics_doc)]
    pub fn prepare(&mut self) {
       assert!(matches!(self.typestate, SpartanTypestate::Unready));
@@ -573,13 +571,13 @@ impl SpartanDiagram {
       }
 
       self.prep.scale = [
-         self.prep.canvas_size[0] / (total_width_range + 2.0 * width_adjustment),
-         self.prep.canvas_size[1] / (total_height_range + 2.0 * height_adjustment),
+         self.prep.canvas_size[0] / 2.0f64.mul_add(width_adjustment, total_width_range),
+         self.prep.canvas_size[1] / 2.0f64.mul_add(height_adjustment, total_height_range),
       ];
 
       self.prep.offset = [
-         self.prep.scale[0] * (-x_min + (x_max - x_min) * left_padding + width_adjustment),
-         self.prep.scale[1] * (-y_min + (y_max - y_min) * bottom_padding + height_adjustment),
+         self.prep.scale[0] * (x_max - x_min).mul_add(left_padding, -x_min + width_adjustment),
+         self.prep.scale[1] * (y_max - y_min).mul_add(bottom_padding, -y_min + height_adjustment),
       ];
 
       let mut scale_content = self.scale_content;
@@ -613,8 +611,8 @@ pub struct CairoSpartanRender {
 
 impl CairoSpartanRender {
    #[must_use]
-   pub fn new() -> CairoSpartanRender {
-      CairoSpartanRender { ..Default::default() }
+   pub fn new() -> Self {
+      Self::default()
    }
    // This is necessary because line thicknesses and similar are distorted if the x and y
    // scales differ.  Consequently we only use the scaling transform for the Cairo CTM when
@@ -679,12 +677,12 @@ pub struct CairoSpartanCombo {
 
 impl CairoSpartanCombo {
    #[must_use]
-   pub fn new() -> CairoSpartanCombo {
-      CairoSpartanCombo { ..Default::default() }
+   pub fn new() -> Self {
+      Self::default()
    }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum AxesStyle {
    #[default]
    None,
@@ -693,7 +691,7 @@ pub enum AxesStyle {
    BoxCross,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum AxisNumbering {
    #[default]
    At,
@@ -714,8 +712,8 @@ pub struct AxesSpec {
 
 impl AxesSpec {
    #[must_use]
-   pub fn new(style: AxesStyle) -> AxesSpec {
-      AxesSpec { axes_style: style, ..Default::default() }
+   pub fn new(style: AxesStyle) -> Self {
+      Self { axes_style: style, ..Default::default() }
    }
 
    #[must_use]
@@ -731,7 +729,7 @@ impl AxesSpec {
       let left_numbering_location: Option<f64>;
       let right_numbering_location: Option<f64>;
 
-      let edge_coincidence = match self.axes_style {
+      let edge_coincidence: f64 = match self.axes_style {
          AxesStyle::BoxCross | AxesStyle::Box => -1.0,
          AxesStyle::Cross | AxesStyle::None => 1.0,
       };
@@ -763,7 +761,8 @@ impl AxesSpec {
          // numbering location.
          assert!(final_left_location > mid_range);
          assert!(final_right_location < mid_range);
-         while left_scan > (one_range[0] - edge_coincidence * x_tolerance) {
+         #[allow(clippy::while_float)]
+         while left_scan > edge_coincidence.mul_add(-x_tolerance, one_range[0]) {
             vertical_light
                .offsets
                .push([left_scan * offset_pattern[0], left_scan * offset_pattern[1]]);
@@ -771,7 +770,8 @@ impl AxesSpec {
             final_left_location = left_scan;
             left_scan -= horiz_interval;
          }
-         while right_scan < (one_range[1] + edge_coincidence * x_tolerance) {
+         #[allow(clippy::while_float)]
+         while right_scan < edge_coincidence.mul_add(x_tolerance, one_range[1]) {
             vertical_light
                .offsets
                .push([right_scan * offset_pattern[0], right_scan * offset_pattern[1]]);
@@ -791,9 +791,10 @@ impl AxesSpec {
             right_numbering_location = Some(final_right_location);
          }
       }
-      return (left_numbering_location, right_numbering_location);
+      (left_numbering_location, right_numbering_location)
    }
 
+   #[allow(clippy::too_many_lines)]
    #[allow(clippy::missing_panics_doc)]
    pub fn generate_axes(&self, diagram: &mut SpartanDiagram) {
       if (self.axes_style == AxesStyle::None)
@@ -909,14 +910,14 @@ impl AxesSpec {
    }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum LineChoice {
    #[default]
    Ordinary,
    Light,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ColorChoice {
    #[default]
    Black,
