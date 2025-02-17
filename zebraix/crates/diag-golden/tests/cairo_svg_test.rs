@@ -16,10 +16,9 @@ extern crate goldenfile;
 
 use cairo::SvgSurface;
 use cairo::SvgUnit::Pt;
+use diag_golden::SvgGoldenTest;
 use std::f64::consts::PI;
 use std::io::Write;
-
-use diag_golden::SvgGoldenTest;
 
 // After dependency to test_utils is added, use type-def for the result box.
 pub fn write_sample_to_write<W: Write + 'static>(
@@ -51,7 +50,7 @@ pub fn write_sample_to_write<W: Write + 'static>(
 
    // Create a single context, instead of using create_layout.  This
    // demonstrates avoiding lots of Pango contexts.
-   let text_context = pangocairo::create_context(&context);
+   let text_context = pangocairo::functions::create_context(&context);
    let text_layout = pango::Layout::new(&text_context);
 
    let k_label_font_size = 12.0;
@@ -66,7 +65,7 @@ pub fn write_sample_to_write<W: Write + 'static>(
    context.set_source_rgb(0.0, 0.0, 1.0);
 
    context.move_to(120.0, 60.0);
-   pangocairo::show_layout(&context, &text_layout);
+   pangocairo::functions::show_layout(&context, &text_layout);
 
    surface.flush();
    surface.finish_output_stream()

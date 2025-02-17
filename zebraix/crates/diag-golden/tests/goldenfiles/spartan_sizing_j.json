@@ -1,0 +1,762 @@
+{
+  "sizing_scheme": "SquareCenter",
+  "base_width": 600.0,
+  "base_height": 500.0,
+  "axes_range": [
+    6.5,
+    5.0
+  ],
+  "padding": [
+    0.05
+  ],
+  "drawables": [
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              -6.5,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              6.5,
+              0.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              -0.0,
+              -1.5
+            ],
+            [
+              -0.0,
+              -3.0
+            ],
+            [
+              -0.0,
+              -4.5
+            ],
+            [
+              0.0,
+              1.5
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              0.0,
+              4.5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              0.0,
+              -5.0
+            ]
+          ],
+          "end": [
+            [
+              0.0,
+              5.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              -2.0,
+              -0.0
+            ],
+            [
+              -4.0,
+              -0.0
+            ],
+            [
+              -6.0,
+              -0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_vertical": "Top",
+          "texts": [
+            {
+              "content": "-6.0",
+              "location": [
+                -6.0,
+                -5.0
+              ]
+            },
+            {
+              "content": "0.0",
+              "location": [
+                0.0,
+                -5.0
+              ]
+            },
+            {
+              "content": "6.0",
+              "location": [
+                6.0,
+                -5.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_horizontal": "Right",
+          "texts": [
+            {
+              "content": "-4.5",
+              "location": [
+                -6.5,
+                -4.5
+              ]
+            },
+            {
+              "content": "0.0",
+              "location": [
+                -6.5,
+                0.0
+              ]
+            },
+            {
+              "content": "4.5",
+              "location": [
+                -6.5,
+                4.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "start": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Points": {
+          "point_choice": "Dot",
+          "color_choice": "Gray",
+          "centers": [
+            [
+              2.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.5
+            ],
+            [
+              2.0,
+              -1.5
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.5
+            ],
+            [
+              4.0,
+              -1.5
+            ],
+            [
+              2.0,
+              -3.0
+            ],
+            [
+              2.0,
+              3.0
+            ],
+            [
+              0.0,
+              1.5
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              0.0,
+              4.5
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Points": {
+          "point_choice": "Dot",
+          "color_choice": "Gray",
+          "centers": [
+            [
+              -2.0,
+              -0.0
+            ],
+            [
+              -2.0,
+              -1.5
+            ],
+            [
+              -2.0,
+              1.5
+            ],
+            [
+              -4.0,
+              -0.0
+            ],
+            [
+              -4.0,
+              -1.5
+            ],
+            [
+              -4.0,
+              1.5
+            ],
+            [
+              -2.0,
+              3.0
+            ],
+            [
+              -2.0,
+              -3.0
+            ],
+            [
+              -0.0,
+              -1.5
+            ],
+            [
+              -0.0,
+              -3.0
+            ],
+            [
+              -0.0,
+              -4.5
+            ],
+            [
+              -0.0,
+              -0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "texts": [
+            {
+              "content": "o+=-x-=+o"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Large",
+          "offset_choice": "Both",
+          "anchor_horizontal": "Left",
+          "color_choice": "Red",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                2.0,
+                1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "offset_choice": "Both",
+          "anchor_horizontal": "Left",
+          "color_choice": "Green",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                2.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_horizontal": "Left",
+          "color_choice": "Blue",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                2.0,
+                -1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "anchor_horizontal": "Left",
+          "anchor_vertical": "Top",
+          "color_choice": "BlueBlueGreen",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                2.0,
+                -3.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Large",
+          "anchor_horizontal": "Left",
+          "color_choice": "YellowBrown",
+          "texts": [
+            {
+              "content": "xopqgox",
+              "location": [
+                4.0,
+                1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "anchor_horizontal": "Left",
+          "color_choice": "BlueGreen",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                4.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "anchor_horizontal": "Left",
+          "color_choice": "Magenta",
+          "texts": [
+            {
+              "content": "xodflox",
+              "location": [
+                4.0,
+                -1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "anchor_horizontal": "Left",
+          "anchor_vertical": "Bottom",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                2.0,
+                3.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "offset_choice": "Both",
+          "anchor_vertical": "Bottom",
+          "color_choice": "RedRedBlue",
+          "texts": [
+            {
+              "content": "Elpo x lpoE",
+              "location": [
+                0.0,
+                1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Large",
+          "offset_choice": "Both",
+          "anchor_vertical": "Bottom",
+          "color_choice": "BlueBlueRed",
+          "texts": [
+            {
+              "content": "Elpo x lpoE",
+              "location": [
+                0.0,
+                3.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_vertical": "Bottom",
+          "texts": [
+            {
+              "content": "Elpo x lpoE",
+              "location": [
+                0.0,
+                4.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Large",
+          "offset_choice": "Both",
+          "anchor_horizontal": "Right",
+          "color_choice": "Blue",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                -2.0,
+                1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "offset_choice": "Both",
+          "anchor_horizontal": "Right",
+          "color_choice": "Green",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                -2.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_horizontal": "Right",
+          "color_choice": "Red",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                -2.0,
+                -1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Large",
+          "anchor_horizontal": "Right",
+          "color_choice": "Magenta",
+          "texts": [
+            {
+              "content": "oxacoxocaxo\nox=c-+-c=xo\noxacoxocaxo",
+              "location": [
+                -4.0,
+                1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "anchor_horizontal": "Right",
+          "color_choice": "BlueGreen",
+          "texts": [
+            {
+              "content": "oxacoxocaxo\nox=c-+-c=xo\noxacoxocaxo",
+              "location": [
+                -4.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "anchor_horizontal": "Right",
+          "color_choice": "YellowBrown",
+          "texts": [
+            {
+              "content": "oxacoxocaxo\nox=c-+-c=xo\noxacoxocaxo",
+              "location": [
+                -4.0,
+                -1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "anchor_horizontal": "Right",
+          "anchor_vertical": "Bottom",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                -2.0,
+                3.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "anchor_horizontal": "Right",
+          "anchor_vertical": "Top",
+          "color_choice": "RedRedGreen",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                -2.0,
+                -3.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "offset_choice": "Both",
+          "anchor_vertical": "Top",
+          "color_choice": "GreenGreenBlue",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                0.0,
+                -1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Large",
+          "offset_choice": "Both",
+          "anchor_vertical": "Top",
+          "color_choice": "GreenGreenRed",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                0.0,
+                -3.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_vertical": "Top",
+          "texts": [
+            {
+              "content": "Elpo xftdg",
+              "location": [
+                0.0,
+                -4.5
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
