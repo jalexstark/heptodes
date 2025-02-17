@@ -315,6 +315,7 @@ pub struct SpartanDiagram {
 
    #[serde(skip)]
    pub prep: SpartanPreparation,
+
    pub sizing_scheme: SizingScheme,
    #[serde(
       skip_serializing_if = "SpartanDiagram::is_default_base_width",
@@ -341,6 +342,16 @@ pub struct SpartanDiagram {
       default = "SpartanDiagram::default_base_line_width"
    )]
    pub base_line_width: f64,
+
+   #[serde(skip_serializing_if = "is_default")]
+   pub base_color_choice: ColorChoice,
+
+   #[serde(skip_serializing_if = "is_default")]
+   pub light_color_choice: ColorChoice,
+
+   #[serde(skip_serializing_if = "is_default")]
+   pub text_color_choice: ColorChoice,
+
    // Scaling of 1-D annotations, such as grid line width vs normal.
    #[serde(
       skip_serializing_if = "SpartanDiagram::is_default_annotation_linear_scale",
@@ -366,10 +377,13 @@ pub struct SpartanDiagram {
    pub scale_width: f64,
    #[serde(skip_serializing_if = "is_default")]
    pub scale_height: f64,
-   // Main line-width scaling as diagram scales. Default is to use something like the square
+   // Main line-width scaling as diagram scales. If zero, use something like the square
    // root of the geometric mean of the width and height scaling, so that content grows
    // gradually.
-   #[serde(skip_serializing_if = "is_default")]
+   #[serde(
+      skip_serializing_if = "SpartanDiagram::is_default_scale_content",
+      default = "SpartanDiagram::default_scale_content"
+   )]
    pub scale_content: f64,
 
    #[serde(skip_serializing_if = "is_default")]
@@ -378,7 +392,7 @@ pub struct SpartanDiagram {
    pub padding: Vec<f64>,
 
    #[serde(skip_serializing_if = "is_default")]
-   pub drawables: Vec<QualfiedDrawable>,
+   pub drawables: Vec<QualifiedDrawable>,
 }
 
 impl SpartanDiagram {
@@ -418,7 +432,7 @@ impl SpartanDiagram {
 
    #[must_use]
    const fn default_base_font_size() -> f64 {
-      12.0
+      11.0
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
    #[must_use]
@@ -436,9 +450,11 @@ impl SpartanDiagram {
       Self::is_near_float(*v, Self::default_base_point_size())
    }
 
+   // 1.0 is a regular thickness, definitely not thick, 2.0 definitely thick, 0.6 thin but
+   // firm.
    #[must_use]
    const fn default_base_line_width() -> f64 {
-      1.1
+      1.0
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
    #[must_use]
@@ -447,8 +463,18 @@ impl SpartanDiagram {
    }
 
    #[must_use]
+   const fn default_scale_content() -> f64 {
+      1.0
+   }
+   #[allow(clippy::trivially_copy_pass_by_ref)]
+   #[must_use]
+   fn is_default_scale_content(v: &f64) -> bool {
+      Self::is_near_float(*v, Self::default_scale_content())
+   }
+
+   #[must_use]
    const fn default_annotation_linear_scale() -> f64 {
-      0.5
+      0.45
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
    #[must_use]
@@ -458,7 +484,7 @@ impl SpartanDiagram {
 
    #[must_use]
    const fn default_annotation_area_scale() -> f64 {
-      0.7
+      0.85
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
    #[must_use]
@@ -468,7 +494,7 @@ impl SpartanDiagram {
 
    #[must_use]
    const fn default_annotation_offset() -> [f64; 2] {
-      [0.4, 0.6]
+      [0.5, 0.2]
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
    #[must_use]
@@ -603,6 +629,14 @@ impl SpartanDiagram {
       self.prep.annotation_linear_scale = self.annotation_linear_scale;
       self.prep.annotation_area_scale = self.annotation_area_scale;
 
+      if self.light_color_choice == ColorChoice::default() {
+         self.light_color_choice = self.base_color_choice;
+      }
+
+      if self.text_color_choice == ColorChoice::default() {
+         self.text_color_choice = self.base_color_choice;
+      }
+
       self.typestate = SpartanTypestate::Ready;
    }
 }
@@ -633,6 +667,43 @@ impl CairoSpartanRender {
       context.set_matrix(self.saved_matrix);
    }
 
+   // #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+   // pub enum ColorChoice {
+   //    #[default]
+   //    DefaultBlack,
+   //    Black,
+   //    Gray,
+   // }
+
+   #[allow(clippy::unused_self)]
+   fn set_color(&self, context: &Context, _prep: &SpartanPreparation, color_choice: ColorChoice) {
+      let (r, g, b) = match color_choice {
+         ColorChoice::DefaultBlack | ColorChoice::Black => (0.0, 0.0, 0.0),
+         ColorChoice::Gray => (0.55, 0.55, 0.55),
+         ColorChoice::DarkGray => (0.35, 0.35, 0.35),
+         ColorChoice::LightGray => (0.7, 0.7, 0.7),
+         ColorChoice::BrightRed => (1.0, 0.0, 0.0),
+         ColorChoice::BrightGreen => (0.0, 1.0, 0.0),
+         ColorChoice::BrightBlue => (0.0, 0.0, 1.0),
+         ColorChoice::BrightYellow => (1.0, 1.0, 0.0),
+         ColorChoice::BrightCyan => (0.0, 1.0, 1.0),
+         ColorChoice::BrightMagenta => (1.0, 0.0, 1.0),
+         ColorChoice::Red => (0.6, 0.0, 0.0),
+         ColorChoice::Green => (0.0, 0.4, 0.0),
+         ColorChoice::Blue => (0.0, 0.0, 0.65),
+         ColorChoice::YellowBrown => (0.37, 0.28, 0.0), // A dark Olive
+         ColorChoice::BlueGreen => (0.0, 0.3, 0.3),     // BlueStone-like
+         ColorChoice::Magenta => (0.35, 0.0, 0.5),
+         ColorChoice::RedRedGreen => (0.45, 0.18, 0.0),
+         ColorChoice::GreenGreenRed => (0.24, 0.32, 0.0),
+         ColorChoice::BlueBlueGreen => (0.0, 0.18, 0.45),
+         ColorChoice::GreenGreenBlue => (0.0, 0.36, 0.18),
+         ColorChoice::RedRedBlue => (0.47, 0.0, 0.34),
+         ColorChoice::BlueBlueRed => (0.23, 0.0, 0.55),
+      };
+      context.set_source_rgb(r, g, b);
+   }
+
    fn draw_lines_set(
       &mut self,
       context: &Context,
@@ -641,16 +712,15 @@ impl CairoSpartanRender {
    ) {
       match drawable.line_choice {
          LineChoice::Ordinary => {
-            // 1.0 is a regular thickness, definitely not thick, 2.0 definitely thick, 0.6 thin but
-            // firm.
-            context.set_line_width(1.0);
+            context.set_line_width(prep.line_width);
             context.set_dash(&[], 0.0);
          }
          LineChoice::Light => {
-            context.set_line_width(0.45);
+            context.set_line_width(prep.line_width * prep.annotation_linear_scale);
             context.set_dash(&[4.5, 3.5], 0.0);
          }
       }
+      self.set_color(context, prep, drawable.color_choice);
       self.save_set_path_transform(prep, context);
       assert_eq!(drawable.start.len(), drawable.end.len());
       for i in 0..drawable.start.len() {
@@ -671,6 +741,8 @@ impl CairoSpartanRender {
    ) {
       context.set_line_width(1.0);
       context.set_dash(&[], 0.0);
+      self.set_color(context, prep, drawable.color_choice);
+
       match drawable.point_choice {
          PointChoice::Circle => {
             for center in &drawable.centers {
@@ -725,6 +797,79 @@ impl CairoSpartanRender {
       context.stroke().unwrap();
    }
 
+   fn draw_text_set(
+      &mut self,
+      context: &Context,
+      drawable: &TextDrawable,
+      prep: &SpartanPreparation,
+   ) {
+      let area_based_scale = match drawable.size_choice {
+         TextSizeChoice::Normal => 1.0,
+         TextSizeChoice::Large => 1.0 / prep.annotation_area_scale,
+         TextSizeChoice::Small => prep.annotation_area_scale,
+      };
+      let font_size = prep.font_size * area_based_scale;
+
+      for single_text in &drawable.texts {
+         // Create a single context, instead of using create_layout.  This
+         // demonstrates avoiding lots of Pango contexts.
+         let text_context = pangocairo::functions::create_context(context);
+         let text_layout = pango::Layout::new(&text_context);
+
+         let mut font_description = pango::FontDescription::new();
+         font_description.set_family("sans");
+         font_description.set_absolute_size(font_size * f64::from(pango::SCALE));
+         text_layout.set_font_description(Some(&font_description));
+
+         let metrics = text_layout.context().metrics(Some(&font_description), None);
+         // Strikethrough is top of line above baseline.
+         let strikethrough_center = 0.5
+            * f64::from(2 * metrics.strikethrough_position() - metrics.strikethrough_thickness());
+         let even_half_height = f64::max(
+            f64::from(metrics.ascent()) - strikethrough_center,
+            f64::from(metrics.descent()) + strikethrough_center,
+         );
+
+         text_layout.set_text(&single_text.content);
+         let (text_width, text_height) = text_layout.size();
+
+         self.set_color(context, prep, drawable.color_choice);
+
+         self.save_set_path_transform(prep, context);
+         let (tx, ty) = context.user_to_device(single_text.location[0], single_text.location[1]);
+         let (offset_x, offset_y) = match drawable.offset_choice {
+            TextOffsetChoice::None => (0.0, 0.0),
+            TextOffsetChoice::Both => (
+               prep.annotation_offset_absolute[0] * area_based_scale * f64::from(pango::SCALE),
+               prep.annotation_offset_absolute[1] * area_based_scale * f64::from(pango::SCALE),
+            ),
+         };
+         // assert_eq!(offset_x, 0.0);
+         self.restore_transform(context);
+
+         let mut height_adjust = f64::from(metrics.ascent()) - strikethrough_center;
+         let multiline_adjust = f64::from(text_height - metrics.height());
+
+         height_adjust += match drawable.anchor_vertical {
+            TextAnchorVertical::Bottom => even_half_height + multiline_adjust + offset_y,
+            TextAnchorVertical::Middle => 0.5 * multiline_adjust,
+            TextAnchorVertical::Top => -even_half_height - offset_y,
+         };
+         let width_adjust = match drawable.anchor_horizontal {
+            TextAnchorHorizontal::Left => -offset_x,
+            TextAnchorHorizontal::Center => 0.5 * f64::from(text_width),
+            TextAnchorHorizontal::Right => f64::from(text_width) + offset_x,
+         };
+
+         context.move_to(
+            tx - width_adjust / f64::from(pango::SCALE),
+            ty - height_adjust / f64::from(pango::SCALE),
+         );
+         pangocairo::functions::show_layout(context, &text_layout);
+         context.stroke().unwrap();
+      }
+   }
+
    #[allow(clippy::missing_panics_doc)]
    pub fn render_drawables(&mut self, spartan: &SpartanDiagram, context: &Context) {
       for qualified_drawable in &spartan.drawables {
@@ -734,6 +879,9 @@ impl CairoSpartanRender {
             }
             OneOfDrawable::Points(drawable) => {
                self.draw_points_set(context, drawable, &spartan.prep);
+            }
+            OneOfDrawable::Text(drawable) => {
+               self.draw_text_set(context, drawable, &spartan.prep);
             }
             OneOfDrawable::Nothing => {}
          }
@@ -800,6 +948,8 @@ pub struct AxesSpec {
    pub axis_numbering: AxisNumbering,
    #[serde(skip_serializing_if = "is_default")]
    pub grid_interval: [f64; 2],
+   #[serde(skip_serializing_if = "is_default")]
+   pub grid_precision: Vec<usize>,
 }
 
 impl AxesSpec {
@@ -909,17 +1059,23 @@ impl AxesSpec {
       let has_vert_zero = (-range[0] > x_tolerance) && (range[2] > x_tolerance);
       let has_horiz_zero = (-range[1] > y_tolerance) && (range[3] > y_tolerance);
 
-      let mut lines_ordinary = LinesDrawable { offsets: vec![[0.0, 0.0]], ..Default::default() };
+      let mut lines_ordinary = LinesDrawable {
+         offsets: vec![[0.0, 0.0]],
+         color_choice: diagram.base_color_choice,
+         ..Default::default()
+      };
       let mut horizontal_light = LinesDrawable {
          start: vec![[range[0], 0.0]],
          end: vec![[range[2], 0.0]],
          line_choice: LineChoice::Light,
+         color_choice: diagram.light_color_choice,
          ..Default::default()
       };
       let mut vertical_light = LinesDrawable {
          start: vec![[0.0, range[1]]],
          end: vec![[0.0, range[3]]],
          line_choice: LineChoice::Light,
+         color_choice: diagram.light_color_choice,
          ..Default::default()
       };
 
@@ -951,58 +1107,148 @@ impl AxesSpec {
          AxesStyle::Box | AxesStyle::None => {}
       }
 
-      {
-         // Grid lines, horizontal interval, vertical lines.
-         let (left_numbering_location, right_numbering_location) = self.add_grid_lines(
-            &mut vertical_light,
-            [range[0], range[2]],
-            self.grid_interval[0],
-            x_tolerance,
-            has_vert_zero,
-            [1.0, 0.0],
-         );
-         println!(
-            "{}, {}",
-            left_numbering_location.unwrap_or(-1.0),
-            right_numbering_location.unwrap_or(-1.0)
-         );
-      }
-      {
-         // Grid lines, vertical interval, horizontal lines.
-         let (bottom_numbering_location, top_numbering_location) = self.add_grid_lines(
-            &mut horizontal_light,
-            [range[1], range[3]],
-            self.grid_interval[1],
-            y_tolerance,
-            has_horiz_zero,
-            [0.0, 1.0],
-         );
-         println!(
-            "{}, {}",
-            bottom_numbering_location.unwrap_or(-1.0),
-            top_numbering_location.unwrap_or(-1.0)
-         );
-      }
+      // Grid lines, horizontal interval, vertical lines.
+      let (left_numbering_location, right_numbering_location) = self.add_grid_lines(
+         &mut vertical_light,
+         [range[0], range[2]],
+         self.grid_interval[0],
+         x_tolerance,
+         has_vert_zero,
+         [1.0, 0.0],
+      );
+
+      // Grid lines, vertical interval, horizontal lines.
+      let (bottom_numbering_location, top_numbering_location) = self.add_grid_lines(
+         &mut horizontal_light,
+         [range[1], range[3]],
+         self.grid_interval[1],
+         y_tolerance,
+         has_horiz_zero,
+         [0.0, 1.0],
+      );
 
       // Change layer to depth.
       let axes_layer = 0;
       if !lines_ordinary.start.is_empty() {
          // assert!(false);
-         let qualified_drawable =
-            QualfiedDrawable { layer: axes_layer, drawable: OneOfDrawable::Lines(lines_ordinary) };
+         let qualified_drawable = QualifiedDrawable {
+            layer: axes_layer,
+            // color_choice: diagram.base_color_choice,
+            drawable: OneOfDrawable::Lines(lines_ordinary),
+         };
          diagram.drawables.push(qualified_drawable);
       }
       if !horizontal_light.offsets.is_empty() {
-         let qualified_drawable = QualfiedDrawable {
+         let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
+            // color_choice: diagram.light_color_choice,
             drawable: OneOfDrawable::Lines(horizontal_light),
          };
          diagram.drawables.push(qualified_drawable);
       }
       if !vertical_light.offsets.is_empty() {
-         let qualified_drawable =
-            QualfiedDrawable { layer: axes_layer, drawable: OneOfDrawable::Lines(vertical_light) };
+         let qualified_drawable = QualifiedDrawable {
+            layer: axes_layer,
+            // color_choice: diagram.light_color_choice,
+            drawable: OneOfDrawable::Lines(vertical_light),
+         };
          diagram.drawables.push(qualified_drawable);
+      }
+
+      if self.axis_numbering != AxisNumbering::None {
+         let horizontal_precision =
+            if self.grid_precision.is_empty() { 20_usize } else { self.grid_precision[0] };
+         let vertical_precision = if self.grid_precision.len() > 1 {
+            self.grid_precision[1]
+         } else {
+            horizontal_precision
+         };
+         let (anchor_horizontal, anchor_vertical) = match self.axis_numbering {
+            AxisNumbering::Before => (TextAnchorHorizontal::Right, TextAnchorVertical::Top),
+            AxisNumbering::After => (TextAnchorHorizontal::Left, TextAnchorVertical::Bottom),
+            AxisNumbering::At | AxisNumbering::None => {
+               (TextAnchorHorizontal::Center, TextAnchorVertical::Middle)
+            }
+         };
+         let mut horizontal_numbering = TextDrawable {
+            size_choice: TextSizeChoice::Small,
+            color_choice: diagram.text_color_choice,
+            offset_choice: TextOffsetChoice::Both,
+            anchor_horizontal,
+            anchor_vertical: TextAnchorVertical::Top,
+            ..Default::default()
+         };
+         let mut vertical_numbering = TextDrawable {
+            size_choice: TextSizeChoice::Small,
+            color_choice: diagram.text_color_choice,
+            offset_choice: TextOffsetChoice::Both,
+            anchor_horizontal: TextAnchorHorizontal::Right,
+            anchor_vertical,
+            ..Default::default()
+         };
+
+         let number_at_zero = self.axes_style == AxesStyle::Cross;
+
+         let vertical_for_horizontal = if has_vert_zero && number_at_zero { 0.0 } else { range[1] };
+         let horizontal_for_vertical =
+            if has_horiz_zero && number_at_zero { 0.0 } else { range[0] };
+
+         if let Some(location) = left_numbering_location {
+            horizontal_numbering.texts.push(TextSingle {
+               content: format!("{location:.horizontal_precision$}"),
+               location: [location, vertical_for_horizontal],
+            });
+         }
+         if has_vert_zero && !number_at_zero {
+            horizontal_numbering.texts.push(TextSingle {
+               content: format!("{:.horizontal_precision$}", 0.0),
+               location: [0.0, vertical_for_horizontal],
+            });
+         }
+         if let Some(location) = right_numbering_location {
+            horizontal_numbering.texts.push(TextSingle {
+               content: format!("{location:.horizontal_precision$}"),
+               location: [location, vertical_for_horizontal],
+            });
+         }
+         if let Some(location) = bottom_numbering_location {
+            vertical_numbering.texts.push(TextSingle {
+               content: format!("{location:.vertical_precision$}"),
+               location: [horizontal_for_vertical, location],
+            });
+         }
+         if has_horiz_zero && !number_at_zero {
+            vertical_numbering.texts.push(TextSingle {
+               content: format!("{:.vertical_precision$}", 0.0),
+               location: [horizontal_for_vertical, 0.0],
+            });
+         }
+         if let Some(location) = top_numbering_location {
+            vertical_numbering.texts.push(TextSingle {
+               content: format!("{location:.vertical_precision$}"),
+               location: [horizontal_for_vertical, location],
+            });
+         }
+
+         // Change layer to depth.
+         let axes_layer = 0;
+         if !horizontal_numbering.texts.is_empty() {
+            let qualified_drawable = QualifiedDrawable {
+               layer: axes_layer,
+               // color_choice: diagram.text_color_choice,
+               drawable: OneOfDrawable::Text(horizontal_numbering),
+            };
+            diagram.drawables.push(qualified_drawable);
+         }
+         let axes_layer = 0;
+         if !vertical_numbering.texts.is_empty() {
+            let qualified_drawable = QualifiedDrawable {
+               layer: axes_layer,
+               // color_choice: diagram.text_color_choice,
+               drawable: OneOfDrawable::Text(vertical_numbering),
+            };
+            diagram.drawables.push(qualified_drawable);
+         }
       }
    }
 }
@@ -1024,10 +1270,64 @@ pub enum PointChoice {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum TextAnchorHorizontal {
+   #[default]
+   Center,
+   Left,
+   Right,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum TextAnchorVertical {
+   #[default]
+   Middle,
+   Bottom,
+   Top,
+}
+
+// Normal vs annotation vs title.
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum TextSizeChoice {
+   #[default]
+   Normal,
+   Large,
+   Small,
+}
+
+// Directions (horizontal, vertical) over which to offset anchoring.
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum TextOffsetChoice {
+   #[default]
+   None,
+   Both,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ColorChoice {
    #[default]
+   DefaultBlack,
    Black,
    Gray,
+   DarkGray,
+   LightGray,
+   BrightRed,
+   BrightGreen,
+   BrightBlue,
+   BrightYellow,
+   BrightCyan,
+   BrightMagenta,
+   Red,
+   Green,
+   Blue,
+   YellowBrown,
+   BlueGreen,
+   Magenta,
+   RedRedGreen,
+   GreenGreenRed,
+   BlueBlueGreen,
+   GreenGreenBlue,
+   RedRedBlue,
+   BlueBlueRed,
 }
 
 // Length of start and end must match.
@@ -1056,16 +1356,44 @@ pub struct PointsDrawable {
    pub centers: Vec<[f64; 2]>,
 }
 
+// Length of start and end must match.
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct TextSingle {
+   #[serde(skip_serializing_if = "is_default")]
+   pub content: String,
+   #[serde(skip_serializing_if = "is_default")]
+   pub location: [f64; 2],
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct TextDrawable {
+   #[serde(skip_serializing_if = "is_default")]
+   pub size_choice: TextSizeChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub offset_choice: TextOffsetChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub anchor_horizontal: TextAnchorHorizontal,
+   #[serde(skip_serializing_if = "is_default")]
+   pub anchor_vertical: TextAnchorVertical,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color_choice: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub texts: Vec<TextSingle>,
+}
+
 #[derive(Serialize, Debug, Default, PartialEq)]
 pub enum OneOfDrawable {
    #[default]
    Nothing,
    Lines(LinesDrawable),
    Points(PointsDrawable),
+   Text(TextDrawable),
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-pub struct QualfiedDrawable {
+pub struct QualifiedDrawable {
+   #[serde(skip_serializing_if = "is_default")]
    pub layer: i32,
+   #[serde(skip_serializing_if = "is_default")]
    pub drawable: OneOfDrawable,
 }

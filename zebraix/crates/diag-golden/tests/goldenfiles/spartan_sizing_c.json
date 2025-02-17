@@ -7,7 +7,6 @@
   ],
   "drawables": [
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "start": [
@@ -36,7 +35,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "line_choice": "Light",

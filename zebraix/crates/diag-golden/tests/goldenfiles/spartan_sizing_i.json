@@ -10,7 +10,6 @@
   ],
   "drawables": [
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "start": [
@@ -39,7 +38,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "line_choice": "Light",
@@ -73,7 +71,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "start": [
@@ -114,7 +111,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "line_choice": "Light",
@@ -156,7 +152,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Points": {
           "centers": [
@@ -189,7 +184,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Points": {
           "point_choice": "Times",
@@ -223,7 +217,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Points": {
           "point_choice": "Plus",
@@ -257,7 +250,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Points": {
           "point_choice": "Dot",

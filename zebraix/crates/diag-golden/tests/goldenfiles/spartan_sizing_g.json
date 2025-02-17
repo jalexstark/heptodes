@@ -8,7 +8,6 @@
   ],
   "drawables": [
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "start": [
@@ -57,7 +56,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "line_choice": "Light",
@@ -107,7 +105,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "line_choice": "Light",
@@ -165,7 +162,70 @@
       }
     },
     {
-      "layer": 0,
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_vertical": "Top",
+          "texts": [
+            {
+              "content": "-2",
+              "location": [
+                -2.0,
+                -2.0
+              ]
+            },
+            {
+              "content": "0",
+              "location": [
+                0.0,
+                -2.0
+              ]
+            },
+            {
+              "content": "2",
+              "location": [
+                2.0,
+                -2.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Both",
+          "anchor_horizontal": "Right",
+          "texts": [
+            {
+              "content": "-1.8",
+              "location": [
+                -2.0,
+                -1.7999999999999998
+              ]
+            },
+            {
+              "content": "0.0",
+              "location": [
+                -2.0,
+                0.0
+              ]
+            },
+            {
+              "content": "1.8",
+              "location": [
+                -2.0,
+                1.7999999999999998
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
       "drawable": {
         "Lines": {
           "start": [
@@ -194,7 +254,6 @@
       }
     },
     {
-      "layer": 0,
       "drawable": {
         "Lines": {
           "line_choice": "Light",
