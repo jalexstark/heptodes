@@ -844,7 +844,6 @@ impl CairoSpartanRender {
                prep.annotation_offset_absolute[1] * area_based_scale * f64::from(pango::SCALE),
             ),
          };
-         // assert_eq!(offset_x, 0.0);
          self.restore_transform(context);
 
          let mut height_adjust = f64::from(metrics.ascent()) - strikethrough_center;
@@ -870,6 +869,66 @@ impl CairoSpartanRender {
       }
    }
 
+   fn set_line_choice(context: &Context, line_choice: LineChoice, prep: &SpartanPreparation) {
+      match line_choice {
+         LineChoice::Ordinary => {
+            context.set_line_width(prep.line_width);
+            context.set_dash(&[], 0.0);
+         }
+         LineChoice::Light => {
+            context.set_line_width(prep.line_width * prep.annotation_linear_scale);
+            context.set_dash(&[4.5, 3.5], 0.0);
+         }
+      }
+   }
+
+   fn draw_polyine(
+      &mut self,
+      context: &Context,
+      drawable: &PolylineDrawable,
+      prep: &SpartanPreparation,
+   ) {
+      Self::set_line_choice(context, drawable.line_choice, prep);
+
+      self.set_color(context, prep, drawable.color_choice);
+      self.save_set_path_transform(prep, context);
+      assert!(!drawable.locations.is_empty());
+      context.move_to(drawable.locations[0][0], drawable.locations[0][1]);
+      for i in 1..drawable.locations.len() {
+         context.line_to(drawable.locations[i][0], drawable.locations[i][1]);
+      }
+      if drawable.line_closure_choice == LineClosureChoice::Closed {
+         context.close_path();
+      }
+      self.restore_transform(context);
+      context.stroke().unwrap();
+   }
+
+   fn draw_circles_set(
+      &mut self,
+      context: &Context,
+      drawable: &CirclesDrawable,
+      prep: &SpartanPreparation,
+   ) {
+      context.set_line_width(1.0);
+      context.set_dash(&[], 0.0);
+      self.set_color(context, prep, drawable.color_choice);
+
+      for center in &drawable.centers {
+         self.save_set_path_transform(prep, context);
+         let (cx, cy) = (center[0], center[1]);
+         let r = drawable.radius;
+         // let (cx, cy) = context.user_to_device(center[0], center[1]);
+         // let r = context.user_to_device_distance(drawable.radius, 0.0);
+         // self.restore_transform(context);
+         context.move_to(cx + r, cy);
+         context.arc(cx, cy, r, 0.0 * PI, 2.0 * PI);
+         context.close_path();
+         self.restore_transform(context);
+      }
+      context.stroke().unwrap();
+   }
+
    #[allow(clippy::missing_panics_doc)]
    pub fn render_drawables(&mut self, spartan: &SpartanDiagram, context: &Context) {
       for qualified_drawable in &spartan.drawables {
@@ -882,6 +941,12 @@ impl CairoSpartanRender {
             }
             OneOfDrawable::Text(drawable) => {
                self.draw_text_set(context, drawable, &spartan.prep);
+            }
+            OneOfDrawable::Circles(drawable) => {
+               self.draw_circles_set(context, drawable, &spartan.prep);
+            }
+            OneOfDrawable::Polyline(drawable) => {
+               self.draw_polyine(context, drawable, &spartan.prep);
             }
             OneOfDrawable::Nothing => {}
          }
@@ -1302,6 +1367,14 @@ pub enum TextOffsetChoice {
    Both,
 }
 
+// Directions (horizontal, vertical) over which to offset anchoring.
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum LineClosureChoice {
+   #[default]
+   Open,
+   Closed,
+}
+
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ColorChoice {
    #[default]
@@ -1381,6 +1454,30 @@ pub struct TextDrawable {
    pub texts: Vec<TextSingle>,
 }
 
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct CirclesDrawable {
+   #[serde(skip_serializing_if = "is_default")]
+   pub line_choice: LineChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color_choice: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub radius: f64,
+   #[serde(skip_serializing_if = "is_default")]
+   pub centers: Vec<[f64; 2]>,
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct PolylineDrawable {
+   #[serde(skip_serializing_if = "is_default")]
+   pub line_choice: LineChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub line_closure_choice: LineClosureChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color_choice: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub locations: Vec<[f64; 2]>,
+}
+
 #[derive(Serialize, Debug, Default, PartialEq)]
 pub enum OneOfDrawable {
    #[default]
@@ -1388,6 +1485,8 @@ pub enum OneOfDrawable {
    Lines(LinesDrawable),
    Points(PointsDrawable),
    Text(TextDrawable),
+   Circles(CirclesDrawable),
+   Polyline(PolylineDrawable),
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]

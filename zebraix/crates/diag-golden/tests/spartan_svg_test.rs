@@ -22,13 +22,16 @@ use diag_golden::AxesSpec;
 use diag_golden::AxesStyle;
 use diag_golden::AxisNumbering;
 use diag_golden::CairoSpartanCombo;
+use diag_golden::CirclesDrawable;
 use diag_golden::ColorChoice;
 use diag_golden::JsonGoldenTest;
 use diag_golden::LineChoice;
+use diag_golden::LineClosureChoice;
 use diag_golden::LinesDrawable;
 use diag_golden::OneOfDrawable;
 use diag_golden::PointChoice;
 use diag_golden::PointsDrawable;
+use diag_golden::PolylineDrawable;
 use diag_golden::QualifiedDrawable;
 use diag_golden::SizingScheme;
 use diag_golden::SpartanDiagram;
@@ -966,6 +969,98 @@ fn spartan_sizing_j_test() {
    });
 
    run_json_svg("spartan_sizing_j", &mut cairo_spartan);
+}
+
+#[test]
+fn spartan_sizing_k_test() {
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 300.0],
+      axes_range: vec![5.0],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = build_diagram(&sizing);
+   let drawable_layer = 0;
+
+   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+      layer: drawable_layer,
+      drawable: OneOfDrawable::Circles(CirclesDrawable {
+         radius: 1.2,
+         centers: vec![[-3.0, 3.0], [0.0, 3.0], [3.0, 3.0]],
+         ..Default::default()
+      }),
+      ..Default::default()
+   });
+
+   run_json_svg("spartan_sizing_k", &mut cairo_spartan);
+}
+
+#[test]
+fn spartan_sizing_l_test() {
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 300.0],
+      axes_range: vec![5.0],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = build_diagram(&sizing);
+   let drawable_layer = 0;
+
+   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+      layer: drawable_layer,
+      drawable: OneOfDrawable::Polyline(PolylineDrawable {
+         color_choice: ColorChoice::Red,
+         // line_closure_choice: LineClosureChoice::Open,
+         locations: vec![
+            [-3.0, 2.0],
+            [-2.0, 3.0],
+            [-1.0, 1.0],
+            [0.0, 3.0],
+            [1.0, 1.0],
+            [2.0, 3.0],
+            [3.0, 2.0],
+         ],
+         ..Default::default()
+      }),
+      ..Default::default()
+   });
+
+   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+      layer: drawable_layer,
+      drawable: OneOfDrawable::Polyline(PolylineDrawable {
+         color_choice: ColorChoice::Green,
+         line_closure_choice: LineClosureChoice::Closed,
+         locations: vec![
+            [-3.0, -2.0],
+            [-2.0, -3.0],
+            [-1.0, -1.0],
+            [0.0, -3.0],
+            [1.0, -1.0],
+            [2.0, -3.0],
+            [3.0, -2.0],
+         ],
+         ..Default::default()
+      }),
+      ..Default::default()
+   });
+
+   run_json_svg("spartan_sizing_l", &mut cairo_spartan);
 }
 
 struct RatQuad {
