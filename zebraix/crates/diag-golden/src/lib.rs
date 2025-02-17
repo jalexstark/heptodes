@@ -667,14 +667,6 @@ impl CairoSpartanRender {
       context.set_matrix(self.saved_matrix);
    }
 
-   // #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
-   // pub enum ColorChoice {
-   //    #[default]
-   //    DefaultBlack,
-   //    Black,
-   //    Gray,
-   // }
-
    #[allow(clippy::unused_self)]
    fn set_color(&self, context: &Context, _prep: &SpartanPreparation, color_choice: ColorChoice) {
       let (r, g, b) = match color_choice {
@@ -691,8 +683,8 @@ impl CairoSpartanRender {
          ColorChoice::Red => (0.6, 0.0, 0.0),
          ColorChoice::Green => (0.0, 0.4, 0.0),
          ColorChoice::Blue => (0.0, 0.0, 0.65),
-         ColorChoice::YellowBrown => (0.37, 0.28, 0.0), // A dark Olive
-         ColorChoice::BlueGreen => (0.0, 0.3, 0.3),     // BlueStone-like
+         ColorChoice::YellowBrown => (0.37, 0.28, 0.0),
+         ColorChoice::BlueGreen => (0.0, 0.3, 0.3),
          ColorChoice::Magenta => (0.35, 0.0, 0.5),
          ColorChoice::RedRedGreen => (0.45, 0.18, 0.0),
          ColorChoice::GreenGreenRed => (0.24, 0.32, 0.0),
@@ -704,23 +696,32 @@ impl CairoSpartanRender {
       context.set_source_rgb(r, g, b);
    }
 
-   fn draw_lines_set(
-      &mut self,
-      context: &Context,
-      drawable: &LinesDrawable,
-      prep: &SpartanPreparation,
-   ) {
-      match drawable.line_choice {
+   fn set_line_choice(context: &Context, line_choice: LineChoice, prep: &SpartanPreparation) {
+      match line_choice {
          LineChoice::Ordinary => {
             context.set_line_width(prep.line_width);
             context.set_dash(&[], 0.0);
          }
          LineChoice::Light => {
             context.set_line_width(prep.line_width * prep.annotation_linear_scale);
-            context.set_dash(&[4.5, 3.5], 0.0);
+            // assert_eq!(prep.annotation_linear_scale, 0.45);
+            context.set_dash(
+               &[10.0 * prep.annotation_linear_scale, 7.0 * prep.annotation_linear_scale],
+               0.0,
+            );
          }
       }
+   }
+
+   fn draw_lines_set(
+      &mut self,
+      context: &Context,
+      drawable: &LinesDrawable,
+      prep: &SpartanPreparation,
+   ) {
+      Self::set_line_choice(context, drawable.line_choice, prep);
       self.set_color(context, prep, drawable.color_choice);
+
       self.save_set_path_transform(prep, context);
       assert_eq!(drawable.start.len(), drawable.end.len());
       for i in 0..drawable.start.len() {
@@ -739,8 +740,7 @@ impl CairoSpartanRender {
       drawable: &PointsDrawable,
       prep: &SpartanPreparation,
    ) {
-      context.set_line_width(1.0);
-      context.set_dash(&[], 0.0);
+      Self::set_line_choice(context, LineChoice::Ordinary, prep);
       self.set_color(context, prep, drawable.color_choice);
 
       match drawable.point_choice {
@@ -869,19 +869,6 @@ impl CairoSpartanRender {
       }
    }
 
-   fn set_line_choice(context: &Context, line_choice: LineChoice, prep: &SpartanPreparation) {
-      match line_choice {
-         LineChoice::Ordinary => {
-            context.set_line_width(prep.line_width);
-            context.set_dash(&[], 0.0);
-         }
-         LineChoice::Light => {
-            context.set_line_width(prep.line_width * prep.annotation_linear_scale);
-            context.set_dash(&[4.5, 3.5], 0.0);
-         }
-      }
-   }
-
    fn draw_polyine(
       &mut self,
       context: &Context,
@@ -889,8 +876,8 @@ impl CairoSpartanRender {
       prep: &SpartanPreparation,
    ) {
       Self::set_line_choice(context, drawable.line_choice, prep);
-
       self.set_color(context, prep, drawable.color_choice);
+
       self.save_set_path_transform(prep, context);
       assert!(!drawable.locations.is_empty());
       context.move_to(drawable.locations[0][0], drawable.locations[0][1]);
@@ -910,8 +897,7 @@ impl CairoSpartanRender {
       drawable: &CirclesDrawable,
       prep: &SpartanPreparation,
    ) {
-      context.set_line_width(1.0);
-      context.set_dash(&[], 0.0);
+      Self::set_line_choice(context, drawable.line_choice, prep);
       self.set_color(context, prep, drawable.color_choice);
 
       for center in &drawable.centers {
