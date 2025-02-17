@@ -917,8 +917,13 @@ impl CairoSpartanRender {
 
    #[allow(clippy::missing_panics_doc)]
    pub fn render_drawables(&mut self, spartan: &SpartanDiagram, context: &Context) {
-      for qualified_drawable in &spartan.drawables {
-         match &qualified_drawable.drawable {
+      let drawables = &spartan.drawables;
+      let mut indices = (0..drawables.len()).collect::<Vec<_>>();
+      indices.sort_by_key(|&i| &drawables[i].layer);
+      // for qualified_drawable in &spartan.drawables {
+      //   match &qualified_drawable.drawable {
+      for i in indices {
+         match &drawables[i].drawable {
             OneOfDrawable::Lines(drawable) => {
                self.draw_lines_set(context, drawable, &spartan.prep);
             }
@@ -1094,6 +1099,9 @@ impl AxesSpec {
    #[allow(clippy::too_many_lines)]
    #[allow(clippy::missing_panics_doc)]
    pub fn generate_axes(&self, diagram: &mut SpartanDiagram) {
+      // Future improvement ideas:
+      //
+      // * Generate box as closed polygon.
       if (self.axes_style == AxesStyle::None)
          && (self.grid_interval[0] == 0.0)
          && (self.grid_interval[1] == 0.0)
@@ -1110,6 +1118,7 @@ impl AxesSpec {
       let has_vert_zero = (-range[0] > x_tolerance) && (range[2] > x_tolerance);
       let has_horiz_zero = (-range[1] > y_tolerance) && (range[3] > y_tolerance);
 
+      let axes_layer = 0;
       let mut lines_ordinary = LinesDrawable {
          offsets: vec![[0.0, 0.0]],
          color_choice: diagram.base_color_choice,
@@ -1132,14 +1141,20 @@ impl AxesSpec {
 
       match self.axes_style {
          AxesStyle::BoxCross | AxesStyle::Box => {
-            lines_ordinary.start.push([range[0], range[1]]);
-            lines_ordinary.end.push([range[0], range[3]]);
-            lines_ordinary.start.push([range[2], range[1]]);
-            lines_ordinary.end.push([range[2], range[3]]);
-            lines_ordinary.start.push([range[0], range[1]]);
-            lines_ordinary.end.push([range[2], range[1]]);
-            lines_ordinary.start.push([range[0], range[3]]);
-            lines_ordinary.end.push([range[2], range[3]]);
+            diagram.drawables.push(QualifiedDrawable {
+               drawable: OneOfDrawable::Polyline(PolylineDrawable {
+                  // This should be miter-join even if we switch default later.
+                  line_closure_choice: LineClosureChoice::Closed,
+                  locations: vec![
+                     [range[0], range[1]],
+                     [range[0], range[3]],
+                     [range[2], range[3]],
+                     [range[2], range[1]],
+                  ],
+                  ..Default::default()
+               }),
+               ..Default::default()
+            });
          }
          AxesStyle::Cross | AxesStyle::None => {}
       }
@@ -1178,8 +1193,6 @@ impl AxesSpec {
          [0.0, 1.0],
       );
 
-      // Change layer to depth.
-      let axes_layer = 0;
       if !lines_ordinary.start.is_empty() {
          // assert!(false);
          let qualified_drawable = QualifiedDrawable {

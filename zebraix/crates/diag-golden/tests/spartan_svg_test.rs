@@ -270,7 +270,7 @@ fn write_sample_to_write<W: Write + 'static>(
    cairo_spartan.render_controller.render_to_stream(out_stream, &cairo_spartan.spartan)
 }
 
-fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
+fn create_sized_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
    let mut cairo_spartan = CairoSpartanCombo::new();
    cairo_spartan.spartan.sizing_scheme = sizing.sizing_scheme;
    cairo_spartan.spartan.base_width = sizing.canvas_size[0];
@@ -278,8 +278,12 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
    cairo_spartan.spartan.axes_range = sizing.axes_range.clone();
    cairo_spartan.spartan.padding = sizing.padding.clone();
 
-   cairo_spartan.spartan.prepare();
+   cairo_spartan
+}
 
+fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
+   let mut cairo_spartan = create_sized_diagram(sizing);
+   cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    {
@@ -522,7 +526,9 @@ fn spartan_sizing_i_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = build_diagram(&sizing);
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    {
       let pattern_layer = 0;
@@ -629,7 +635,9 @@ fn spartan_sizing_j_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = build_diagram(&sizing);
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let pattern_vec = vec![
       [2.0, 0.0],
@@ -987,12 +995,31 @@ fn spartan_sizing_k_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = build_diagram(&sizing);
-   let drawable_layer = 0;
+   // let mut cairo_spartan = build_diagram(&sizing);
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.base_line_width = 4.0;
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   let behind_layer = 10;
+   let front_layer = 15;
 
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
-      layer: drawable_layer,
+      layer: front_layer,
       drawable: OneOfDrawable::Circles(CirclesDrawable {
+         color_choice: ColorChoice::BrightRed,
+         radius: 1.2,
+         centers: vec![[-1.5, 3.0], [1.5, 3.0]],
+         ..Default::default()
+      }),
+      ..Default::default()
+   });
+
+   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+      layer: behind_layer,
+      drawable: OneOfDrawable::Circles(CirclesDrawable {
+         color_choice: ColorChoice::Blue,
          radius: 1.2,
          centers: vec![[-3.0, 3.0], [0.0, 3.0], [3.0, 3.0]],
          ..Default::default()
@@ -1019,7 +1046,10 @@ fn spartan_sizing_l_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = build_diagram(&sizing);
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
    let drawable_layer = 0;
 
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {

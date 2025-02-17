@@ -1,5 +1,6 @@
 {
   "sizing_scheme": "SquareCenter",
+  "base_line_width": 4.0,
   "axes_range": [
     5.0
   ],
@@ -9,26 +10,13 @@
   "drawables": [
     {
       "drawable": {
-        "Lines": {
-          "start": [
+        "Polyline": {
+          "line_closure_choice": "Closed",
+          "locations": [
             [
               -5.0,
               -5.0
             ],
-            [
-              5.0,
-              -5.0
-            ],
-            [
-              -5.0,
-              -5.0
-            ],
-            [
-              -5.0,
-              5.0
-            ]
-          ],
-          "end": [
             [
               -5.0,
               5.0
@@ -40,16 +28,6 @@
             [
               5.0,
               -5.0
-            ],
-            [
-              5.0,
-              5.0
-            ]
-          ],
-          "offsets": [
-            [
-              0.0,
-              0.0
             ]
           ]
         }
@@ -234,69 +212,29 @@
       }
     },
     {
-      "drawable": {
-        "Lines": {
-          "start": [
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "end": [
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "offsets": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.0,
-              0.0
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "drawable": {
-        "Lines": {
-          "line_choice": "Light",
-          "start": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "end": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "offsets": [
-            [
-              0.0,
-              0.0
-            ]
-          ]
-        }
-      }
-    },
-    {
+      "layer": 15,
       "drawable": {
         "Circles": {
+          "color_choice": "BrightRed",
+          "radius": 1.2,
+          "centers": [
+            [
+              -1.5,
+              3.0
+            ],
+            [
+              1.5,
+              3.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Circles": {
+          "color_choice": "Blue",
           "radius": 1.2,
           "centers": [
             [

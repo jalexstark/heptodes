@@ -191,8 +191,6 @@
 <use xlink:href="#glyph-0-2" x="14.597656" y="63.963867"/>
 <use xlink:href="#glyph-0-5" x="17.597656" y="63.963867"/>
 </g>
-<path fill="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-miterlimit="10" d="M 300 250 L 300 250 M 300 250 L 300 250 "/>
-<path fill="none" stroke-width="0.45" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-dasharray="4.5 3.15" stroke-miterlimit="10" d="M 300 250 L 300 250 M 300 250 L 300 250 "/>
 <path fill-rule="nonzero" fill="rgb(55%, 55%, 55%)" fill-opacity="1" d="M 386.492188 250 C 386.492188 253.433594 381.339844 253.433594 381.339844 250 C 381.339844 246.566406 386.492188 246.566406 386.492188 250 "/>
 <path fill-rule="nonzero" fill="rgb(55%, 55%, 55%)" fill-opacity="1" d="M 386.492188 187.0625 C 386.492188 190.496094 381.339844 190.496094 381.339844 187.0625 C 381.339844 183.628906 386.492188 183.628906 386.492188 187.0625 "/>
 <path fill-rule="nonzero" fill="rgb(55%, 55%, 55%)" fill-opacity="1" d="M 386.492188 312.9375 C 386.492188 316.371094 381.339844 316.371094 381.339844 312.9375 C 381.339844 309.503906 386.492188 309.503906 386.492188 312.9375 "/>
