@@ -55,7 +55,7 @@ fn test_json_simple() {
                     }
             }
 }"#;
-   json_golden.writeln_as_bytes(&in_text);
+   json_golden.writeln_as_bytes(in_text);
 }
 
 // Deliberate test of failure, and disable golden file update.
@@ -67,7 +67,7 @@ fn test_json_failure() {
       let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", "json_failure_test_data");
 
       let in_text = "{ \"k\" : 1 }";
-      json_golden.writeln_as_bytes(&in_text);
+      json_golden.writeln_as_bytes(in_text);
    }
    let update_var = env::var("UPDATE_GOLDENFILES");
    if !(update_var.is_ok() && update_var.unwrap() == "1") {
@@ -75,11 +75,11 @@ fn test_json_failure() {
          let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", "json_failure_test_data");
 
          let in_text = "{ \"k\" : 0 }";
-         json_golden.writeln_as_bytes(&in_text);
+         json_golden.writeln_as_bytes(in_text);
       });
 
       match failure_result {
-         Ok(_) => {
+         Ok(()) => {
             panic!("JSON test should have failed, but erroneously passed.");
          }
          Err(error) => {
@@ -87,7 +87,7 @@ fn test_json_failure() {
             let mut error_mint = mint.new_goldenfile("json_failure_test_error.txt").unwrap();
 
             let diff_result = if let Some(s) = error.downcast_ref::<&str>() {
-               s.to_string()
+               (*s).to_string()
             } else if let Some(s) = error.downcast_ref::<String>() {
                s.clone()
             } else {
@@ -102,7 +102,7 @@ fn test_json_failure() {
                   .unwrap()
                   .replace_all(&diff_result_intermediate, "")
                   .to_string();
-            writeln!(error_mint, "{}", cleaned_diff_result).unwrap();
+            writeln!(error_mint, "{cleaned_diff_result}").unwrap();
          }
       }
    } else {
@@ -110,13 +110,13 @@ fn test_json_failure() {
       let mut error_mint = mint.new_goldenfile("json_failure_test_error.txt").unwrap();
 
       let error_text = "  left: `\"{\\n  \\\"k\\\": 1\\n}\"`\n right: `\"{\\n  \\\"k\\\": 0\\n}\"`\n\nDifferences (-left|+right):\n {\n-  \"k\": 1\n+  \"k\": 0\n }\n\n";
-      writeln!(error_mint, "{}", error_text).unwrap();
+      writeln!(error_mint, "{error_text}").unwrap();
    }
 
    {
       let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", "json_failure_test_data");
 
       let in_text = "{ \"k\" : 1 }";
-      json_golden.writeln_as_bytes(&in_text);
+      json_golden.writeln_as_bytes(in_text);
    }
 }

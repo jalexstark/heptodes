@@ -57,7 +57,7 @@ pub fn write_sample_to_write<W: Write + 'static>(
 
    let mut font_description = pango::FontDescription::new();
    font_description.set_family("sans");
-   font_description.set_absolute_size(k_label_font_size * pango::SCALE as f64);
+   font_description.set_absolute_size(k_label_font_size * f64::from(pango::SCALE));
 
    text_layout.set_font_description(Some(&font_description));
    text_layout.set_text("Hello world!");

@@ -62,9 +62,6 @@
 //! UPDATE_GOLDENFILES=1 cargo test
 //! ```
 
-// At time of coding, Rust has a bug that cannot cope with test-only emptiness.
-// #![cfg(test)]
-
 use cairo::Context;
 use cairo::Matrix;
 use cairo::SvgSurface;
@@ -193,7 +190,6 @@ impl JsonGoldenTest {
    pub fn new(mint_dir: &str, golden_filestem: &str) -> Self {
       let mut mint = Mint::new(mint_dir);
       let full_golden_filename = format!("{golden_filestem}.json");
-      // let out_stream = mint.new_goldenfile(output_filename).unwrap();
       let out_stream = mint
          .new_goldenfile_with_differ(full_golden_filename.clone(), Box::new(Self::custom_diff))
          .unwrap();
@@ -303,7 +299,7 @@ pub struct SpartanPreparation {
    pub scale_content: f64,
    pub annotation_linear_scale: f64,
    pub annotation_area_scale: f64,
-   pub axes_range: Vec<f64>,
+   pub axes_range: [f64; 4],
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde)]
@@ -538,7 +534,7 @@ impl SpartanDiagram {
             );
          }
       }
-      self.prep.axes_range.clone_from(&axes_range);
+      self.prep.axes_range = [axes_range[0], axes_range[1], axes_range[2], axes_range[3]];
 
       let mut padding = self.padding.clone();
       match padding.len() {
@@ -725,9 +721,14 @@ impl CairoSpartanRender {
       self.save_set_path_transform(prep, context);
       assert_eq!(drawable.start.len(), drawable.end.len());
       for i in 0..drawable.start.len() {
-         for offset in &drawable.offsets {
-            context.move_to(drawable.start[i][0] + offset[0], drawable.start[i][1] + offset[1]);
-            context.line_to(drawable.end[i][0] + offset[0], drawable.end[i][1] + offset[1]);
+         if let Some(offset_vector) = &drawable.offsets {
+            for offset in offset_vector {
+               context.move_to(drawable.start[i][0] + offset[0], drawable.start[i][1] + offset[1]);
+               context.line_to(drawable.end[i][0] + offset[0], drawable.end[i][1] + offset[1]);
+            }
+         } else {
+            context.move_to(drawable.start[i][0], drawable.start[i][1]);
+            context.line_to(drawable.end[i][0], drawable.end[i][1]);
          }
       }
       self.restore_transform(context);
@@ -794,6 +795,58 @@ impl CairoSpartanRender {
             }
          }
       }
+      context.stroke().unwrap();
+   }
+
+   fn draw_arc(&mut self, context: &Context, drawable: &ArcDrawable, prep: &SpartanPreparation) {
+      //    // Elliptical transform matrix.  Zero angle is in direction of x axis.
+      //    #[serde(skip_serializing_if = "is_default")]
+      //    pub transform: Vec<[f64; 4]>,
+      // }
+      Self::set_line_choice(context, drawable.line_choice, prep);
+      self.set_color(context, prep, drawable.color_choice);
+
+      self.save_set_path_transform(prep, context);
+
+      let arc_transformation_matrix = cairo::Matrix::new(
+         drawable.transform[0],
+         drawable.transform[1],
+         drawable.transform[2],
+         drawable.transform[3],
+         drawable.center[0],
+         drawable.center[1],
+      );
+      context.transform(arc_transformation_matrix);
+
+      // Logically circle is center (0.0, 0.0) radius 1.0.
+      context.move_to(drawable.angle_range[0].cos(), drawable.angle_range[0].sin());
+      context.arc(0.0, 0.0, 1.0, drawable.angle_range[0], drawable.angle_range[1]);
+      self.restore_transform(context);
+      context.stroke().unwrap();
+   }
+
+   fn draw_cubic(
+      &mut self,
+      context: &Context,
+      drawable: &CubicDrawable,
+      prep: &SpartanPreparation,
+   ) {
+      Self::set_line_choice(context, drawable.line_choice, prep);
+      self.set_color(context, prep, drawable.color_choice);
+
+      self.save_set_path_transform(prep, context);
+
+      context.move_to(drawable.x[0], drawable.y[0]);
+      context.curve_to(
+         drawable.x[1],
+         drawable.y[1],
+         drawable.x[2],
+         drawable.y[2],
+         drawable.x[3],
+         drawable.y[3],
+      );
+
+      self.restore_transform(context);
       context.stroke().unwrap();
    }
 
@@ -927,6 +980,12 @@ impl CairoSpartanRender {
             OneOfDrawable::Lines(drawable) => {
                self.draw_lines_set(context, drawable, &spartan.prep);
             }
+            OneOfDrawable::Arc(drawable) => {
+               self.draw_arc(context, drawable, &spartan.prep);
+            }
+            OneOfDrawable::Cubic(drawable) => {
+               self.draw_cubic(context, drawable, &spartan.prep);
+            }
             OneOfDrawable::Points(drawable) => {
                self.draw_points_set(context, drawable, &spartan.prep);
             }
@@ -1059,28 +1118,29 @@ impl AxesSpec {
          // numbering location.
          assert!(final_left_location > mid_range);
          assert!(final_right_location < mid_range);
+
+         let mut offsets = vertical_light.offsets.clone().unwrap_or_default();
+
          #[allow(clippy::while_float)]
          while left_scan > one_range[0] - x_tolerance {
             if !is_boxy || (left_scan > one_range[0] + x_tolerance) {
-               vertical_light
-                  .offsets
-                  .push([left_scan * offset_pattern[0], left_scan * offset_pattern[1]]);
+               offsets.push([left_scan * offset_pattern[0], left_scan * offset_pattern[1]]);
             }
-            assert!(vertical_light.offsets.len() < 100);
+            assert!(offsets.len() < 100);
             final_left_location = left_scan;
             left_scan -= horiz_interval;
          }
+
          #[allow(clippy::while_float)]
          while right_scan < one_range[1] + x_tolerance {
             if !is_boxy || (right_scan < one_range[1] - x_tolerance) {
-               vertical_light
-                  .offsets
-                  .push([right_scan * offset_pattern[0], right_scan * offset_pattern[1]]);
+               offsets.push([right_scan * offset_pattern[0], right_scan * offset_pattern[1]]);
             }
-            assert!(vertical_light.offsets.len() < 100);
+            assert!(offsets.len() < 100);
             final_right_location = right_scan;
             right_scan += horiz_interval;
          }
+         vertical_light.offsets = Some(offsets);
 
          if final_left_location > mid_range {
             left_numbering_location = None;
@@ -1120,7 +1180,7 @@ impl AxesSpec {
 
       let axes_layer = 0;
       let mut lines_ordinary = LinesDrawable {
-         offsets: vec![[0.0, 0.0]],
+         offsets: Some(vec![[0.0, 0.0]]),
          color_choice: diagram.base_color_choice,
          ..Default::default()
       };
@@ -1129,7 +1189,7 @@ impl AxesSpec {
          end: vec![[range[2], 0.0]],
          line_choice: LineChoice::Light,
          color_choice: diagram.light_color_choice,
-         ..Default::default()
+         offsets: Some(Vec::<[f64; 2]>::new()),
       };
       let mut vertical_light = LinesDrawable {
          start: vec![[0.0, range[1]]],
@@ -1202,7 +1262,8 @@ impl AxesSpec {
          };
          diagram.drawables.push(qualified_drawable);
       }
-      if !horizontal_light.offsets.is_empty() {
+
+      if horizontal_light.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
             // color_choice: diagram.light_color_choice,
@@ -1210,7 +1271,7 @@ impl AxesSpec {
          };
          diagram.drawables.push(qualified_drawable);
       }
-      if !vertical_light.offsets.is_empty() {
+      if vertical_light.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
             // color_choice: diagram.light_color_choice,
@@ -1403,6 +1464,8 @@ pub enum ColorChoice {
 }
 
 // Length of start and end must match.
+//
+// Probably refactor to make vector of pairs of coords.
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct LinesDrawable {
    #[serde(skip_serializing_if = "is_default")]
@@ -1415,7 +1478,34 @@ pub struct LinesDrawable {
    pub end: Vec<[f64; 2]>,
    // If offsets is empty, draw single line with no offset.
    #[serde(skip_serializing_if = "is_default")]
-   pub offsets: Vec<[f64; 2]>,
+   pub offsets: Option<Vec<[f64; 2]>>,
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct ArcDrawable {
+   #[serde(skip_serializing_if = "is_default")]
+   pub line_choice: LineChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color_choice: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub angle_range: [f64; 2],
+   #[serde(skip_serializing_if = "is_default")]
+   pub center: [f64; 2],
+   // Elliptical transform matrix.  Zero angle is in direction of x axis.
+   #[serde(skip_serializing_if = "is_default")]
+   pub transform: [f64; 4],
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct CubicDrawable {
+   #[serde(skip_serializing_if = "is_default")]
+   pub line_choice: LineChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color_choice: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub x: [f64; 4],
+   #[serde(skip_serializing_if = "is_default")]
+   pub y: [f64; 4],
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
@@ -1482,6 +1572,8 @@ pub enum OneOfDrawable {
    #[default]
    Nothing,
    Lines(LinesDrawable),
+   Arc(ArcDrawable),
+   Cubic(CubicDrawable),
    Points(PointsDrawable),
    Text(TextDrawable),
    Circles(CirclesDrawable),
@@ -1494,4 +1586,658 @@ pub struct QualifiedDrawable {
    pub layer: i32,
    #[serde(skip_serializing_if = "is_default")]
    pub drawable: OneOfDrawable,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum RatQuadState {
+   #[default]
+   RationalPoly,
+   SymmetricRange,       // RationalPoly[nomial] with symmetric range.
+   RegularizedSymmetric, // SymmetricRange with zero middle denominator coefficient.
+   OffsetOddEven,        // O-O-E weightings of RegularizedSymmetric.
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct BaseRatQuad {
+   pub state: RatQuadState,
+   pub r: [f64; 2], // Range.
+   pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
+   pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
+   pub c: [f64; 3], // Numerator or O-O-E coefficients for y component.
+}
+
+impl BaseRatQuad {
+   // pub fn new(r: [f64; 2], a: [f64; 3], b: [f64; 3], c: [f64; 3]) -> Self {
+   //    Self { r, a, b, c, form: RatQuadState::RationalPoly }
+   // }
+
+   #[must_use]
+   pub fn eval_quad(&self, t: &[f64]) -> Vec<[f64; 2]> {
+      let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+      for item in t {
+         let denom_reciprocal = 1.0 / self.a[2].mul_add(*item, self.a[1]).mul_add(*item, self.a[0]);
+         ret_val.push([
+            self.b[2].mul_add(*item, self.b[1]).mul_add(*item, self.b[0]) * denom_reciprocal,
+            self.c[2].mul_add(*item, self.c[1]).mul_add(*item, self.c[0]) * denom_reciprocal,
+         ]);
+      }
+      ret_val
+   }
+
+   #[inline]
+   // Applies bilinear substitution of the form (wt + x) / (yt + z) with normalization.
+   //
+   // This function should be applied by a knowledgeable caller, that is one that handles the
+   // state of the RatQuad.
+   #[allow(clippy::suboptimal_flops)]
+   fn apply_bilinear_unranged(&mut self, mut w: f64, mut x: f64, mut y: f64, mut z: f64) {
+      #[allow(clippy::suboptimal_flops)]
+      let norm = 1.0 / ((w * w + x * x) * (y * y + z * z)).sqrt().sqrt();
+      w *= norm;
+      x *= norm;
+      y *= norm;
+      z *= norm;
+      self.a = [
+         self.a[0] * z * z + self.a[1] * x * z + self.a[2] * x * x,
+         2.0 * self.a[0] * y * z + self.a[1] * (x * y + w * z) + 2.0 * self.a[2] * w * x,
+         self.a[0] * y * y + self.a[1] * w * y + self.a[2] * w * w,
+      ];
+      self.b = [
+         self.b[0] * z * z + self.b[1] * x * z + self.b[2] * x * x,
+         2.0 * self.b[0] * y * z + self.b[1] * (x * y + w * z) + 2.0 * self.b[2] * w * x,
+         self.b[0] * y * y + self.b[1] * w * y + self.b[2] * w * w,
+      ];
+      self.c = [
+         self.c[0] * z * z + self.c[1] * x * z + self.c[2] * x * x,
+         2.0 * self.c[0] * y * z + self.c[1] * (x * y + w * z) + 2.0 * self.c[2] * w * x,
+         self.c[0] * y * y + self.c[1] * w * y + self.c[2] * w * w,
+      ];
+   }
+   #[inline]
+   // Applies bilinear transformation with factor sigma, preserving the range.
+   #[allow(clippy::suboptimal_flops)]
+   fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
+      match self.state {
+         RatQuadState::OffsetOddEven => {
+            Err("Unable to convert offset-even-odd form to symmetric-range form.")
+         }
+         RatQuadState::RegularizedSymmetric => {
+            Err("Applying bilinear to regularized will downgrade it.")
+         }
+         RatQuadState::SymmetricRange => {
+            let r = self.r[1];
+            self.apply_bilinear_unranged(
+               (sigma + 1.0) * r,
+               (sigma - 1.0) * r * r,
+               sigma - 1.0,
+               (sigma + 1.0) * r,
+            );
+            Ok(())
+         }
+         RatQuadState::RationalPoly => {
+            let p = self.r[0];
+            let q = self.r[1];
+            self.apply_bilinear_unranged(
+               sigma * q - p,
+               -(sigma - 1.0) * p * q,
+               sigma - 1.0,
+               q - sigma * p,
+            );
+            Ok(())
+         }
+      }
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
+      if self.state == RatQuadState::OffsetOddEven {
+         return Err("Unable to convert offset-even-odd form to symmetric-range form.");
+      }
+      // Replace t with t - d.
+      let d = 0.5 * (self.r[0] + self.r[1]);
+      let r = 0.5 * (self.r[1] - self.r[0]);
+
+      self.a =
+         [d * (d * self.a[2] + self.a[1]) + self.a[0], 2.0 * d * self.a[2] + self.a[1], self.a[2]];
+      self.b =
+         [d * (d * self.b[2] + self.b[1]) + self.b[0], 2.0 * d * self.b[2] + self.b[1], self.b[2]];
+      self.c =
+         [d * (d * self.c[2] + self.c[1]) + self.c[0], 2.0 * d * self.c[2] + self.c[1], self.c[2]];
+
+      self.r = [-r, r];
+      self.state = RatQuadState::SymmetricRange;
+      Ok(())
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
+      if self.state != RatQuadState::SymmetricRange {
+         return Err("Can only raise from symmetric-range to regularized-symmetric form.");
+      }
+      let r = self.r[1];
+      let a_s = self.a[2] * r * r + self.a[0];
+      // let a_d = self.a[2] * r * r - self.a[0];
+      let combo_s = a_s + self.a[1] * r;
+      let combo_d = a_s - self.a[1] * r;
+
+      let sigma = combo_d.abs().sqrt() / combo_s.abs().sqrt();
+
+      self.apply_bilinear(sigma)?;
+
+      assert!(self.a[1].abs() < 0.001);
+      self.state = RatQuadState::RegularizedSymmetric;
+
+      Ok(())
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   fn raise_to_offset_odd_even(&mut self, poly: &Self) -> Result<(), &'static str> {
+      if poly.state != RatQuadState::RegularizedSymmetric {
+         return Err("Can only raise from regularized-symmetric form to offset-odd-even form.");
+      }
+      *self = *poly;
+      let s = 1.0 / self.a[0];
+      let f = 1.0 / self.a[2];
+      self.a[0] = 1.0;
+      self.a[2] *= s;
+
+      {
+         let offset = 0.5 * (s * self.b[0] + f * self.b[2]);
+         let even = 0.5 * (s * self.b[0] - f * self.b[2]);
+         let odd = self.b[1] * s;
+         self.b = [offset, odd, even];
+      }
+      {
+         let offset = 0.5 * (s * self.c[0] + f * self.c[2]);
+         let even = 0.5 * (s * self.c[0] - f * self.c[2]);
+         let odd = self.c[1] * s;
+         self.c = [offset, odd, even];
+      }
+
+      self.state = RatQuadState::OffsetOddEven;
+
+      Ok(())
+   }
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct ManagedRatQuad {
+   ooe: BaseRatQuad,
+   poly: BaseRatQuad,
+   canvas_range: [f64; 4],
+}
+
+#[allow(clippy::missing_panics_doc)]
+impl ManagedRatQuad {
+   #[must_use]
+   pub fn new(poly: &BaseRatQuad, canvas_range: [f64; 4]) -> Self {
+      assert!(poly.state == RatQuadState::RationalPoly);
+      Self { poly: *poly, ooe: BaseRatQuad::default(), canvas_range }
+   }
+   #[must_use]
+   pub const fn get_ooe_rat_quad(&self) -> &BaseRatQuad {
+      &self.ooe
+   }
+   #[must_use]
+   pub const fn get_poly_rat_quad(&self) -> &BaseRatQuad {
+      &self.poly
+   }
+
+   #[allow(clippy::missing_errors_doc)]
+   // Velocity at beginning multiplied by sigma, and velocity at end divided by sigma.
+   pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
+      self.poly.apply_bilinear(sigma)
+   }
+
+   #[allow(clippy::missing_errors_doc)]
+   pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
+      self.poly.raise_to_symmetric_range()
+   }
+   #[allow(clippy::missing_errors_doc)]
+   pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
+      self.poly.raise_to_regularized_symmetric()
+   }
+   #[allow(clippy::missing_errors_doc)]
+   pub fn raise_to_offset_odd_even(&mut self) -> Result<(), &'static str> {
+      self.ooe.raise_to_offset_odd_even(&self.poly)
+   }
+}
+
+#[allow(clippy::missing_panics_doc)]
+#[allow(clippy::suboptimal_flops)]
+pub fn draw_sample_rat_quad(
+   managed_rat_quad: &ManagedRatQuad,
+   spartan: &mut SpartanDiagram,
+   curve_config: &SampleCurveConfig,
+) {
+   let rat_quad: &BaseRatQuad = managed_rat_quad.get_poly_rat_quad();
+
+   // if let Some(color_choice) = curve_config.control_color {
+   //    let end_points_vec =
+   //       vec![[four_point.x[0], four_point.y[0]], [four_point.x[3], four_point.y[3]]];
+   //    let control_points_vec =
+   //       vec![[four_point.x[1], four_point.y[1]], [four_point.x[2], four_point.y[2]]];
+
+   //    spartan.drawables.push(QualifiedDrawable {
+   //       layer: curve_config.control_layer,
+   //       drawable: OneOfDrawable::Points(PointsDrawable {
+   //          point_choice: curve_config.control_point_choices[0],
+   //          color_choice,
+   //          centers: end_points_vec.clone(),
+   //       }),
+   //    });
+   //    spartan.drawables.push(QualifiedDrawable {
+   //       layer: curve_config.control_layer,
+   //       drawable: OneOfDrawable::Points(PointsDrawable {
+   //          point_choice: curve_config.control_point_choices[1],
+   //          color_choice,
+   //          centers: control_points_vec.clone(),
+   //       }),
+   //    });
+
+   //    spartan.drawables.push(QualifiedDrawable {
+   //       layer: curve_config.control_layer,
+   //       drawable: OneOfDrawable::Lines(LinesDrawable {
+   //          line_choice: curve_config.control_line_choice,
+   //          color_choice,
+   //          start: end_points_vec,
+   //          end: control_points_vec,
+   //          ..Default::default()
+   //       }),
+   //    });
+   // }
+
+   if let Some(color_choice) = curve_config.points_color {
+      // Do not include end points if control points are doing that already.
+      let t_int: Vec<i32> = if curve_config.control_color.is_some() {
+         (1..curve_config.points_num_segments).collect()
+      } else {
+         (0..=curve_config.points_num_segments).collect()
+      };
+      let mut t = Vec::<f64>::with_capacity(t_int.len());
+      let scale = (rat_quad.r[1] - rat_quad.r[0]) / f64::from(curve_config.points_num_segments);
+      let offset = rat_quad.r[0];
+      for item in &t_int {
+         t.push(f64::from(*item).mul_add(scale, offset));
+      }
+
+      let mut pattern_vec = rat_quad.eval_quad(&t);
+
+      if curve_config.sample_options == SampleOption::XVsT {
+         for i in 0..t_int.len() {
+            pattern_vec[i] = [t[i], pattern_vec[i][0]];
+         }
+      }
+
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.points_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.points_choice,
+            color_choice,
+            centers: pattern_vec,
+         }),
+      });
+   }
+
+   if let Some(color_choice) = curve_config.main_color {
+      if curve_config.approx_num_segments != 0 {
+         let t_int: Vec<i32> = (0..=curve_config.approx_num_segments).collect();
+         let mut t = Vec::<f64>::with_capacity(t_int.len());
+         let scale = (rat_quad.r[1] - rat_quad.r[0]) / f64::from(curve_config.approx_num_segments);
+         let offset = rat_quad.r[0];
+         for item in &t_int {
+            t.push(f64::from(*item).mul_add(scale, offset));
+         }
+
+         let mut pattern_vec = rat_quad.eval_quad(&t);
+
+         if curve_config.sample_options == SampleOption::XVsT {
+            for i in 0..t_int.len() {
+               pattern_vec[i] = [t[i], pattern_vec[i][0]];
+            }
+         }
+
+         spartan.drawables.push(QualifiedDrawable {
+            layer: curve_config.main_line_layer,
+            drawable: OneOfDrawable::Polyline(PolylineDrawable {
+               color_choice,
+               locations: pattern_vec,
+               ..Default::default()
+            }),
+         });
+      } else {
+         let ooe_rat_quad: &BaseRatQuad = managed_rat_quad.get_ooe_rat_quad();
+         assert_eq!(ooe_rat_quad.state, RatQuadState::OffsetOddEven);
+
+         let r = ooe_rat_quad.r[1];
+         let s = 1.0 / ooe_rat_quad.a[2].sqrt();
+         let mx = ooe_rat_quad.b[0];
+         let my = ooe_rat_quad.c[0];
+         let (sx, sy) = (0.5 * s * ooe_rat_quad.b[1], 0.5 * s * ooe_rat_quad.c[1]);
+         let (cx, cy) = (ooe_rat_quad.b[2], ooe_rat_quad.c[2]);
+
+         // The arc range is [-angle_range, angle_range].
+         let angle_range = 2.0 * (r * (ooe_rat_quad.a[2] / ooe_rat_quad.a[0]).sqrt()).atan();
+
+         spartan.drawables.push(QualifiedDrawable {
+            layer: curve_config.main_line_layer,
+            drawable: OneOfDrawable::Arc(ArcDrawable {
+               color_choice,
+               angle_range: [-angle_range, angle_range],
+               center: [mx, my],
+               transform: [cx, cy, sx, sy],
+               ..Default::default()
+            }),
+         });
+      }
+   }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum CubicForm {
+   #[default]
+   FourPoint,
+   MidDiff,
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct CubiLinear {
+   pub form: CubicForm,
+   pub r: [f64; 2], // Range.
+   pub x: [f64; 4],
+   pub y: [f64; 4],
+   // Should default to 1.0.
+   pub sigma: f64,
+}
+
+#[allow(clippy::missing_errors_doc)]
+impl CubiLinear {
+   #[inline]
+   #[allow(clippy::many_single_char_names)]
+   #[allow(clippy::suboptimal_flops)]
+   fn eval_part(b: f64, a: f64, coeffs: &[f64; 4], multiplier: f64) -> f64 {
+      multiplier
+         * (b * b * b * coeffs[0]
+            + 3.0 * b * b * a * coeffs[1]
+            + 3.0 * b * a * a * coeffs[2]
+            + a * a * a * coeffs[3])
+   }
+
+   #[allow(clippy::many_single_char_names)]
+   #[allow(clippy::suboptimal_flops)]
+   pub fn eval(&self, t: &[f64]) -> Result<Vec<[f64; 2]>, &'static str> {
+      if self.form != CubicForm::FourPoint {
+         return Err("Can only evaluate cubilinear curves in four-point form.");
+      }
+      let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+      for item in t {
+         let a = self.sigma * (*item - self.r[0]);
+         let b = self.r[1] - *item;
+         let f0 = 1.0 / (b + a);
+         let recip_denom = f0 * f0 * f0;
+         let x = Self::eval_part(b, a, &self.x, recip_denom);
+         let y = Self::eval_part(b, a, &self.y, recip_denom);
+         ret_val.push([x, y]);
+      }
+      Ok(ret_val)
+   }
+
+   #[allow(clippy::similar_names)]
+   #[allow(clippy::suboptimal_flops)]
+   fn select_range(&mut self, new_range: [f64; 2]) {
+      let mut new_x = [0.0; 4];
+      let mut new_y = [0.0; 4];
+
+      let a_k = self.sigma * (new_range[0] - self.r[0]);
+      let b_k = self.r[1] - new_range[0];
+      let a_l = self.sigma * (new_range[1] - self.r[0]);
+      let b_l = self.r[1] - new_range[1];
+      let f0_k = 1.0 / (b_k + a_k);
+      let recip_denom_k = f0_k * f0_k * f0_k;
+      let f0_l = 1.0 / (b_l + a_l);
+      let recip_denom_l = f0_l * f0_l * f0_l;
+      new_x[0] = Self::eval_part(b_k, a_k, &self.x, recip_denom_k);
+      new_y[0] = Self::eval_part(b_k, a_k, &self.y, recip_denom_k);
+      new_x[3] = Self::eval_part(b_l, a_l, &self.x, recip_denom_l);
+      new_y[3] = Self::eval_part(b_l, a_l, &self.y, recip_denom_l);
+      let kl_numerator_k = self.sigma * self.r[1] * (new_range[0] - self.r[0])
+         + self.r[0] * (self.r[1] - new_range[0]);
+      let kl_numerator_l = self.sigma * self.r[1] * (new_range[1] - self.r[0])
+         + self.r[0] * (self.r[1] - new_range[1]);
+      // This is [k, l] bilinearly transformed.
+      let selected_range_bilineared = kl_numerator_l / (a_l + b_l) - kl_numerator_k / (a_k + b_k);
+      let fudge_k = selected_range_bilineared / (self.r[1] - self.r[0]);
+      let fudge_l = selected_range_bilineared / (self.r[1] - self.r[0]);
+      // assert_eq!(1.0 / f0_k, 0.0);
+      let dx_1 = fudge_k
+         * f0_k
+         * f0_k
+         * (b_k * b_k * (self.x[1] - self.x[0])
+            + 2.0 * b_k * a_k * (self.x[2] - self.x[1])
+            + a_k * a_k * (self.x[3] - self.x[2]));
+      new_x[1] = new_x[0] + dx_1;
+      let dy_1 = fudge_k
+         * f0_k
+         * f0_k
+         * (b_k * b_k * (self.y[1] - self.y[0])
+            + 2.0 * b_k * a_k * (self.y[2] - self.y[1])
+            + a_k * a_k * (self.y[3] - self.y[2]));
+      new_y[1] = new_y[0] + dy_1;
+      let dx_1 = fudge_l
+         * f0_l
+         * f0_l
+         * (b_l * b_l * (self.x[1] - self.x[0])
+            + 2.0 * b_l * a_l * (self.x[2] - self.x[1])
+            + a_l * a_l * (self.x[3] - self.x[2]));
+      new_x[2] = new_x[3] - dx_1;
+      let dy_1 = fudge_l
+         * f0_l
+         * f0_l
+         * (b_l * b_l * (self.y[1] - self.y[0])
+            + 2.0 * b_l * a_l * (self.y[2] - self.y[1])
+            + a_l * a_l * (self.y[3] - self.y[2]));
+      new_y[2] = new_y[3] - dy_1;
+
+      self.sigma = (a_l + b_l) / (a_k + b_k);
+      self.x = new_x;
+      self.y = new_y;
+      self.r = new_range;
+   }
+
+   fn displace(&mut self, d: [f64; 2]) {
+      self.x[0] += d[0];
+      self.x[1] += d[0];
+      self.x[2] += d[0];
+      self.x[3] += d[0];
+      self.y[0] += d[1];
+      self.y[1] += d[1];
+      self.y[2] += d[1];
+      self.y[3] += d[1];
+   }
+
+   fn bilinear_transform(&mut self, sigma: f64) {
+      self.sigma *= sigma;
+   }
+
+   fn adjust_range(&mut self, new_range: [f64; 2]) {
+      self.r = new_range;
+   }
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct ManagedCubic {
+   four_point: CubiLinear,
+   canvas_range: [f64; 4],
+}
+
+#[allow(clippy::missing_panics_doc)]
+impl ManagedCubic {
+   #[must_use]
+   pub const fn create_from_control_points(
+      control_points: &CubiLinear,
+      canvas_range: [f64; 4],
+   ) -> Self {
+      let mut ret_val = Self { four_point: *control_points, canvas_range };
+      ret_val.four_point.form = CubicForm::FourPoint;
+      ret_val
+   }
+
+   #[must_use]
+   pub const fn get_form(&self) -> CubicForm {
+      self.four_point.form
+   }
+
+   #[must_use]
+   pub const fn get_four_point(&self) -> &CubiLinear {
+      &self.four_point
+   }
+
+   pub fn displace(&mut self, d: [f64; 2]) {
+      self.four_point.displace(d);
+   }
+
+   pub fn bilinear_transform(&mut self, sigma: f64) {
+      self.four_point.bilinear_transform(sigma);
+   }
+
+   pub fn adjust_range(&mut self, new_range: [f64; 2]) {
+      self.four_point.adjust_range(new_range);
+   }
+
+   pub fn select_range(&mut self, new_range: [f64; 2]) {
+      self.four_point.select_range(new_range);
+   }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum SampleOption {
+   #[default]
+   Normal,
+   XVsT,
+}
+
+// In each drawn feature (the main line, points, control) the some-ness of the first field
+// toggles drawing of the feature.
+pub struct SampleCurveConfig {
+   pub main_color: Option<ColorChoice>,
+   pub main_line_choice: LineChoice,
+   pub approx_num_segments: i32,
+
+   pub points_color: Option<ColorChoice>,
+   pub points_choice: PointChoice,
+   pub points_num_segments: i32,
+
+   pub sample_options: SampleOption,
+
+   pub control_color: Option<ColorChoice>,
+   pub control_point_choices: [PointChoice; 2],
+   pub control_line_choice: LineChoice,
+
+   pub control_layer: i32,
+   pub points_layer: i32,
+   pub main_line_layer: i32,
+}
+
+impl Default for SampleCurveConfig {
+   fn default() -> Self {
+      Self {
+         main_color: Some(ColorChoice::Blue),
+         main_line_choice: LineChoice::Ordinary,
+         approx_num_segments: 0,
+         points_color: Some(ColorChoice::Green),
+         points_choice: PointChoice::Dot,
+         points_num_segments: 12,
+         sample_options: SampleOption::Normal,
+         control_color: None,
+         control_point_choices: [PointChoice::Circle, PointChoice::Times],
+         control_line_choice: LineChoice::Light,
+
+         control_layer: 10,
+         points_layer: 20,
+         main_line_layer: 30,
+      }
+   }
+}
+
+#[allow(clippy::missing_panics_doc)]
+#[allow(clippy::suboptimal_flops)]
+pub fn draw_sample_cubilinear(
+   managed_cubic: &ManagedCubic,
+   spartan: &mut SpartanDiagram,
+   curve_config: &SampleCurveConfig,
+) {
+   let four_point = &managed_cubic.four_point;
+
+   if let Some(color_choice) = curve_config.control_color {
+      let end_points_vec =
+         vec![[four_point.x[0], four_point.y[0]], [four_point.x[3], four_point.y[3]]];
+      let control_points_vec =
+         vec![[four_point.x[1], four_point.y[1]], [four_point.x[2], four_point.y[2]]];
+
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.control_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.control_point_choices[0],
+            color_choice,
+            centers: end_points_vec.clone(),
+         }),
+      });
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.control_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.control_point_choices[1],
+            color_choice,
+            centers: control_points_vec.clone(),
+         }),
+      });
+
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.control_layer,
+         drawable: OneOfDrawable::Lines(LinesDrawable {
+            line_choice: curve_config.control_line_choice,
+            color_choice,
+            start: end_points_vec,
+            end: control_points_vec,
+            ..Default::default()
+         }),
+      });
+   }
+
+   if let Some(color_choice) = curve_config.points_color {
+      // Do not include end points if control points are doing that already.
+      let t_int: Vec<i32> = if curve_config.control_color.is_some() {
+         (1..curve_config.points_num_segments).collect()
+      } else {
+         (0..=curve_config.points_num_segments).collect()
+      };
+      let mut t = Vec::<f64>::with_capacity(t_int.len());
+      let scale = (four_point.r[1] - four_point.r[0]) / f64::from(curve_config.points_num_segments);
+      let offset = four_point.r[0];
+      for item in &t_int {
+         t.push(f64::from(*item).mul_add(scale, offset));
+      }
+
+      let pattern_vec = four_point.eval(&t).unwrap();
+
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.points_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.points_choice,
+            color_choice,
+            centers: pattern_vec,
+         }),
+      });
+   }
+
+   if let Some(color_choice) = curve_config.main_color {
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.main_line_layer,
+         drawable: OneOfDrawable::Cubic(CubicDrawable {
+            color_choice,
+            x: four_point.x,
+            y: four_point.y,
+            ..Default::default()
+         }),
+      });
+   }
 }
