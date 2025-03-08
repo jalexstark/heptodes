@@ -28,6 +28,7 @@ use diag_golden::CairoSpartanCombo;
 use diag_golden::CirclesDrawable;
 use diag_golden::ColorChoice;
 use diag_golden::CubiLinear;
+use diag_golden::FourPointRatQuad;
 use diag_golden::JsonGoldenTest;
 use diag_golden::LineChoice;
 use diag_golden::LineClosureChoice;
@@ -39,6 +40,7 @@ use diag_golden::PointChoice;
 use diag_golden::PointsDrawable;
 use diag_golden::PolylineDrawable;
 use diag_golden::QualifiedDrawable;
+use diag_golden::RatQuadState;
 use diag_golden::SampleCurveConfig;
 use diag_golden::SampleOption;
 use diag_golden::SizingScheme;
@@ -50,6 +52,7 @@ use diag_golden::TextDrawable;
 use diag_golden::TextOffsetChoice;
 use diag_golden::TextSingle;
 use diag_golden::TextSizeChoice;
+use diag_golden::ZebraixAngle;
 use serde_json::to_string_pretty;
 use std::f64::consts::PI;
 use std::io::Write;
@@ -780,7 +783,7 @@ fn spartan_sizing_j_test() {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Small,
-         color_choice: ColorChoice::Magenta,
+         color_choice: ColorChoice::BlueRed,
          anchor_horizontal: TextAnchorHorizontal::Left,
          anchor_vertical: TextAnchorVertical::Middle,
          texts: vec![TextSingle { content: "xodflox".to_string(), location: [4.0, -1.5] }],
@@ -880,7 +883,7 @@ fn spartan_sizing_j_test() {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
-         color_choice: ColorChoice::Magenta,
+         color_choice: ColorChoice::BlueRed,
          anchor_horizontal: TextAnchorHorizontal::Right,
          anchor_vertical: TextAnchorVertical::Middle,
          texts: vec![TextSingle {
@@ -1129,7 +1132,8 @@ fn spartan_sizing_m_test() {
       ..Default::default()
    };
 
-   let managed_curve = ManagedRatQuad::new(&rat_quad, cairo_spartan.spartan.prep.axes_range);
+   let managed_curve =
+      ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
    draw_sample_rat_quad(
       &managed_curve,
       &mut cairo_spartan.spartan,
@@ -1177,7 +1181,8 @@ fn spartan_sizing_n_test() {
       ..Default::default()
    };
 
-   let managed_curve = ManagedRatQuad::new(&rat_quad, cairo_spartan.spartan.prep.axes_range);
+   let managed_curve =
+      ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
    draw_sample_rat_quad(
       &managed_curve,
       &mut cairo_spartan.spartan,
@@ -1218,7 +1223,7 @@ fn spartan_sizing_n1_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let mut managed_curve = ManagedRatQuad::new(
+   let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &BaseRatQuad {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
@@ -1269,7 +1274,7 @@ fn spartan_sizing_o_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let mut managed_curve = ManagedRatQuad::new(
+   let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &BaseRatQuad {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
@@ -1323,7 +1328,7 @@ fn spartan_sizing_o1_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let mut managed_curve = ManagedRatQuad::new(
+   let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &BaseRatQuad {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
@@ -1378,7 +1383,7 @@ fn spartan_sizing_o2_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let mut managed_curve = ManagedRatQuad::new(
+   let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &BaseRatQuad {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
@@ -1407,10 +1412,6 @@ fn spartan_sizing_o2_test() {
    run_json_svg("spartan_sizing_o2", &mut cairo_spartan);
 }
 
-// Symmetric range, warped.
-//
-// This does not need to be graphical, but instead should match numerically.  The polyline
-// points should not move.
 #[test]
 fn spartan_sizing_p_test() {
    let t_range = [-6.0, 14.0];
@@ -1433,7 +1434,7 @@ fn spartan_sizing_p_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let mut managed_curve = ManagedRatQuad::new(
+   let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &BaseRatQuad {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
@@ -1666,4 +1667,1008 @@ fn spartan_sizing_q_test() {
    );
 
    run_json_svg("spartan_sizing_q", &mut cairo_spartan);
+}
+
+#[test]
+fn spartan_sizing_r_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-1.0, 11.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 350.0],
+      axes_range: vec![-4.5, -3.5, 1.5, 2.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   {
+      let shift_x = 0.0;
+      let shift_y = 1.0;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + shift_x, -0.5 + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -0.5 + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            points_num_segments: 12,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let s = 2.0;
+      let h = s * 2.0_f64.sqrt() / 3.0;
+
+      let shift_x = -1.0;
+      let shift_y = 0.0;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = -2.0;
+      let shift_y = -1.0;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + shift_x, 1.0 / 3.0 + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, 1.0 / 3.0 + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = -3.0;
+      let shift_y = -2.0;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + shift_x, 2.0 + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, 2.0 + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   run_json_svg("spartan_sizing_r", &mut cairo_spartan);
+}
+
+#[test]
+fn spartan_sizing_s_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-6.0, 14.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 300.0],
+      axes_range: vec![-4.5, -3.5, 4.5, 3.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   let s = 2.5;
+
+   {
+      let h = s * 2.0_f64.sqrt() / 3.0;
+      let shift_x = -3.5;
+      let shift_y = 0.0;
+      let managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [s + shift_x, s + shift_x, h + shift_x, 0.0 + shift_x],
+            y: [0.0 + shift_y, h + shift_y, s + shift_y, s + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: None,
+            points_num_segments: 12,
+            approx_num_segments: 30,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let h = s * 2.0_f64.sqrt() / 3.0;
+      let shift_x = -3.5;
+      let shift_y = 0.0;
+      let managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [
+               0.8 * s + shift_x,
+               0.8 * s + 0.6 * h + shift_x,
+               0.6 * s + 0.8 * h + shift_x,
+               0.6 * s + shift_x,
+            ],
+            y: [
+               -0.6 * s + shift_y,
+               -0.6 * s + 0.8 * h + shift_y,
+               0.8 * s - 0.6 * h + shift_y,
+               0.8 * s + shift_y,
+            ],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: None,
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            points_num_segments: 12,
+            approx_num_segments: 30,
+            ..Default::default()
+         },
+      );
+
+      {
+         let h = s * 2.0 / 3.0;
+         let shift_x = 0.5;
+         let shift_y = 0.0;
+         let managed_curve = ManagedRatQuad::create_from_four_points(
+            &FourPointRatQuad {
+               x: [0.0 + shift_x, 0.0 + h + shift_x, 0.0 + h + shift_x, 0.0 + shift_x],
+               y: [-s + shift_y, -s + shift_y, s + shift_y, s + shift_y],
+               // x: [0.0, 1.0, 1.0, 0.0],
+               // y: [-1.0, -1.0, 1.0, 1.0],
+               r: t_range,
+               ..Default::default()
+            },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         draw_sample_rat_quad(
+            &managed_curve,
+            &mut cairo_spartan.spartan,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Green),
+               points_color: Some(ColorChoice::Blue),
+               points_choice: PointChoice::Dot,
+               points_num_segments: 12,
+               approx_num_segments: 30,
+               ..Default::default()
+            },
+         );
+      }
+
+      // managed_curve.raise_to_symmetric_range().unwrap();
+      // managed_curve.raise_to_regularized_symmetric().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
+
+      // draw_sample_rat_quad(
+      //    &managed_curve,
+      //    &mut cairo_spartan.spartan,
+      //    &SampleCurveConfig {
+      //       main_color: Some(ColorChoice::Green),
+      //       points_color: None,
+      //       ..Default::default()
+      //    },
+      // );
+   }
+
+   run_json_svg("spartan_sizing_s", &mut cairo_spartan);
+}
+
+// Parabola test, with most plotted via RatQuad, but confirmatory circles via cubic.
+#[test]
+fn spartan_sizing_t_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-2.0, 10.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 300.0],
+      axes_range: vec![-3.5, -2.5, 3.5, 2.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   let x_a = [-3.0, -1.0, -1.0, -3.0];
+   let y_a = [-2.0, 0.0, 0.0, 2.0];
+
+   let x_b = [0.0, 1.0, 1.0, -1.0];
+   let y_b = [-2.0, 1.0, 1.0, 2.0];
+
+   let x_c = [3.0, 3.0, 3.0, 1.0];
+   let y_c = [-2.0, 2.0, 2.0, 2.0];
+
+   {
+      let managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            // Quarter-circle temporary test.
+            // x: [-3.0, -2.5, -2.5, -3.0],
+            // y: [-2.0, -1.5, 1.5, 2.0],
+            x: [x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
+            y: [y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      // Switch from approx when implemented!!!!!!!
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::BrightGreen),
+            points_choice: PointChoice::Dot,
+            points_num_segments: 12,
+            approx_num_segments: 30,
+            ..Default::default()
+         },
+      );
+   }
+   {
+      let managed_curve = ManagedCubic::create_from_control_points(
+         &CubiLinear {
+            r: t_range,
+            x: [x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
+            y: [y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+            sigma: 1.0,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      draw_sample_cubilinear(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: None,
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
+            y: [y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      // Switch from approx when implemented!!!!!!!
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::BrightGreen),
+            points_choice: PointChoice::Dot,
+            points_num_segments: 12,
+            approx_num_segments: 30,
+            ..Default::default()
+         },
+      );
+   }
+   {
+      let managed_curve = ManagedCubic::create_from_control_points(
+         &CubiLinear {
+            r: t_range,
+            x: [x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
+            y: [y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+            sigma: 1.0,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      draw_sample_cubilinear(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: None,
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
+            y: [y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      // Switch from approx when implemented!!!!!!!
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::BrightGreen),
+            points_choice: PointChoice::Dot,
+            points_num_segments: 12,
+            approx_num_segments: 30,
+            ..Default::default()
+         },
+      );
+   }
+   {
+      let managed_curve = ManagedCubic::create_from_control_points(
+         &CubiLinear {
+            r: t_range,
+            x: [x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
+            y: [y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+            sigma: 1.0,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      draw_sample_cubilinear(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: None,
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            ..Default::default()
+         },
+      );
+   }
+
+   run_json_svg("spartan_sizing_t", &mut cairo_spartan);
+}
+
+fn rotate_3_simply(p: ([f64; 3], [f64; 3]), transformation: [f64; 4]) -> ([f64; 3], [f64; 3]) {
+   let t = &transformation;
+   let x = &p.0;
+   let y = &p.1;
+   let result_x = [t[0] * x[0] + t[1] * y[0], t[0] * x[1] + t[1] * y[1], t[0] * x[2] + t[1] * y[2]];
+   let result_y = [t[2] * x[0] + t[3] * y[0], t[2] * x[1] + t[3] * y[1], t[2] * x[2] + t[3] * y[2]];
+   (result_x, result_y)
+}
+
+fn translate_3_simply(p: ([f64; 3], [f64; 3]), offset: [f64; 2]) -> ([f64; 3], [f64; 3]) {
+   let t = &offset;
+   let x = &p.0;
+   let y = &p.1;
+   let result_x = [x[0] + t[0], x[1] + t[0], x[2] + t[0]];
+   let result_y = [y[0] + t[1], y[1] + t[1], y[2] + t[1]];
+   (result_x, result_y)
+}
+
+fn rotate_4_simply(p: ([f64; 4], [f64; 4]), transformation: [f64; 4]) -> ([f64; 4], [f64; 4]) {
+   let t = &transformation;
+   let x = &p.0;
+   let y = &p.1;
+   let result_x = [
+      t[0] * x[0] + t[1] * y[0],
+      t[0] * x[1] + t[1] * y[1],
+      t[0] * x[2] + t[1] * y[2],
+      t[0] * x[3] + t[1] * y[3],
+   ];
+   let result_y = [
+      t[2] * x[0] + t[3] * y[0],
+      t[2] * x[1] + t[3] * y[1],
+      t[2] * x[2] + t[3] * y[2],
+      t[2] * x[3] + t[3] * y[3],
+   ];
+   (result_x, result_y)
+}
+
+fn translate_4_simply(p: ([f64; 4], [f64; 4]), offset: [f64; 2]) -> ([f64; 4], [f64; 4]) {
+   let t = &offset;
+   let x = &p.0;
+   let y = &p.1;
+   let result_x = [x[0] + t[0], x[1] + t[0], x[2] + t[0], x[3] + t[0]];
+   let result_y = [y[0] + t[1], y[1] + t[1], y[2] + t[1], y[3] + t[1]];
+   (result_x, result_y)
+}
+
+#[test]
+fn spartan_sizing_u_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-1.0, 11.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 350.0],
+      axes_range: vec![-4.5, -4.5, 5.5, 4.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   // Need to enable: fix ratquad rendering that is parabolic.
+
+   {
+      let shift_x = -2.0;
+      let shift_y = -4.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 0.0, -1.0], [-1.0, 0.0, 1.0]), [1.0, -1.0, 1.0, 1.0]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(1.0),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = -2.0;
+      let shift_y = -3.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 0.5, -1.0], [-1.0, 0.5, 1.0]), [1.0, -1.0, 1.0, 1.0]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(1.0),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = -2.0;
+      let shift_y = -1.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [1.0, -1.0, 1.0, 1.0]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(1.0),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = -2.0;
+      let shift_y = 1.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 1.5, -1.0], [-1.0, 1.5, 1.0]), [1.0, -1.0, 1.0, 1.0]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(1.0),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = 3.0;
+      let shift_y = 3.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(0.1),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: None,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = 3.0;
+      let shift_y = 2.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(1.0),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: None,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = 3.0;
+      let shift_y = 1.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(1.5),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: None,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = 3.0;
+      let shift_y = 0.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(2.5),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: None,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = 3.0;
+      let shift_y = -1.0;
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
+         [shift_x, shift_y],
+      );
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::Quadrant(3.0),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: None,
+            ..Default::default()
+         },
+      );
+   }
+
+   run_json_svg("spartan_sizing_u", &mut cairo_spartan);
+}
+
+#[test]
+fn spartan_sizing_v_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-1.0, 11.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 350.0],
+      axes_range: vec![-4.5, -3.5, 2.5, 3.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   let p_d = [1.2, 0.4];
+   let p_a = [0.0, 3.0];
+   let p_z = [0.0, -3.0];
+
+   let t = 1.0 / 2.0;
+   let alpha = t * (1.0 + t * t);
+   let beta = (1.0 + t * t) / t;
+
+   let f = 1.0 / (alpha + beta);
+   let p_m = [
+      f * (2.0 * alpha * beta * p_d[0] + beta * p_a[0] + alpha * p_z[0]),
+      f * (2.0 * alpha * beta * p_d[1] + beta * p_a[1] + alpha * p_z[1]),
+   ];
+
+   let rotation = [-0.25, 1.0, 1.0, 0.25];
+   let shift = [-1.0, 0.0];
+   {
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(
+            ([p_a[0], p_a[0] + alpha * p_d[0], p_m[0]], [p_a[1], p_a[1] + alpha * p_d[1], p_m[1]]),
+            rotation,
+         ),
+         shift,
+      );
+
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::TanHalf(t),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            // main_color: None,
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            // points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let (x, y) = translate_3_simply(
+         rotate_3_simply(
+            ([p_m[0], p_z[0] + beta * p_d[0], p_z[0]], [p_m[1], p_z[1] + beta * p_d[1], p_z[1]]),
+            rotation,
+         ),
+         shift,
+      );
+
+      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+         &BaseRatQuad {
+            state: RatQuadState::ThreePointAngle,
+            b: x,
+            c: y,
+            angle: ZebraixAngle::TanHalf(1.0 / t),
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let g = -2.0 / 3.0 * (1.0 + t * t);
+      let (x, y) = translate_4_simply(
+         rotate_4_simply(
+            (
+               [p_a[0], p_a[0] + g * p_d[0], p_z[0] + g * p_d[0], p_z[0]],
+               [p_a[1], p_a[1] + g * p_d[1], p_z[1] + g * p_d[1], p_z[1]],
+            ),
+            rotation,
+         ),
+         shift,
+      );
+
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::RedRedBlue),
+            // main_line_choice: LineChoice::Light,
+            points_color: None,
+            ..Default::default()
+         },
+      );
+   }
+
+   run_json_svg("spartan_sizing_v", &mut cairo_spartan);
 }

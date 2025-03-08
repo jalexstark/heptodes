@@ -85,6 +85,21 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
    t == &T::default()
 }
 
+#[must_use]
+fn is_near_float(v: f64, w: f64) -> bool {
+   (v - w).abs() < 0.0001
+}
+
+#[must_use]
+pub const fn default_unit_f64() -> f64 {
+   1.0
+}
+#[allow(clippy::trivially_copy_pass_by_ref)]
+#[must_use]
+pub fn is_default_unit_f64(v: &f64) -> bool {
+   is_near_float(*v, default_unit_f64())
+}
+
 // Helper that handles a golden (Mint) test for SVG output.
 //
 // Some parts of SVG are "random", such as the surface ID.  The
@@ -389,6 +404,9 @@ pub struct SpartanDiagram {
 
    #[serde(skip_serializing_if = "is_default")]
    pub drawables: Vec<QualifiedDrawable>,
+
+   #[serde(skip, default = "SpartanDiagram::default_num_segments_hyperbolic")]
+   pub num_segments_hyperbolic: i32,
 }
 
 impl SpartanDiagram {
@@ -498,6 +516,11 @@ impl SpartanDiagram {
       let default_value = Self::default_annotation_offset();
       Self::is_near_float((*v)[0], default_value[0])
          && Self::is_near_float((*v)[1], default_value[1])
+   }
+
+   #[must_use]
+   const fn default_num_segments_hyperbolic() -> i32 {
+      50
    }
 
    fn multiply_default_one(a: f64, b: f64) -> f64 {
@@ -681,7 +704,7 @@ impl CairoSpartanRender {
          ColorChoice::Blue => (0.0, 0.0, 0.65),
          ColorChoice::YellowBrown => (0.37, 0.28, 0.0),
          ColorChoice::BlueGreen => (0.0, 0.3, 0.3),
-         ColorChoice::Magenta => (0.35, 0.0, 0.5),
+         ColorChoice::BlueRed => (0.35, 0.0, 0.5),
          ColorChoice::RedRedGreen => (0.45, 0.18, 0.0),
          ColorChoice::GreenGreenRed => (0.24, 0.32, 0.0),
          ColorChoice::BlueBlueGreen => (0.0, 0.18, 0.45),
@@ -1454,7 +1477,7 @@ pub enum ColorChoice {
    Blue,
    YellowBrown,
    BlueGreen,
-   Magenta,
+   BlueRed,
    RedRedGreen,
    GreenGreenRed,
    BlueBlueGreen,
@@ -1588,6 +1611,42 @@ pub struct QualifiedDrawable {
    pub drawable: OneOfDrawable,
 }
 
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq)]
+pub enum ZebraixAngle {
+   Quadrant(f64),
+   Radians(f64),
+   TanHalf(f64),
+}
+
+impl ZebraixAngle {
+   #[inline]
+   #[must_use]
+   pub fn in_radians(&self) -> f64 {
+      match self {
+         Self::Quadrant(q) => 0.5 * q * std::f64::consts::PI,
+         Self::Radians(r) => *r,
+         Self::TanHalf(t) => 2.0 * t.atan(),
+      }
+   }
+
+   // This is really not good. We should deal with half the opening angle, or otherwise we get
+   // strangeness as regards interpretation of angles (such as subtracting 2 pi from angle.
+   #[inline]
+   #[must_use]
+   pub fn cos_half(&self) -> f64 {
+      match self {
+         Self::Quadrant(_) => (0.5 * self.in_radians()).cos(),
+         Self::Radians(r) => (0.5 * r).cos(),
+         Self::TanHalf(t) => 1.0 / (1.0 + t * t).sqrt(),
+      }
+   }
+}
+
+impl Default for ZebraixAngle {
+   fn default() -> Self {
+      Self::Quadrant(1.0)
+   }
+}
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum RatQuadState {
    #[default]
@@ -1595,6 +1654,60 @@ pub enum RatQuadState {
    SymmetricRange,       // RationalPoly[nomial] with symmetric range.
    RegularizedSymmetric, // SymmetricRange with zero middle denominator coefficient.
    OffsetOddEven,        // O-O-E weightings of RegularizedSymmetric.
+
+   FourPoint,        // Like cubic.
+   ThreePointAngle,  // Form a,b,angle, sigma.
+   RationalWeighted, // Polynomial-like, by  difference from end points.
+}
+
+#[derive(Debug, Serialize, PartialEq, Copy, Clone)]
+pub struct FourPointRatQuad {
+   pub state: RatQuadState,
+   pub r: [f64; 2], // Range.
+   pub x: [f64; 4],
+   pub y: [f64; 4],
+}
+
+impl Default for FourPointRatQuad {
+   fn default() -> Self {
+      Self {
+         state: RatQuadState::FourPoint,
+         r: [0.0, 0.0],
+         x: [0.0, 0.0, 0.0, 0.0],
+         y: [0.0, 0.0, 0.0, 0.0],
+      }
+   }
+}
+
+// #[derive(Debug, Serialize, PartialEq, Copy, Clone)]
+// pub struct ThreePointAngleRatQuad {
+//    pub state: RatQuadState,
+//    pub r: [f64; 2], // Range.
+//    pub x: [f64; 3],
+//    pub y: [f64; 3],
+//    pub angle: ZebraixAngle,
+//    pub sigma: f64,
+// }
+
+// impl Default for ThreePointAngleRatQuad {
+//    fn default() -> Self {
+//       Self {
+//          state: RatQuadState::ThreePointAngle,
+//          r: [0.0, 0.0],
+//          x: [0.0, 0.0, 0.0],
+//          y: [0.0, 0.0, 0.0],
+//          angle: ZebraixAngle::Quadrant(1.0),
+//          sigma: 1.0,
+//       }
+//    }
+// }
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum RatQuadOoeSubtype {
+   #[default]
+   Elliptical,
+   Parabolic,
+   Hyperbolic,
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
@@ -1604,6 +1717,21 @@ pub struct BaseRatQuad {
    pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
    pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
    pub c: [f64; 3], // Numerator or O-O-E coefficients for y component.
+   #[serde(skip_serializing_if = "is_default")]
+   pub angle: ZebraixAngle,
+   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
+   pub sigma: f64,
+   pub ooe_subtype: RatQuadOoeSubtype,
+}
+
+#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq)]
+pub enum SpecifiedRatQuad {
+   #[default]
+   None, // For, say, polynomial directly specified.
+   // Base(BaseRatQuad), // Three-points and angle, for example.
+   FourPoint(FourPointRatQuad),
+   ThreePointAngle(BaseRatQuad),
+   // ThreePointAngle(ThreePointAngleRatQuad),
 }
 
 impl BaseRatQuad {
@@ -1685,6 +1813,15 @@ impl BaseRatQuad {
             );
             Ok(())
          }
+         RatQuadState::FourPoint => {
+            Err("Bilinear is applicable to four-point form, but not implemented.")
+         }
+         RatQuadState::ThreePointAngle => {
+            Err("Bilinear is applicable to three-point-angle form, but not implemented.")
+         }
+         RatQuadState::RationalWeighted => {
+            Err("Bilinear is applicable to rational-weighted form, but not implemented.")
+         }
       }
    }
 
@@ -1730,32 +1867,125 @@ impl BaseRatQuad {
       Ok(())
    }
 
+   #[inline]
+   fn characterize_endpoints(&self) -> ([f64; 4], [f64; 4]) {
+      let mut x = [0.0; 4];
+      let mut y = [0.0; 4];
+      let speed_scale = self.r[1] - self.r[0];
+      for (outer, inner, t) in [(0, 1, self.r[0]), (3, 2, self.r[1])] {
+         let recip_a = 1.0 / self.a[2].mul_add(t, self.a[1]).mul_add(t, self.a[0]);
+         let b = self.b[2].mul_add(t, self.b[1]).mul_add(t, self.b[0]);
+         let c = self.c[2].mul_add(t, self.c[1]).mul_add(t, self.c[0]);
+         let da = self.a[2].mul_add(2.0 * t, self.a[1]) * speed_scale;
+         let db = self.b[2].mul_add(2.0 * t, self.b[1]) * speed_scale;
+         let dc = self.c[2].mul_add(2.0 * t, self.c[1]) * speed_scale;
+         x[outer] = b * recip_a;
+         y[outer] = c * recip_a;
+         x[inner] = (-b * da).mul_add(recip_a, db) * recip_a;
+         y[inner] = (-c * da).mul_add(recip_a, dc) * recip_a;
+      }
+      (x, y)
+   }
+
    #[allow(clippy::suboptimal_flops)]
-   fn raise_to_offset_odd_even(&mut self, poly: &Self) -> Result<(), &'static str> {
+   fn raise_to_offset_odd_even(&mut self, poly: &Self, tolerance: f64) -> Result<(), &'static str> {
       if poly.state != RatQuadState::RegularizedSymmetric {
          return Err("Can only raise from regularized-symmetric form to offset-odd-even form.");
       }
       *self = *poly;
-      let s = 1.0 / self.a[0];
-      let f = 1.0 / self.a[2];
-      self.a[0] = 1.0;
-      self.a[2] *= s;
 
-      {
-         let offset = 0.5 * (s * self.b[0] + f * self.b[2]);
-         let even = 0.5 * (s * self.b[0] - f * self.b[2]);
-         let odd = self.b[1] * s;
-         self.b = [offset, odd, even];
-      }
-      {
-         let offset = 0.5 * (s * self.c[0] + f * self.c[2]);
-         let even = 0.5 * (s * self.c[0] - f * self.c[2]);
-         let odd = self.c[1] * s;
-         self.c = [offset, odd, even];
+      let r = self.r[1];
+      // assert_eq!(r, 10000.0);
+      if (self.a[2].abs() * r * r) < (self.a[0].abs() * tolerance) {
+         self.ooe_subtype = RatQuadOoeSubtype::Parabolic;
+      } else if self.a[2].signum() == self.a[0].signum() {
+         self.ooe_subtype = RatQuadOoeSubtype::Elliptical;
+
+         let s = 1.0 / self.a[0];
+         let f = 1.0 / self.a[2];
+         self.a[0] = 1.0;
+         self.a[2] *= s;
+
+         {
+            let offset = 0.5 * (s * self.b[0] + f * self.b[2]);
+            let even = 0.5 * (s * self.b[0] - f * self.b[2]);
+            let odd = self.b[1] * s;
+            self.b = [offset, odd, even];
+         }
+         {
+            let offset = 0.5 * (s * self.c[0] + f * self.c[2]);
+            let even = 0.5 * (s * self.c[0] - f * self.c[2]);
+            let odd = self.c[1] * s;
+            self.c = [offset, odd, even];
+         }
+
+         let sss = 1.0 / self.a[2].sqrt();
+         let (sx, sy) = (0.5 * sss * self.b[1], 0.5 * sss * self.c[1]);
+         let (cx, cy) = (self.b[2], self.c[2]);
+         let determinant = sx * cy - cx * sy;
+         let frobenius_squared = sx * sx + sy * sy + cx * cx + cy * cy;
+         if determinant.abs() < (frobenius_squared * tolerance) {
+            // From the plotting point of view this is not a degenerate case, but renderers may
+            // want the transformation to be invertible.
+            //
+            // If one singular value is much larger than the other, the frobenius norm
+            // (squared) will be approximately the square of larger.  The determinant is their
+            // product, and so the condition effectively compares their magnitude (for small
+            // tolerances).
+            *self = *poly;
+            self.ooe_subtype = RatQuadOoeSubtype::Parabolic;
+         }
+      } else {
+         self.ooe_subtype = RatQuadOoeSubtype::Hyperbolic;
       }
 
       self.state = RatQuadState::OffsetOddEven;
 
+      Ok(())
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   fn weighted_to_polynomial(&mut self) -> Result<(), &'static str> {
+      if self.state != RatQuadState::RationalWeighted {
+         return Err("Attempted conversion from rational-weighted when not in that state.");
+      }
+      // Get from self.sigma once confirmed working.
+      let sigma = 1.0;
+      let v = self.r[0];
+      let w = self.r[1];
+      // assert_eq!(w, 100.0);
+      {
+         let h0 = self.a[0];
+         let h1 = sigma * self.a[1];
+         let h2 = sigma * sigma * self.a[2];
+         self.a = [
+            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+            h0 - 2.0 * h1 + h2,
+         ];
+      }
+      {
+         let h0 = self.b[0];
+         let h1 = sigma * self.b[1];
+         let h2 = sigma * sigma * self.b[2];
+         self.b = [
+            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+            h0 - 2.0 * h1 + h2,
+         ];
+      }
+      {
+         let h0 = self.c[0];
+         let h1 = sigma * self.c[1];
+         let h2 = sigma * sigma * self.c[2];
+         self.c = [
+            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+            h0 - 2.0 * h1 + h2,
+         ];
+      }
+
+      self.state = RatQuadState::RationalPoly;
       Ok(())
    }
 }
@@ -1764,16 +1994,90 @@ impl BaseRatQuad {
 pub struct ManagedRatQuad {
    ooe: BaseRatQuad,
    poly: BaseRatQuad,
+   specified: SpecifiedRatQuad, // FourPoint or ThreePointAngle.
    canvas_range: [f64; 4],
 }
 
 #[allow(clippy::missing_panics_doc)]
 impl ManagedRatQuad {
    #[must_use]
-   pub fn new(poly: &BaseRatQuad, canvas_range: [f64; 4]) -> Self {
+   pub fn create_from_polynomial(poly: &BaseRatQuad, canvas_range: [f64; 4]) -> Self {
       assert!(poly.state == RatQuadState::RationalPoly);
-      Self { poly: *poly, ooe: BaseRatQuad::default(), canvas_range }
+      Self { poly: *poly, ooe: BaseRatQuad::default(), canvas_range, ..Default::default() }
    }
+
+   #[must_use]
+   #[allow(clippy::many_single_char_names)]
+   #[allow(clippy::similar_names)]
+   #[allow(clippy::suboptimal_flops)]
+   pub fn create_from_four_points(four_points: &FourPointRatQuad, canvas_range: [f64; 4]) -> Self {
+      assert!(four_points.state == RatQuadState::FourPoint);
+      let x = &four_points.x;
+      let y = &four_points.y;
+      let delta_x = (x[2] - x[3]) * (y[1] - y[0]);
+      let delta_y = (y[2] - y[3]) * (x[1] - x[0]);
+      let w_b = delta_x - delta_y;
+      let w_b_x_m = (y[3] - y[0]) * (x[2] - x[3]) * (x[1] - x[0]) - x[3] * delta_y + x[0] * delta_x;
+      // If we exchange all x and y then we also negate, by implication, w_b.
+      let w_b_y_m =
+         -1.0 * ((x[3] - x[0]) * (y[2] - y[3]) * (y[1] - y[0]) - y[3] * delta_x + y[0] * delta_y);
+      let w_a = 2.0 / 3.0 * (x[0] * (y[2] - y[3]) + x[2] * (y[3] - y[0]) + x[3] * (y[0] - y[2]));
+      let w_c = -2.0 / 3.0 * (y[0] * (x[2] - x[3]) + y[2] * (x[3] - x[0]) + y[3] * (x[0] - x[2]));
+
+      let b = [w_a * x[0], w_b_x_m, w_c * x[3]];
+      let c = [w_a * y[0], w_b_y_m, w_c * y[3]];
+      let a = [w_a, w_b, w_c];
+      let mut rat_quad = BaseRatQuad {
+         state: RatQuadState::RationalWeighted,
+         r: four_points.r,
+         a,
+         b,
+         c,
+         ..Default::default()
+      };
+      rat_quad.weighted_to_polynomial().unwrap();
+      Self {
+         poly: rat_quad,
+         ooe: BaseRatQuad::default(),
+         specified: SpecifiedRatQuad::FourPoint(*four_points),
+         canvas_range,
+         // ..Default::default()
+      }
+   }
+   #[must_use]
+   pub fn create_from_three_points(
+      three_point_rat_quad: &BaseRatQuad,
+      canvas_range: [f64; 4],
+   ) -> Self {
+      assert!(three_point_rat_quad.state == RatQuadState::ThreePointAngle);
+      let xs = &three_point_rat_quad.b;
+      let ys = &three_point_rat_quad.c;
+      let f_mult_1p5 = three_point_rat_quad.angle.cos_half();
+      // Can construct as four-point rat quad with these values.
+      // let x = [xs[0], f * xs[1] + (1.0 - f) * xs[0], f * xs[1] + (1.0 - f) * xs[2], xs[2]];
+      // let y = [ys[0], f * ys[1] + (1.0 - f) * ys[0], f * ys[1] + (1.0 - f) * ys[2], ys[2]];
+
+      let b = [xs[0], f_mult_1p5 * xs[1], xs[2]];
+      let c = [ys[0], f_mult_1p5 * ys[1], ys[2]];
+      let a = [1.0, f_mult_1p5, 1.0];
+      let mut rat_quad = BaseRatQuad {
+         state: RatQuadState::RationalWeighted,
+         r: three_point_rat_quad.r,
+         a,
+         b,
+         c,
+         ..Default::default()
+      };
+      rat_quad.weighted_to_polynomial().unwrap();
+      Self {
+         poly: rat_quad,
+         ooe: BaseRatQuad::default(),
+         specified: SpecifiedRatQuad::ThreePointAngle(*three_point_rat_quad),
+         canvas_range,
+         // ..Default::default()
+      }
+   }
+
    #[must_use]
    pub const fn get_ooe_rat_quad(&self) -> &BaseRatQuad {
       &self.ooe
@@ -1799,10 +2103,11 @@ impl ManagedRatQuad {
    }
    #[allow(clippy::missing_errors_doc)]
    pub fn raise_to_offset_odd_even(&mut self) -> Result<(), &'static str> {
-      self.ooe.raise_to_offset_odd_even(&self.poly)
+      self.ooe.raise_to_offset_odd_even(&self.poly, 0.01)
    }
 }
 
+#[allow(clippy::too_many_lines)]
 #[allow(clippy::missing_panics_doc)]
 #[allow(clippy::suboptimal_flops)]
 pub fn draw_sample_rat_quad(
@@ -1812,40 +2117,63 @@ pub fn draw_sample_rat_quad(
 ) {
    let rat_quad: &BaseRatQuad = managed_rat_quad.get_poly_rat_quad();
 
-   // if let Some(color_choice) = curve_config.control_color {
-   //    let end_points_vec =
-   //       vec![[four_point.x[0], four_point.y[0]], [four_point.x[3], four_point.y[3]]];
-   //    let control_points_vec =
-   //       vec![[four_point.x[1], four_point.y[1]], [four_point.x[2], four_point.y[2]]];
+   if let Some(color_choice) = curve_config.control_color {
+      // assert!(false);
 
-   //    spartan.drawables.push(QualifiedDrawable {
-   //       layer: curve_config.control_layer,
-   //       drawable: OneOfDrawable::Points(PointsDrawable {
-   //          point_choice: curve_config.control_point_choices[0],
-   //          color_choice,
-   //          centers: end_points_vec.clone(),
-   //       }),
-   //    });
-   //    spartan.drawables.push(QualifiedDrawable {
-   //       layer: curve_config.control_layer,
-   //       drawable: OneOfDrawable::Points(PointsDrawable {
-   //          point_choice: curve_config.control_point_choices[1],
-   //          color_choice,
-   //          centers: control_points_vec.clone(),
-   //       }),
-   //    });
+      let end_points_vec;
+      let control_points_vec;
+      match managed_rat_quad.specified {
+         SpecifiedRatQuad::None => {
+            panic!("Unable to draw control points when RQC not specified via control points.");
+         }
+         // SpecifiedRatQuad:: Base(BaseRatQuad), // Three-points and angle, for example.
+         SpecifiedRatQuad::FourPoint(specified) => {
+            end_points_vec =
+               vec![[specified.x[0], specified.y[0]], [specified.x[3], specified.y[3]]];
+            control_points_vec =
+               vec![[specified.x[1], specified.y[1]], [specified.x[2], specified.y[2]]];
+         }
+         SpecifiedRatQuad::ThreePointAngle(specified) => {
+            end_points_vec =
+               vec![[specified.b[0], specified.c[0]], [specified.b[2], specified.c[2]]];
+            control_points_vec = vec![[specified.b[1], specified.c[1]]];
+         }
+      }
 
-   //    spartan.drawables.push(QualifiedDrawable {
-   //       layer: curve_config.control_layer,
-   //       drawable: OneOfDrawable::Lines(LinesDrawable {
-   //          line_choice: curve_config.control_line_choice,
-   //          color_choice,
-   //          start: end_points_vec,
-   //          end: control_points_vec,
-   //          ..Default::default()
-   //       }),
-   //    });
-   // }
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.control_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.control_point_choices[0],
+            color_choice,
+            centers: end_points_vec.clone(),
+         }),
+      });
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.control_layer,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.control_point_choices[1],
+            color_choice,
+            centers: control_points_vec.clone(),
+         }),
+      });
+
+      let expanded_control_points_vec = if control_points_vec.len() == 2 {
+         control_points_vec
+      } else {
+         vec![control_points_vec[0], control_points_vec[0]]
+      };
+
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.control_layer,
+         drawable: OneOfDrawable::Lines(LinesDrawable {
+            line_choice: curve_config.control_line_choice,
+            color_choice,
+            start: end_points_vec,
+            end: expanded_control_points_vec,
+            ..Default::default()
+         }),
+      });
+   }
 
    if let Some(color_choice) = curve_config.points_color {
       // Do not include end points if control points are doing that already.
@@ -1901,6 +2229,7 @@ pub fn draw_sample_rat_quad(
             layer: curve_config.main_line_layer,
             drawable: OneOfDrawable::Polyline(PolylineDrawable {
                color_choice,
+               line_choice: curve_config.main_line_choice,
                locations: pattern_vec,
                ..Default::default()
             }),
@@ -1909,26 +2238,79 @@ pub fn draw_sample_rat_quad(
          let ooe_rat_quad: &BaseRatQuad = managed_rat_quad.get_ooe_rat_quad();
          assert_eq!(ooe_rat_quad.state, RatQuadState::OffsetOddEven);
 
-         let r = ooe_rat_quad.r[1];
-         let s = 1.0 / ooe_rat_quad.a[2].sqrt();
-         let mx = ooe_rat_quad.b[0];
-         let my = ooe_rat_quad.c[0];
-         let (sx, sy) = (0.5 * s * ooe_rat_quad.b[1], 0.5 * s * ooe_rat_quad.c[1]);
-         let (cx, cy) = (ooe_rat_quad.b[2], ooe_rat_quad.c[2]);
+         match ooe_rat_quad.ooe_subtype {
+            RatQuadOoeSubtype::Elliptical => {
+               let r = ooe_rat_quad.r[1];
+               let s = 1.0 / ooe_rat_quad.a[2].sqrt();
+               let mx = ooe_rat_quad.b[0];
+               let my = ooe_rat_quad.c[0];
+               let (sx, sy) = (0.5 * s * ooe_rat_quad.b[1], 0.5 * s * ooe_rat_quad.c[1]);
+               let (cx, cy) = (ooe_rat_quad.b[2], ooe_rat_quad.c[2]);
 
-         // The arc range is [-angle_range, angle_range].
-         let angle_range = 2.0 * (r * (ooe_rat_quad.a[2] / ooe_rat_quad.a[0]).sqrt()).atan();
+               // The arc range is [-angle_range, angle_range].
+               let angle_range = 2.0 * (r * (ooe_rat_quad.a[2] / ooe_rat_quad.a[0]).sqrt()).atan();
 
-         spartan.drawables.push(QualifiedDrawable {
-            layer: curve_config.main_line_layer,
-            drawable: OneOfDrawable::Arc(ArcDrawable {
-               color_choice,
-               angle_range: [-angle_range, angle_range],
-               center: [mx, my],
-               transform: [cx, cy, sx, sy],
-               ..Default::default()
-            }),
-         });
+               spartan.drawables.push(QualifiedDrawable {
+                  layer: curve_config.main_line_layer,
+                  drawable: OneOfDrawable::Arc(ArcDrawable {
+                     color_choice,
+                     line_choice: curve_config.main_line_choice,
+                     angle_range: [-angle_range, angle_range],
+                     center: [mx, my],
+                     transform: [cx, cy, sx, sy],
+                     ..Default::default()
+                  }),
+               });
+            }
+
+            RatQuadOoeSubtype::Parabolic => {
+               let (x, y) = rat_quad.characterize_endpoints();
+               let f = 1.0 / 3.0;
+               let four_x = [x[0], x[0] + f * x[1], x[3] - f * x[2], x[3]];
+               let four_y = [y[0], y[0] + f * y[1], y[3] - f * y[2], y[3]];
+
+               if let Some(color_choice) = curve_config.main_color {
+                  spartan.drawables.push(QualifiedDrawable {
+                     layer: curve_config.main_line_layer,
+                     drawable: OneOfDrawable::Cubic(CubicDrawable {
+                        color_choice,
+                        line_choice: curve_config.main_line_choice,
+                        x: four_x,
+                        y: four_y,
+                        ..Default::default()
+                     }),
+                  });
+               }
+            }
+            RatQuadOoeSubtype::Hyperbolic => {
+               let t_int: Vec<i32> = (0..spartan.num_segments_hyperbolic).collect();
+               let mut t = Vec::<f64>::with_capacity(t_int.len());
+               let scale =
+                  (rat_quad.r[1] - rat_quad.r[0]) / f64::from(spartan.num_segments_hyperbolic);
+               let offset = rat_quad.r[0];
+               for item in &t_int {
+                  t.push(f64::from(*item).mul_add(scale, offset));
+               }
+
+               let mut pattern_vec = rat_quad.eval_quad(&t);
+
+               if curve_config.sample_options == SampleOption::XVsT {
+                  for i in 0..t_int.len() {
+                     pattern_vec[i] = [t[i], pattern_vec[i][0]];
+                  }
+               }
+
+               spartan.drawables.push(QualifiedDrawable {
+                  layer: curve_config.main_line_layer,
+                  drawable: OneOfDrawable::Polyline(PolylineDrawable {
+                     color_choice,
+                     line_choice: curve_config.main_line_choice,
+                     locations: pattern_vec,
+                     ..Default::default()
+                  }),
+               });
+            }
+         }
       }
    }
 }
@@ -1946,7 +2328,7 @@ pub struct CubiLinear {
    pub r: [f64; 2], // Range.
    pub x: [f64; 4],
    pub y: [f64; 4],
-   // Should default to 1.0.
+   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
    pub sigma: f64,
 }
 
@@ -2234,6 +2616,7 @@ pub fn draw_sample_cubilinear(
          layer: curve_config.main_line_layer,
          drawable: OneOfDrawable::Cubic(CubicDrawable {
             color_choice,
+            line_choice: curve_config.main_line_choice,
             x: four_point.x,
             y: four_point.y,
             ..Default::default()
