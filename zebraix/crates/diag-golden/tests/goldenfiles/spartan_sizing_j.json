@@ -174,67 +174,6 @@
     },
     {
       "drawable": {
-        "Lines": {
-          "start": [
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "end": [
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "offsets": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.0,
-              0.0
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "drawable": {
-        "Lines": {
-          "line_choice": "Light",
-          "start": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "end": [
-            [
-              0.0,
-              0.0
-            ],
-            [
-              0.0,
-              0.0
-            ]
-          ],
-          "offsets": [
-            [
-              0.0,
-              0.0
-            ]
-          ]
-        }
-      }
-    },
-    {
-      "drawable": {
         "Points": {
           "point_choice": "Dot",
           "color_choice": "Gray",
@@ -474,7 +413,7 @@
         "Text": {
           "size_choice": "Small",
           "anchor_horizontal": "Left",
-          "color_choice": "Magenta",
+          "color_choice": "BlueRed",
           "texts": [
             {
               "content": "xodflox",
@@ -620,7 +559,7 @@
         "Text": {
           "size_choice": "Large",
           "anchor_horizontal": "Right",
-          "color_choice": "Magenta",
+          "color_choice": "BlueRed",
           "texts": [
             {
               "content": "oxacoxocaxo\nox=c-+-c=xo\noxacoxocaxo",

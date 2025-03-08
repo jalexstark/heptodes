@@ -51,5 +51,5 @@ fn test_svg_simple() {
  transform="matrix(1, 0, 0, 1, -15, -25)"/>
 </svg>"#;
 
-   svg_golden.writeln_as_bytes(&in_text);
+   svg_golden.writeln_as_bytes(in_text);
 }
