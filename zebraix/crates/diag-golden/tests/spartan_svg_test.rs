@@ -1676,8 +1676,8 @@ fn spartan_sizing_r_test() {
 
    let sizing = TestSizing {
       sizing_scheme: SizingScheme::SquareCenter,
-      canvas_size: [400.0, 350.0],
-      axes_range: vec![-4.5, -3.5, 1.5, 2.5],
+      canvas_size: [600.0, 350.0],
+      axes_range: vec![-4.5, -3.5, 7.5, 4.5],
       padding: vec![0.05],
       axes_spec: AxesSpec {
          axes_style: AxesStyle::Box,
@@ -1694,12 +1694,45 @@ fn spartan_sizing_r_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    {
-      let shift_x = 0.0;
-      let shift_y = 1.0;
+      let shift_x = -3.0;
+      let shift_y = -2.0;
+      let h = 0.005;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, -0.5 + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -0.5 + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            points_num_segments: 12,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = -2.0;
+      let shift_y = -1.0;
+      let h = 0.5;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
             r: t_range,
             ..Default::default()
          },
@@ -1758,12 +1791,13 @@ fn spartan_sizing_r_test() {
    }
 
    {
-      let shift_x = -2.0;
-      let shift_y = -1.0;
+      let shift_x = 0.0;
+      let shift_y = 1.0;
+      let h = 4.0 / 3.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, 1.0 / 3.0 + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, 1.0 / 3.0 + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
             r: t_range,
             ..Default::default()
          },
@@ -1788,12 +1822,142 @@ fn spartan_sizing_r_test() {
    }
 
    {
-      let shift_x = -3.0;
-      let shift_y = -2.0;
+      let shift_x = 1.0;
+      let shift_y = 2.0;
+      let h = 3.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, 2.0 + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, 2.0 + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   //
+
+   {
+      let shift_x = 2.0;
+      let shift_y = -2.0;
+      let h = 0.005;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            points_num_segments: 12,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = 3.0;
+      let shift_y = -1.0;
+      let h = 1.0 / 3.0;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            points_num_segments: 12,
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let h = 2.0 / 3.0;
+
+      let shift_x = 4.0;
+      let shift_y = 0.0;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            r: t_range,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+
+      managed_curve.raise_to_symmetric_range().unwrap();
+      managed_curve.raise_to_regularized_symmetric().unwrap();
+      managed_curve.raise_to_offset_odd_even().unwrap();
+
+      draw_sample_rat_quad(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Circle,
+            control_color: Some(ColorChoice::YellowBrown),
+            ..Default::default()
+         },
+      );
+   }
+
+   {
+      let shift_x = 5.0;
+      let shift_y = 1.0;
+      let h = 1.0;
+      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+         &FourPointRatQuad {
+            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
             r: t_range,
             ..Default::default()
          },
@@ -2220,7 +2384,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(1.0),
+            angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
          },
@@ -2255,7 +2419,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(1.0),
+            angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
          },
@@ -2290,7 +2454,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(1.0),
+            angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
          },
@@ -2325,7 +2489,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(1.0),
+            angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
          },
@@ -2360,7 +2524,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(0.1),
+            angle: ZebraixAngle::Quadrant(0.05),
             r: t_range,
             ..Default::default()
          },
@@ -2394,7 +2558,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(1.0),
+            angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
          },
@@ -2428,7 +2592,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(1.5),
+            angle: ZebraixAngle::Quadrant(0.75),
             r: t_range,
             ..Default::default()
          },
@@ -2462,7 +2626,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(2.5),
+            angle: ZebraixAngle::Quadrant(1.25),
             r: t_range,
             ..Default::default()
          },
@@ -2496,7 +2660,7 @@ fn spartan_sizing_u_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::Quadrant(3.0),
+            angle: ZebraixAngle::Quadrant(1.5),
             r: t_range,
             ..Default::default()
          },
@@ -2545,13 +2709,13 @@ fn spartan_sizing_v_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let p_d = [1.2, 0.4];
+   let p_d = [1.5, 0.5];
    let p_a = [0.0, 3.0];
    let p_z = [0.0, -3.0];
 
    let t = 1.0 / 2.0;
-   let alpha = t * (1.0 + t * t);
-   let beta = (1.0 + t * t) / t;
+   let alpha = t;
+   let beta = 1.0 / t;
 
    let f = 1.0 / (alpha + beta);
    let p_m = [
@@ -2575,7 +2739,7 @@ fn spartan_sizing_v_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::TanHalf(t),
+            angle: ZebraixAngle::Radians(t.atan()),
             r: t_range,
             ..Default::default()
          },
@@ -2614,7 +2778,7 @@ fn spartan_sizing_v_test() {
             state: RatQuadState::ThreePointAngle,
             b: x,
             c: y,
-            angle: ZebraixAngle::TanHalf(1.0 / t),
+            angle: ZebraixAngle::Radians((1.0 / t).atan()),
             r: t_range,
             ..Default::default()
          },
@@ -2638,7 +2802,7 @@ fn spartan_sizing_v_test() {
    }
 
    {
-      let g = -2.0 / 3.0 * (1.0 + t * t);
+      let g = -2.0 / 3.0;
       let (x, y) = translate_4_simply(
          rotate_4_simply(
             (
@@ -2671,4 +2835,443 @@ fn spartan_sizing_v_test() {
    }
 
    run_json_svg("spartan_sizing_v", &mut cairo_spartan);
+}
+
+// Closed polyline test.
+#[test]
+fn spartan_sizing_w_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-1.0, 11.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [400.0, 350.0],
+      axes_range: vec![-4.5, -3.5, 2.5, 3.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [1.0, 1.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   {
+      let managed_curve = ManagedCubic::create_from_control_points(
+         &CubiLinear {
+            r: t_range,
+            x: [0.0, 1.0, -1.0, 0.0],
+            y: [2.0, 0.0, 0.0, -2.0],
+            sigma: 1.0,
+            ..Default::default()
+         },
+         cairo_spartan.spartan.prep.axes_range,
+      );
+      draw_sample_cubilinear(
+         &managed_curve,
+         &mut cairo_spartan.spartan,
+         &SampleCurveConfig {
+            main_color: Some(ColorChoice::Green),
+            points_color: Some(ColorChoice::Blue),
+            points_choice: PointChoice::Dot,
+            ..Default::default()
+         },
+      );
+   }
+
+   run_json_svg("spartan_sizing_w", &mut cairo_spartan);
+}
+
+// Mid-range tangent.
+#[test]
+fn spartan_sizing_x_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-3.0, 3.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [600.0, 350.0],
+      axes_range: vec![-3.2, -3.5, 9.8, 3.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [6.0, 100.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   {
+      let c_x = 2.0;
+      let a_x = -0.2;
+      let a_y = 1.0;
+      let b_x = 1.2;
+      let b_y = 2.4;
+      let shift = [0.0, 0.0];
+      {
+         let (x, y) = translate_4_simply(
+            ([-c_x + a_x, -c_x - a_x, c_x - b_x, c_x + b_x], [a_y, -a_y, -b_y, b_y]),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve,
+            &mut cairo_spartan.spartan,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Green),
+               points_color: Some(ColorChoice::Blue),
+               points_choice: PointChoice::Circle,
+               control_color: Some(ColorChoice::YellowBrown),
+               control_point_choices: [PointChoice::Circle, PointChoice::Plus],
+               points_num_segments: 2,
+               ..Default::default()
+            },
+         );
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Ordinary,
+               color_choice: ColorChoice::Red,
+               start: vec![[0.5 * (a_x + b_x), 0.5 * (a_y + b_y)]],
+               end: vec![[-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)]],
+               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Light,
+               start: vec![[-c_x + a_x, a_y], [-c_x - a_x, -a_y]],
+               end: vec![[c_x + b_x, b_y], [c_x - b_x, -b_y]],
+               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Ordinary,
+               color_choice: ColorChoice::Blue,
+               start: vec![[-c_x, 0.0]],
+               end: vec![[c_x, 0.0]],
+               offsets: Some(vec![
+                  [0.0 + shift[0], 0.0 + shift[1]],
+                  [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
+               ]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+   }
+
+   {
+      let c_x = 2.0;
+      let a_x = -0.2;
+      let a_y = 1.0;
+      let b_x = 1.2;
+      let b_y = 2.4;
+      let shift = [6.0, 0.0];
+      {
+         let (x, y) = translate_4_simply(
+            ([-c_x + a_x, -c_x - a_x, c_x - b_x, c_x + b_x], [a_y, -a_y, -b_y, b_y]),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve,
+            &mut cairo_spartan.spartan,
+            &SampleCurveConfig {
+               main_color: None,
+               points_color: Some(ColorChoice::Red),
+               points_num_segments: 2,
+               control_color: Some(ColorChoice::YellowBrown),
+               control_point_choices: [PointChoice::Circle, PointChoice::Plus],
+               ..Default::default()
+            },
+         );
+      }
+      {
+         let (x, y) = translate_4_simply(
+            (
+               [-c_x + a_x, -c_x - a_x, c_x - 0.0 * b_x, c_x + 0.0 * b_x],
+               [a_y, -a_y, -0.0 * b_y, 0.0 * b_y],
+            ),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve,
+            &mut cairo_spartan.spartan,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Green),
+               points_color: Some(ColorChoice::Green),
+               points_num_segments: 2,
+               ..Default::default()
+            },
+         );
+      }
+      {
+         let (x, y) = translate_4_simply(
+            (
+               [-c_x + 0.0 * a_x, -c_x - 0.0 * a_x, c_x - b_x, c_x + b_x],
+               [0.0 * a_y, -0.0 * a_y, -b_y, b_y],
+            ),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve,
+            &mut cairo_spartan.spartan,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Blue),
+               points_color: Some(ColorChoice::Blue),
+               points_num_segments: 2,
+               ..Default::default()
+            },
+         );
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Ordinary,
+               color_choice: ColorChoice::Red,
+               start: vec![[-c_x, 0.0]],
+               end: vec![[c_x, 0.0]],
+               offsets: Some(vec![
+                  [0.0 + shift[0], 0.0 + shift[1]],
+                  // [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
+               ]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+   }
+
+   run_json_svg("spartan_sizing_x", &mut cairo_spartan);
+}
+
+// Mid-range tangent.
+#[test]
+fn spartan_sizing_y_test() {
+   // let t_range = [-1.0, 1.0];
+   let t_range = [-3.0, 3.0];
+
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [600.0, 350.0],
+      axes_range: vec![-3.2, -3.5, 9.8, 3.5],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Box,
+         grid_interval: [6.0, 100.0],
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+
+   {
+      let c_x = 2.0;
+      let a_x = -0.2;
+      let a_y = 1.0;
+      let b_x = -1.2;
+      let b_y = -2.4;
+      let shift = [0.0, 0.0];
+      {
+         let (x, y) = translate_4_simply(
+            ([-c_x + a_x, -c_x - a_x, c_x - b_x, c_x + b_x], [a_y, -a_y, -b_y, b_y]),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve,
+            &mut cairo_spartan.spartan,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Green),
+               points_color: Some(ColorChoice::Blue),
+               points_choice: PointChoice::Circle,
+               control_color: Some(ColorChoice::YellowBrown),
+               control_point_choices: [PointChoice::Circle, PointChoice::Plus],
+               points_num_segments: 2,
+               ..Default::default()
+            },
+         );
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Ordinary,
+               color_choice: ColorChoice::Red,
+               start: vec![[0.5 * (a_x + b_x), 0.5 * (a_y + b_y)]],
+               end: vec![[-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)]],
+               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Light,
+               start: vec![[-c_x + a_x, a_y], [-c_x - a_x, -a_y]],
+               end: vec![[c_x + b_x, b_y], [c_x - b_x, -b_y]],
+               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Ordinary,
+               color_choice: ColorChoice::Blue,
+               start: vec![[-c_x, 0.0]],
+               end: vec![[c_x, 0.0]],
+               offsets: Some(vec![
+                  [0.0 + shift[0], 0.0 + shift[1]],
+                  [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
+               ]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+   }
+
+   {
+      let c_x = 1.0;
+      let c_y = 0.75;
+      let a_x = -1.0;
+      let a_y = c_y;
+      let b_x = 1.0;
+      let b_y = -c_y;
+      let shift = [6.0, 0.0];
+      {
+         let (x, y) = translate_4_simply(
+            (
+               [-c_x + a_x, -c_x - a_x, c_x - b_x, c_x + b_x],
+               [-c_y + a_y, -c_y - a_y, c_y - b_y, c_y + b_y],
+            ),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve,
+            &mut cairo_spartan.spartan,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Green),
+               points_color: Some(ColorChoice::Blue),
+               points_choice: PointChoice::Circle,
+               control_color: Some(ColorChoice::YellowBrown),
+               control_point_choices: [PointChoice::Circle, PointChoice::Plus],
+               points_num_segments: 2,
+               ..Default::default()
+            },
+         );
+      }
+      {
+         let qualified_drawable = QualifiedDrawable {
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               line_choice: LineChoice::Ordinary,
+               color_choice: ColorChoice::Red,
+               start: vec![[0.5 * (a_x + b_x), 0.5 * (a_y + b_y)]],
+               end: vec![[-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)]],
+               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               ..Default::default()
+            }),
+            ..Default::default()
+         };
+         cairo_spartan.spartan.drawables.push(qualified_drawable);
+      }
+      // {
+      //    let qualified_drawable = QualifiedDrawable {
+      //       drawable: OneOfDrawable::Lines(LinesDrawable {
+      //          line_choice: LineChoice::Light,
+      //          start: vec![[-c_x + a_x, a_y], [-c_x - a_x, -a_y]],
+      //          end: vec![[c_x + b_x, b_y], [c_x - b_x, -b_y]],
+      //          offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+      //          ..Default::default()
+      //       }),
+      //       ..Default::default()
+      //    };
+      //    cairo_spartan.spartan.drawables.push(qualified_drawable);
+      // }
+      // {
+      //    let qualified_drawable = QualifiedDrawable {
+      //       drawable: OneOfDrawable::Lines(LinesDrawable {
+      //          line_choice: LineChoice::Ordinary,
+      //          color_choice: ColorChoice::Blue,
+      //          start: vec![[-c_x, 0.0]],
+      //          end: vec![[c_x, 0.0]],
+      //          offsets: Some(vec![
+      //             [0.0 + shift[0], 0.0 + shift[1]],
+      //             [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
+      //          ]),
+      //          ..Default::default()
+      //       }),
+      //       ..Default::default()
+      //    };
+      //    cairo_spartan.spartan.drawables.push(qualified_drawable);
+      // }
+   }
+
+   run_json_svg("spartan_sizing_y", &mut cairo_spartan);
 }

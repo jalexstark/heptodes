@@ -1633,11 +1633,11 @@ impl ZebraixAngle {
    // strangeness as regards interpretation of angles (such as subtracting 2 pi from angle.
    #[inline]
    #[must_use]
-   pub fn cos_half(&self) -> f64 {
+   pub fn cos(&self) -> f64 {
       match self {
-         Self::Quadrant(_) => (0.5 * self.in_radians()).cos(),
-         Self::Radians(r) => (0.5 * r).cos(),
-         Self::TanHalf(t) => 1.0 / (1.0 + t * t).sqrt(),
+         Self::Quadrant(_) => self.in_radians().cos(),
+         Self::Radians(r) => r.cos(),
+         Self::TanHalf(t) => (1.0 - t * t) / (1.0 + t * t),
       }
    }
 }
@@ -2052,7 +2052,7 @@ impl ManagedRatQuad {
       assert!(three_point_rat_quad.state == RatQuadState::ThreePointAngle);
       let xs = &three_point_rat_quad.b;
       let ys = &three_point_rat_quad.c;
-      let f_mult_1p5 = three_point_rat_quad.angle.cos_half();
+      let f_mult_1p5 = three_point_rat_quad.angle.cos();
       // Can construct as four-point rat quad with these values.
       // let x = [xs[0], f * xs[1] + (1.0 - f) * xs[0], f * xs[1] + (1.0 - f) * xs[2], xs[2]];
       // let y = [ys[0], f * ys[1] + (1.0 - f) * ys[0], f * ys[1] + (1.0 - f) * ys[2], ys[2]];
