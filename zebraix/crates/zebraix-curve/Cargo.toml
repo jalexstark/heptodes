@@ -1,0 +1,41 @@
+[package]
+name = "zvx-simples"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/jalexstark/heptodes"
+description = "Curve handling for Zebraix"
+keywords = ["svg", "test"]
+documentation = "https://docs.rs/zvx-simples"
+repository = "https://github.com/jalexstark/heptodes/tree/main/zebraix/crates/zvx-simples"
+readme = "README.md"
+license = "MIT"
+categories = ["graphics","development-tools::testing"]
+
+# [[test]]
+# name = "z-graph-test-of-testing"
+# path = "src/test-of-testing.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_default = "0.2"
+serde_json = "1.0"
+zvx-golden =  { path = "../zvx-golden" , version="0.1"}
+zvx-drawable =  { path = "../zvx-drawable" , version="0.1"}
+# json5 = "0.4"
+# goldenfile = "1.8"
+# regex = "1.11"
+# derive_builder = "0.20"
+# testdir = "0.9"
+
+[dev-dependencies]
+pangocairo = "0.20"
+# goldenfile should be here, but Rust has bugs with test-only config.
+# zvx-golden = { path = "../zvx-golden" }
+
+[dev-dependencies.cairo-rs]
+version =  "0.20"
+features = ["svg", "v1_16"]
+
+[dependencies.pango]
+version =  "0.20"
+features = ["v1_44"]
