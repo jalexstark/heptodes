@@ -23,7 +23,7 @@ use zvx_drawable::choices::TextAnchorHorizontal;
 use zvx_drawable::choices::TextAnchorVertical;
 use zvx_drawable::choices::TextOffsetChoice;
 use zvx_drawable::choices::TextSizeChoice;
-use crate::diagram::SpartanDiagram;
+use zvx_docagram::diagram::SpartanDiagram;
 use zvx_drawable::kinds::ArcDrawable;
 use zvx_drawable::kinds::CirclesDrawable;
 use zvx_drawable::kinds::CubicDrawable;

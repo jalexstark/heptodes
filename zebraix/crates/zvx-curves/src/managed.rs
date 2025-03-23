@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::simple::BaseRatQuad;
-use crate::simple::CubiLinear;
-use crate::simple::CubicForm;
-use crate::simple::FourPointRatQuad;
-use crate::simple::RatQuadState;
-use crate::simple::SpecifiedRatQuad;
+use crate::base::BaseRatQuad;
+use crate::base::CubiLinear;
+use crate::base::CubicForm;
+use crate::base::FourPointRatQuad;
+use crate::base::RatQuadState;
+use crate::base::SpecifiedRatQuad;
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 

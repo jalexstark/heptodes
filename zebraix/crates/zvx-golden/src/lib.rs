@@ -60,12 +60,9 @@
 //! update the checked-in versions, run:
 //! ```sh
 //! UPDATE_GOLDENFILES=1 cargo test
-//! ```
+//!     ```
 
-pub mod axes;
-pub mod diagram;
 pub mod filtered;
-pub mod render;
 
 use std::io;
 use std::path::Path;
@@ -76,24 +73,4 @@ fn check_panic_with_path<T>(result: Result<T, io::Error>, messaging: &str, path:
       Ok(result) => result,
       Err(error) => panic!("Error while {messaging} for file path {path:?}: {error:?}"),
    }
-}
-
-#[inline]
-pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
-   t == &T::default()
-}
-
-#[must_use]
-fn is_near_float(v: f64, w: f64) -> bool {
-   (v - w).abs() < 0.0001
-}
-
-#[must_use]
-pub const fn default_unit_f64() -> f64 {
-   1.0
-}
-#[allow(clippy::trivially_copy_pass_by_ref)]
-#[must_use]
-pub fn is_default_unit_f64(v: &f64) -> bool {
-   is_near_float(*v, default_unit_f64())
 }

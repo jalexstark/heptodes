@@ -1,0 +1,18 @@
+[package]
+name = "zvx-docagram"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/jalexstark/heptodes"
+description = "Diagramming docagram test"
+keywords = ["svg", "test"]
+documentation = "https://docs.rs/zvx-docagram"
+repository = "https://github.com/jalexstark/heptodes/tree/main/zebraix/crates/zvx-docagram"
+readme = "README.md"
+license = "MIT"
+categories = ["graphics", "development-tools::testing"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_default = "0.2"
+zvx-base =  { path = "../zvx-base", version = "0.1" }
+zvx-drawable =  { path = "../zvx-drawable", version = "0.1" }

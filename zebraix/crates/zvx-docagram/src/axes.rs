@@ -26,7 +26,7 @@ use zvx_drawable::kinds::PolylineDrawable;
 use zvx_drawable::kinds::QualifiedDrawable;
 use zvx_drawable::kinds::TextDrawable;
 use zvx_drawable::kinds::TextSingle;
-use crate::is_default;
+use zvx_base::is_default;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 

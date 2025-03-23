@@ -19,7 +19,7 @@ use crate::choices::PointChoice;
 use crate::choices::TextAnchorChoice;
 use crate::choices::TextOffsetChoice;
 use crate::choices::TextSizeChoice;
-use crate::is_default;
+use zvx_base::is_default;
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 

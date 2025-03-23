@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::is_default;
-use zvx_golden::default_unit_f64;
-use zvx_golden::is_default_unit_f64;
+use zvx_base::is_default;
+use zvx_base::default_unit_f64;
+use zvx_base::is_default_unit_f64;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 

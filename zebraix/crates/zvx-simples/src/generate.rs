@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::managed::ManagedCubic;
-use crate::managed::ManagedRatQuad;
-use crate::simple::BaseRatQuad;
-use crate::simple::RatQuadOoeSubtype;
-use crate::simple::RatQuadState;
-use crate::simple::SpecifiedRatQuad;
+use serde::{Deserialize, Serialize};
+use zvx_curves::base::BaseRatQuad;
+use zvx_curves::base::RatQuadOoeSubtype;
+use zvx_curves::base::RatQuadState;
+use zvx_curves::base::SpecifiedRatQuad;
+use zvx_curves::managed::ManagedCubic;
+use zvx_curves::managed::ManagedRatQuad;
+use zvx_docagram::diagram::SpartanDiagram;
 use zvx_drawable::choices::ColorChoice;
 use zvx_drawable::choices::LineChoice;
 use zvx_drawable::choices::PointChoice;
-use zvx_golden::diagram::SpartanDiagram;
 use zvx_drawable::kinds::ArcDrawable;
 use zvx_drawable::kinds::CubicDrawable;
 use zvx_drawable::kinds::LinesDrawable;
@@ -29,7 +30,6 @@ use zvx_drawable::kinds::OneOfDrawable;
 use zvx_drawable::kinds::PointsDrawable;
 use zvx_drawable::kinds::PolylineDrawable;
 use zvx_drawable::kinds::QualifiedDrawable;
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum SampleOption {

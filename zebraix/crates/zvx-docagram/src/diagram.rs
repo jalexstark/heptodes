@@ -16,7 +16,7 @@ use zvx_drawable::choices::CanvasLayout;
 use zvx_drawable::choices::ColorChoice;
 use zvx_drawable::choices::DiagramChoices;
 use zvx_drawable::kinds::QualifiedDrawable;
-use crate::is_default;
+use zvx_base::is_default;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 

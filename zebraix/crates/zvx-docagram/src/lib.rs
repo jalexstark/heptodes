@@ -12,11 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod etcetc;
-pub mod managed;
-pub mod simple;
-
-#[inline]
-pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
-   t == &T::default()
-}
+pub mod axes;
+pub mod diagram;
