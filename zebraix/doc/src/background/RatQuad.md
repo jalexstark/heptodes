@@ -18,7 +18,7 @@ as in figure captions.
 
 --------------------------------------------------------------------------------
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 ---
 title: Rational Quadratic Splines and Bézier Splines
@@ -27,7 +27,7 @@ author:
 date: 2003--2022
 ...
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 # Task
 
@@ -124,7 +124,7 @@ $$
 For RQSs, we use a three-point expression along with three weights ($w_A$,
 $w_B$, $w_C$). The path and its derivative are
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 $$
 f(t) = \frac{%
@@ -142,7 +142,7 @@ f'(t) = \frac{%
 }\label{Eq04}
 $$
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 There is redundancy in the weights: they can be multiplied by an arbitrary
 scaling factor.
@@ -156,7 +156,7 @@ curve is a parabole, and thus is both a cubic spline and a RQS. The next is an
 elliptical RQS, and one that is like a quadrant in that it is the affine
 transformation of a circle quadrant. Finally, in the bottom-right the curve is
 also an elliptical arc, this one with a flatter
-shape\label{figA}.](figs/RatQuad-A.svg)
+shape\label{figA}.](figs-ratquad/RatQuad-A.svg)
 
 The gradients at the end points are useful for interpreting the specifications.
 
@@ -325,7 +325,7 @@ paragraph break in captions.) The two lower curves are quarter-ellipses. The
 left can be considered a stretched square, with the control points stretched in
 like manner. The right has equal path velocities at either end, as might be
 chosen if a fairly even spacing of points were
-desired\label{figB}.](figs/RatQuad-B.svg)
+desired\label{figB}.](figs-ratquad/RatQuad-B.svg)
 
 Some bilinear transformations are illustrated\text{ (see figure \ref{figB}).} In
 each case points along the paths are shown, for even distribution of $t$. If we
@@ -361,7 +361,7 @@ formulae for sine and cosine. If we extend the range of tan half angles to
 $[-1,1]$, we get a semicircle. RQS paths require a parameter in the range
 $[0,1]$, but we can obtain the wider range by simple scale and offset. The
 corresponding control points are shown for the right
-curve\label{figD}.](figs/RatQuad-D.svg)
+curve\label{figD}.](figs-ratquad/RatQuad-D.svg)
 
 A RQS can be used to generate a quarter circle if it is formulated in terms of
 tan half angles. That is, we can write
@@ -389,7 +389,7 @@ We can also extend the curve to a semicircle. If we do this by extending the
 tan-half-angle range to $[-1,1]$, we can keep $t$ to its RQS range by using
 $2t-1$.
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 $$
 f_S(t) = \begin{bmatrix}
@@ -405,7 +405,7 @@ f_S(t) = \begin{bmatrix}
 \end{bmatrix} \label{Eq35}
 $$
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 While we can write a quarter-circle RQS in terms of $p_m$, this is not possible
 for a semiscircle RQS, since there is no intersection. Nonetheless, we can get
@@ -424,7 +424,7 @@ $$
 ![A general view of a circular arc, paramaterized by the radius and tan of the
 half angle. The triangle that contains the RQS is drawn separately to show the
 side lengths and relative location of $p_1$ and
-$p_2$\label{figE}.](figs/RatQuad-E.svg)
+$p_2$\label{figE}.](figs-ratquad/RatQuad-E.svg)
 
 In like manner to the semicircle we can create a symmetric circular arc RQS as
 illustrated\text{ (see figure \ref{figE})}. Let$\delta$ be the tangent of half
@@ -506,7 +506,7 @@ characterization.
 transformation (top-middle). The top-right drawing shows an alternative pair of
 locations for the control points based on the a-b-c formulae in the text. The
 bottom row shows a similar set of RQSs, but for a quarter
-ellipse\label{figF}.](figs/RatQuad-F.svg)
+ellipse\label{figF}.](figs-ratquad/RatQuad-F.svg)
 
 Let
 
@@ -754,7 +754,7 @@ parabola.
 ![Creating an elliptical arc by affine transformation of a circular arc. The
 centre is transformed to $p_a$, the point $(1,0)$ is transformed to $p_a+p_s$,
 and the point $(0,1)$ is transformed to
-$p_a+p_s$\label{figG}.](figs/RatQuad-G.svg)
+$p_a+p_s$\label{figG}.](figs-ratquad/RatQuad-G.svg)
 
 The overall flow of the conversion from RQS to ellipse arc is as follows.
 
@@ -872,7 +872,7 @@ $$
 is smaller than a threshold, we reject. This is not identifiably of any
 particular type of conic section, a matter we will address shortly.
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 --------------------------------------------------------------------------------
 Arc type                           Angle range                         $\beta$       $\rho$         $\alpha$
@@ -894,7 +894,7 @@ scaling becomes, in the limit, a parabola.  The range of $t$ is $[-1/2,1/2]$.
 Outside of these ranges the curve is a hyperbola.  Zebraix does not support
 these.\label{tabH}
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 Otherwise, that is if the value\text{ in equation \ref{Eq85}} is above the
 threshold, then $\rho$ is well-determined. We then need to consider $\alpha$ and
@@ -1045,7 +1045,7 @@ purposes such as the rounded corners of a parallelogram. The drawing shows such
 a parallelogram (top) along with a breakdown highlighting the corners. This
 illustrates how the mid-point with respect to $t$, that is $t=1/2$ within the
 range $[0,1]$, divides the corner RQS at its logical mid-point. This is where
-the parallelogram diagonal intersects the RQS\label{figI}.](figs/RatQuad-I.svg)
+the parallelogram diagonal intersects the RQS\label{figI}.](figs-ratquad/RatQuad-I.svg)
 
 ## Convenience features of intersection-angle scheme
 
@@ -1078,13 +1078,13 @@ themselves most readily to parallel spacing. All vertegrams should have
 continuous attachments, all the way around, including sharp or rounded corners.
 Vertegrams have four sides, which are intended for parallel attachment.
 Vertegrams must support both styles of attachment, even if much better suited to
-one versus the other\label{figJ}.](figs/RatQuad-J.svg)
+one versus the other\label{figJ}.](figs-ratquad/RatQuad-J.svg)
 
 ![Attachment points, whether parallel or angular, are parameterized
 counter-clockwise from the mid-line of each
-side\label{figK}.](figs/RatQuad-K.svg)
+side\label{figK}.](figs-ratquad/RatQuad-K.svg)
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 ------------------------------------------------------------------------------------------------------
 Vertegram face style             $\tau=$                                 $\tau=$
@@ -1105,7 +1105,7 @@ tan-half-angle.  Zebraix may also support face attachment like *sin-tan-half*,
 which in essence converts an angular vertegram approach to even parallel
 spacing\label{tabL}.
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 Zebraix calls the basic vertex drawable entitly a *vertegram*. A vertegram takes
 the form of a circle, box, logic gate or network node, and has a flow direction.
