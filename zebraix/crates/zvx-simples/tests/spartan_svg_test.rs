@@ -28,7 +28,6 @@ use zvx_docagram::axes::AxisNumbering;
 use zvx_docagram::diagram::SizingScheme;
 use zvx_drawable::choices::ColorChoice;
 use zvx_drawable::choices::LineChoice;
-use zvx_drawable::choices::LineClosureChoice;
 use zvx_drawable::choices::PointChoice;
 use zvx_drawable::choices::TextAnchorChoice;
 use zvx_drawable::choices::TextAnchorHorizontal;
@@ -36,6 +35,7 @@ use zvx_drawable::choices::TextAnchorVertical;
 use zvx_drawable::choices::TextOffsetChoice;
 use zvx_drawable::choices::TextSizeChoice;
 use zvx_drawable::kinds::CirclesDrawable;
+use zvx_drawable::kinds::LineClosureChoice;
 use zvx_drawable::kinds::LinesDrawable;
 use zvx_drawable::kinds::OneOfDrawable;
 use zvx_drawable::kinds::PointsDrawable;
@@ -98,8 +98,10 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
       let qualified_drawable = QualifiedDrawable {
          layer: pattern_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
-            start: vec![[sizing.debug_box[0], sizing.debug_box[1]]],
-            end: vec![[sizing.debug_box[0], sizing.debug_box[3]]],
+            coords: vec![(
+               [sizing.debug_box[0], sizing.debug_box[1]],
+               [sizing.debug_box[0], sizing.debug_box[3]],
+            )],
             offsets: Some(vec![[0.0, 0.0], [sizing.debug_box[2] - sizing.debug_box[0], 0.0]]),
             ..Default::default()
          }),
@@ -113,13 +115,15 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
          layer: pattern_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
             line_choice: LineChoice::Light,
-            start: vec![
-               [sizing.debug_box[0], sizing.debug_box[3]],
-               [sizing.debug_box[2], sizing.debug_box[3]],
-            ],
-            end: vec![
-               [sizing.debug_box[2], sizing.debug_box[1]],
-               [sizing.debug_box[0], sizing.debug_box[1]],
+            coords: vec![
+               (
+                  [sizing.debug_box[0], sizing.debug_box[3]],
+                  [sizing.debug_box[2], sizing.debug_box[1]],
+               ),
+               (
+                  [sizing.debug_box[2], sizing.debug_box[3]],
+                  [sizing.debug_box[0], sizing.debug_box[1]],
+               ),
             ],
             offsets: Some(vec![[0.0, 0.0]]),
             ..Default::default()
@@ -139,6 +143,8 @@ fn run_json_svg(filestem: &str, cairo_spartan: &mut CairoSpartanCombo) {
       // json_golden.writeln_as_bytes(&serialized);
       let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", filestem);
       // This only really fails if keys cannot be rendered.
+      //
+      // Consider moving into golden test crate. This is only trigger for serde_json dependency.
       to_writer_pretty(&json_golden.out_stream, &cairo_spartan.spartan).unwrap();
       let bytes_amount_nl = json_golden.out_stream.write(b"\n").unwrap();
       assert!(bytes_amount_nl == 1);
@@ -351,8 +357,11 @@ fn spartan_sizing_i_test() {
       let qualified_drawable = QualifiedDrawable {
          layer: pattern_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
-            start: vec![[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
-            end: vec![[5.0, 5.0], [0.0, 5.0], [-2.5, 5.0]],
+            coords: vec![
+               ([0.0, 0.0], [5.0, 5.0]),
+               ([0.0, 0.0], [0.0, 5.0]),
+               ([0.0, 0.0], [-2.5, 5.0]),
+            ],
             offsets: None,
             ..Default::default()
          }),
@@ -366,8 +375,11 @@ fn spartan_sizing_i_test() {
          layer: pattern_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
             line_choice: LineChoice::Light,
-            start: vec![[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]],
-            end: vec![[5.0, -5.0], [0.0, -5.0], [-2.5, -5.0]],
+            coords: vec![
+               ([0.0, 0.0], [5.0, -5.0]),
+               ([0.0, 0.0], [0.0, -5.0]),
+               ([0.0, 0.0], [-2.5, -5.0]),
+            ],
             ..Default::default()
          }),
          ..Default::default()
@@ -933,7 +945,7 @@ fn spartan_sizing_l_test() {
       layer: drawable_layer,
       drawable: OneOfDrawable::Polyline(PolylineDrawable {
          color_choice: ColorChoice::Green,
-         line_closure_choice: LineClosureChoice::Closed,
+         line_closure_choice: LineClosureChoice::Closes,
          locations: vec![
             [-3.0, -2.0],
             [-2.0, -3.0],
@@ -2797,8 +2809,10 @@ fn spartan_sizing_x_test() {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Ordinary,
                color_choice: ColorChoice::Red,
-               start: vec![[0.5 * (a_x + b_x), 0.5 * (a_y + b_y)]],
-               end: vec![[-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)]],
+               coords: vec![(
+                  [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
+                  [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
+               )],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
                ..Default::default()
             }),
@@ -2810,8 +2824,10 @@ fn spartan_sizing_x_test() {
          let qualified_drawable = QualifiedDrawable {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Light,
-               start: vec![[-c_x + a_x, a_y], [-c_x - a_x, -a_y]],
-               end: vec![[c_x + b_x, b_y], [c_x - b_x, -b_y]],
+               coords: vec![
+                  ([-c_x + a_x, a_y], [c_x + b_x, b_y]),
+                  ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
+               ],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
                ..Default::default()
             }),
@@ -2824,8 +2840,7 @@ fn spartan_sizing_x_test() {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Ordinary,
                color_choice: ColorChoice::Blue,
-               start: vec![[-c_x, 0.0]],
-               end: vec![[c_x, 0.0]],
+               coords: vec![([-c_x, 0.0], [c_x, 0.0])],
                offsets: Some(vec![
                   [0.0 + shift[0], 0.0 + shift[1]],
                   [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
@@ -2921,8 +2936,7 @@ fn spartan_sizing_x_test() {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Ordinary,
                color_choice: ColorChoice::Red,
-               start: vec![[-c_x, 0.0]],
-               end: vec![[c_x, 0.0]],
+               coords: vec![([-c_x, 0.0], [c_x, 0.0])],
                offsets: Some(vec![
                   [0.0 + shift[0], 0.0 + shift[1]],
                   // [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
@@ -2999,8 +3013,10 @@ fn spartan_sizing_y_test() {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Ordinary,
                color_choice: ColorChoice::Red,
-               start: vec![[0.5 * (a_x + b_x), 0.5 * (a_y + b_y)]],
-               end: vec![[-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)]],
+               coords: vec![(
+                  [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
+                  [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
+               )],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
                ..Default::default()
             }),
@@ -3012,8 +3028,10 @@ fn spartan_sizing_y_test() {
          let qualified_drawable = QualifiedDrawable {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Light,
-               start: vec![[-c_x + a_x, a_y], [-c_x - a_x, -a_y]],
-               end: vec![[c_x + b_x, b_y], [c_x - b_x, -b_y]],
+               coords: vec![
+                  ([-c_x + a_x, a_y], [c_x + b_x, b_y]),
+                  ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
+               ],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
                ..Default::default()
             }),
@@ -3026,8 +3044,7 @@ fn spartan_sizing_y_test() {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Ordinary,
                color_choice: ColorChoice::Blue,
-               start: vec![[-c_x, 0.0]],
-               end: vec![[c_x, 0.0]],
+               coords: vec![([-c_x, 0.0], [c_x, 0.0])],
                offsets: Some(vec![
                   [0.0 + shift[0], 0.0 + shift[1]],
                   [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
@@ -3080,8 +3097,10 @@ fn spartan_sizing_y_test() {
             drawable: OneOfDrawable::Lines(LinesDrawable {
                line_choice: LineChoice::Ordinary,
                color_choice: ColorChoice::Red,
-               start: vec![[0.5 * (a_x + b_x), 0.5 * (a_y + b_y)]],
-               end: vec![[-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)]],
+               coords: vec![(
+                  [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
+                  [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
+               )],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
                ..Default::default()
             }),
@@ -3093,8 +3112,7 @@ fn spartan_sizing_y_test() {
       //    let qualified_drawable = QualifiedDrawable {
       //       drawable: OneOfDrawable::Lines(LinesDrawable {
       //          line_choice: LineChoice::Light,
-      //          start: vec![[-c_x + a_x, a_y], [-c_x - a_x, -a_y]],
-      //          end: vec![[c_x + b_x, b_y], [c_x - b_x, -b_y]],
+      //          coords: vec![([-c_x + a_x, a_y], [-c_x - a_x, -a_y], [c_x + b_x, b_y], [c_x - b_x, -b_y])],
       //          offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
       //          ..Default::default()
       //       }),
@@ -3107,8 +3125,7 @@ fn spartan_sizing_y_test() {
       //       drawable: OneOfDrawable::Lines(LinesDrawable {
       //          line_choice: LineChoice::Ordinary,
       //          color_choice: ColorChoice::Blue,
-      //          start: vec![[-c_x, 0.0]],
-      //          end: vec![[c_x, 0.0]],
+      //          coords: vec![([-c_x, 0.0],[c_x, 0.0])],
       //          offsets: Some(vec![
       //             [0.0 + shift[0], 0.0 + shift[1]],
       //             [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],

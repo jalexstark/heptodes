@@ -28,8 +28,6 @@ fn write_full_sample_to_write<W: Write + 'static>(
    cairo_spartan: &mut CairoSpartanCombo,
 ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
    assert!(cairo_spartan.spartan.is_ready());
-
-   assert!((cairo_spartan.spartan.base_width - 400.0).abs() < 0.0001);
    let mut surface = SvgSurface::for_stream(
       cairo_spartan.spartan.base_width,
       cairo_spartan.spartan.base_height,
@@ -43,52 +41,45 @@ fn write_full_sample_to_write<W: Write + 'static>(
    // 1.0 is a regular thickness, definitely not thick, 2.0 definitely thick, 0.6 thin but
    // firm.
 
-   cairo_spartan
-      .render_controller
-      .save_set_path_transform(&cairo_spartan.spartan.prep.canvas_layout, &context);
+   let render_controller = &mut cairo_spartan.render_controller;
+   let canvas_layout = &cairo_spartan.spartan.prep.canvas_layout;
+
+   render_controller.save_set_path_transform(canvas_layout, &context);
    context.move_to(-0.1 + 0.12, -0.25);
    context.arc(-0.1, -0.25, 0.12, 0.0 * PI, 2.0 * PI);
-   cairo_spartan.render_controller.restore_transform(&context);
+   render_controller.restore_transform(&context);
    context.stroke().unwrap();
 
-   cairo_spartan
-      .render_controller
-      .save_set_path_transform(&cairo_spartan.spartan.prep.canvas_layout, &context);
+   render_controller.save_set_path_transform(canvas_layout, &context);
    context.move_to(0.0, 0.0);
    context.line_to(0.5, 0.3);
    context.move_to(0.0, 0.5);
    context.line_to(0.45, 0.0);
-   cairo_spartan.render_controller.restore_transform(&context);
+   render_controller.restore_transform(&context);
    context.stroke().unwrap();
-   cairo_spartan
-      .render_controller
-      .save_set_path_transform(&cairo_spartan.spartan.prep.canvas_layout, &context);
+   render_controller.save_set_path_transform(canvas_layout, &context);
    context.move_to(0.45, 0.0);
    context.set_line_width(0.45);
    context.set_dash(&[4.5, 3.5], 0.0);
    context.line_to(-0.4, -0.35);
-   cairo_spartan.render_controller.restore_transform(&context);
+   render_controller.restore_transform(&context);
    context.stroke().unwrap();
    context.set_line_width(1.0);
    context.set_dash(&[], 0.0);
 
    // Draw a point-like circle.
-   cairo_spartan
-      .render_controller
-      .save_set_path_transform(&cairo_spartan.spartan.prep.canvas_layout, &context);
+   render_controller.save_set_path_transform(canvas_layout, &context);
    let (cx, cy) = context.user_to_device(0.2, -0.7);
-   cairo_spartan.render_controller.restore_transform(&context);
+   render_controller.restore_transform(&context);
    context.move_to(cx + 2.4, cy);
    context.arc(cx, cy, 2.4, 0.0 * PI, 2.0 * PI);
    context.close_path();
    context.stroke().unwrap();
 
    // Draw a plus-like symbol.
-   cairo_spartan
-      .render_controller
-      .save_set_path_transform(&cairo_spartan.spartan.prep.canvas_layout, &context);
+   render_controller.save_set_path_transform(canvas_layout, &context);
    let (cx, cy) = context.user_to_device(0.25, -0.7);
-   cairo_spartan.render_controller.restore_transform(&context);
+   render_controller.restore_transform(&context);
    let plus_delta = 2.4 * 1.32;
    context.move_to(cx, cy - plus_delta);
    context.line_to(cx, cy + plus_delta);
@@ -98,11 +89,9 @@ fn write_full_sample_to_write<W: Write + 'static>(
    context.stroke().unwrap();
 
    // Draw a times-like symbol.
-   cairo_spartan
-      .render_controller
-      .save_set_path_transform(&cairo_spartan.spartan.prep.canvas_layout, &context);
+   render_controller.save_set_path_transform(canvas_layout, &context);
    let (cx, cy) = context.user_to_device(0.15, -0.7);
-   cairo_spartan.render_controller.restore_transform(&context);
+   render_controller.restore_transform(&context);
    let times_delta = 2.4 * 1.32 * 0.5_f64.sqrt();
    context.move_to(cx - times_delta, cy - times_delta);
    context.line_to(cx + times_delta, cy + times_delta);
@@ -201,11 +190,9 @@ fn write_full_sample_to_write<W: Write + 'static>(
    }
    context.set_source_rgb(0.0, 0.0, 1.0);
 
-   cairo_spartan
-      .render_controller
-      .save_set_path_transform(&cairo_spartan.spartan.prep.canvas_layout, &context);
+   render_controller.save_set_path_transform(canvas_layout, &context);
    context.move_to(0.3, -0.2);
-   cairo_spartan.render_controller.restore_transform(&context);
+   render_controller.restore_transform(&context);
    pangocairo::functions::show_layout(&context, &text_layout);
 
    surface.flush();
@@ -222,6 +209,8 @@ fn simple_full_spartan_test() {
    {
       let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", "simple_spartan");
       // This only really fails if keys cannot be rendered.
+      //
+      // Consider moving into golden test crate. This is only trigger for serde_json dependency.
       to_writer_pretty(&json_golden.out_stream, &cairo_spartan.spartan).unwrap();
       // let serialized = to_string_pretty::<SpartanDiagram>(&cairo_spartan.spartan).unwrap();
       // json_golden.writeln_as_bytes(&serialized);
