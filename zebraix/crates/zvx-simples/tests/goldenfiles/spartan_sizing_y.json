@@ -1,0 +1,407 @@
+{
+  "sizing_scheme": "SquareCenter",
+  "base_width": 600.0,
+  "base_height": 350.0,
+  "axes_range": [
+    -3.2,
+    -3.5,
+    9.8,
+    3.5
+  ],
+  "padding": [
+    0.05
+  ],
+  "drawables": [
+    {
+      "drawable": {
+        "Polyline": {
+          "line_closure_choice": "Closed",
+          "locations": [
+            [
+              -3.2,
+              -3.5
+            ],
+            [
+              -3.2,
+              3.5
+            ],
+            [
+              9.8,
+              3.5
+            ],
+            [
+              9.8,
+              -3.5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              -3.2,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              9.8,
+              0.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              0.0,
+              -3.5
+            ]
+          ],
+          "end": [
+            [
+              0.0,
+              3.5
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Points": {
+          "color_choice": "YellowBrown",
+          "centers": [
+            [
+              -2.2,
+              1.0
+            ],
+            [
+              0.8,
+              -2.4
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Points": {
+          "point_choice": "Plus",
+          "color_choice": "YellowBrown",
+          "centers": [
+            [
+              -1.8,
+              -1.0
+            ],
+            [
+              3.2,
+              2.4
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "color_choice": "YellowBrown",
+          "start": [
+            [
+              -2.2,
+              1.0
+            ],
+            [
+              0.8,
+              -2.4
+            ]
+          ],
+          "end": [
+            [
+              -1.8,
+              -1.0
+            ],
+            [
+              3.2,
+              2.4
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 20,
+      "drawable": {
+        "Points": {
+          "color_choice": "Blue",
+          "centers": [
+            [
+              0.3499999999999998,
+              0.35000000000000003
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Cubic": {
+          "color_choice": "Green",
+          "x": [
+            -2.2,
+            -1.8,
+            3.2,
+            0.8
+          ],
+          "y": [
+            1.0,
+            -1.0,
+            2.4,
+            -2.4
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "color_choice": "Red",
+          "start": [
+            [
+              -0.7,
+              -0.7
+            ]
+          ],
+          "end": [
+            [
+              0.7,
+              0.7
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              -2.2,
+              1.0
+            ],
+            [
+              -1.8,
+              -1.0
+            ]
+          ],
+          "end": [
+            [
+              0.8,
+              -2.4
+            ],
+            [
+              3.2,
+              2.4
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "color_choice": "Blue",
+          "start": [
+            [
+              -2.0,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              2.0,
+              0.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.35,
+              0.35
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Points": {
+          "color_choice": "YellowBrown",
+          "centers": [
+            [
+              4.0,
+              0.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Points": {
+          "point_choice": "Plus",
+          "color_choice": "YellowBrown",
+          "centers": [
+            [
+              6.0,
+              -1.5
+            ],
+            [
+              6.0,
+              1.5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "color_choice": "YellowBrown",
+          "start": [
+            [
+              4.0,
+              0.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              6.0,
+              -1.5
+            ],
+            [
+              6.0,
+              1.5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 20,
+      "drawable": {
+        "Points": {
+          "color_choice": "Blue",
+          "centers": [
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Cubic": {
+          "color_choice": "Green",
+          "x": [
+            4.0,
+            6.0,
+            6.0,
+            8.0
+          ],
+          "y": [
+            0.0,
+            -1.5,
+            1.5,
+            0.0
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "color_choice": "Red",
+          "start": [
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              -0.0,
+              -0.0
+            ]
+          ],
+          "offsets": [
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

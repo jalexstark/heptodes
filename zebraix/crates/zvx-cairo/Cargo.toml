@@ -1,0 +1,28 @@
+[package]
+name = "zvx-cairo"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/jalexstark/heptodes"
+description = "Diagramming cairo test"
+keywords = ["svg", "test"]
+documentation = "https://docs.rs/zvx-cairo"
+repository = "https://github.com/jalexstark/heptodes/tree/main/zebraix/crates/zvx-cairo"
+readme = "README.md"
+license = "MIT"
+categories = ["graphics", "development-tools::testing"]
+
+[dependencies]
+pangocairo = "0.20"
+zvx-docagram =  { path = "../zvx-docagram", version = "0.1" }
+zvx-drawable =  { path = "../zvx-drawable", version = "0.1" }
+
+[package.metadata.cargo-machete]
+ignored = ["cairo-rs"]
+
+[dependencies.cairo-rs]
+version =  "0.20"
+features = ["svg", "v1_16"]
+
+[dependencies.pango]
+version =  "0.20"
+features = ["v1_44"]

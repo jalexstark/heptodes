@@ -1,0 +1,311 @@
+{
+  "sizing_scheme": "Fill",
+  "base_height": 350.0,
+  "axes_range": [
+    2.0
+  ],
+  "padding": [
+    0.09,
+    0.23
+  ],
+  "drawables": [
+    {
+      "drawable": {
+        "Lines": {
+          "start": [
+            [
+              0.0,
+              -2.0
+            ],
+            [
+              -2.0,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              -2.0,
+              0.0
+            ]
+          ],
+          "end": [
+            [
+              2.0,
+              0.0
+            ]
+          ],
+          "offsets": [
+            [
+              -0.0,
+              -0.75
+            ],
+            [
+              -0.0,
+              -1.5
+            ],
+            [
+              0.0,
+              0.75
+            ],
+            [
+              0.0,
+              1.5
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              0.0,
+              -2.0
+            ]
+          ],
+          "end": [
+            [
+              0.0,
+              2.0
+            ]
+          ],
+          "offsets": [
+            [
+              -0.4,
+              -0.0
+            ],
+            [
+              -0.8,
+              -0.0
+            ],
+            [
+              -1.2000000000000002,
+              -0.0
+            ],
+            [
+              -1.6,
+              -0.0
+            ],
+            [
+              -2.0,
+              -0.0
+            ],
+            [
+              0.4,
+              0.0
+            ],
+            [
+              0.8,
+              0.0
+            ],
+            [
+              1.2000000000000002,
+              0.0
+            ],
+            [
+              1.6,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Diagram",
+          "anchor_choice": {
+            "ThreeByThree": [
+              "Right",
+              "Top"
+            ]
+          },
+          "texts": [
+            {
+              "content": "-2.0",
+              "location": [
+                -2.0,
+                0.0
+              ]
+            },
+            {
+              "content": "2.0",
+              "location": [
+                2.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Text": {
+          "size_choice": "Small",
+          "offset_choice": "Diagram",
+          "anchor_choice": {
+            "ThreeByThree": [
+              "Right",
+              "Top"
+            ]
+          },
+          "texts": [
+            {
+              "content": "-1.50",
+              "location": [
+                0.0,
+                -1.5
+              ]
+            },
+            {
+              "content": "1.50",
+              "location": [
+                0.0,
+                1.5
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "start": [
+            [
+              -1.0,
+              -1.0
+            ]
+          ],
+          "end": [
+            [
+              -1.0,
+              1.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "drawable": {
+        "Lines": {
+          "line_choice": "Light",
+          "start": [
+            [
+              -1.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "end": [
+            [
+              1.0,
+              -1.0
+            ],
+            [
+              -1.0,
+              -1.0
+            ]
+          ],
+          "offsets": [
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Text": {
+          "size_choice": "Large",
+          "anchor_choice": {
+            "ThreeByThree": [
+              "Center",
+              "Bottom"
+            ]
+          },
+          "color_choice": "BrightBlue",
+          "texts": [
+            {
+              "content": "This is a title test",
+              "location": [
+                0.0,
+                -2.48
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
+        "Text": {
+          "anchor_choice": {
+            "ThreeByThree": [
+              "Center",
+              "Top"
+            ]
+          },
+          "color_choice": "BrightBlue",
+          "texts": [
+            {
+              "content": "This subtitle has the same anchor location",
+              "location": [
+                0.0,
+                -2.48
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

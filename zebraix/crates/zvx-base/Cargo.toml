@@ -1,0 +1,14 @@
+[package]
+name = "zvx-base"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/jalexstark/heptodes"
+description = "Diagramming base test"
+keywords = ["svg", "test"]
+documentation = "https://docs.rs/zvx-base"
+repository = "https://github.com/jalexstark/heptodes/tree/main/zebraix/crates/zvx-base"
+readme = "README.md"
+license = "MIT"
+categories = ["graphics", "development-tools::testing"]
+
+[dependencies]

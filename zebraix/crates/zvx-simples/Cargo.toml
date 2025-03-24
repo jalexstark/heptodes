@@ -1,0 +1,32 @@
+[package]
+name = "zvx-simples"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/jalexstark/heptodes"
+description = "Curve handling for Zebraix"
+keywords = ["svg", "test"]
+documentation = "https://docs.rs/zvx-simples"
+repository = "https://github.com/jalexstark/heptodes/tree/main/zebraix/crates/zvx-simples"
+readme = "README.md"
+license = "MIT"
+categories = ["graphics", "development-tools::testing"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+zvx-curves =  { path = "../zvx-curves", version = "0.1" }
+zvx-docagram =  { path = "../zvx-docagram", version = "0.1" }
+zvx-drawable =  { path = "../zvx-drawable", version = "0.1" }
+
+[dev-dependencies]
+pangocairo = "0.20"
+serde_json = "1.0"
+zvx-cairo =  { path = "../zvx-cairo", version = "0.1" }
+zvx-golden =  { path = "../zvx-golden", version = "0.1" }
+
+[dev-dependencies.cairo-rs]
+version =  "0.20"
+features = ["svg", "v1_16"]
+
+[dev-dependencies.pango]
+version =  "0.20"
+features = ["v1_44"]

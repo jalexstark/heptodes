@@ -1,0 +1,16 @@
+[package]
+name = "zvx-drawable"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/jalexstark/heptodes"
+description = "Zebraix curves"
+keywords = ["svg", "diagrams", "curves"]
+documentation = "https://docs.rs/zvx-drawable"
+repository = "https://github.com/jalexstark/heptodes/tree/main/zebraix/crates/zvx-drawable"
+readme = "README.md"
+license = "MIT"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_default = "0.2"
+zvx-base =  { path = "../zvx-base", version = "0.1" }
