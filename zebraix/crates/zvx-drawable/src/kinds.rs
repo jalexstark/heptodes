@@ -14,18 +14,30 @@
 
 use crate::choices::ColorChoice;
 use crate::choices::LineChoice;
-use crate::choices::LineClosureChoice;
+// use crate::choices::LineClosureChoice;
 use crate::choices::PointChoice;
 use crate::choices::TextAnchorChoice;
 use crate::choices::TextOffsetChoice;
 use crate::choices::TextSizeChoice;
-use zvx_base::is_default;
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
+use zvx_base::is_default;
 
-// Length of start and end must match.
-//
-// Probably refactor to make vector of pairs of coords.
+#[derive(Serialize, Debug, Default, PartialEq)]
+pub enum Continuation {
+   #[default]
+   Isolated,
+   Continues,
+}
+
+// Directions (horizontal, vertical) over which to offset anchoring.
+#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum LineClosureChoice {
+   #[default]
+   Open,
+   Closes,
+}
+
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct LinesDrawable {
    #[serde(skip_serializing_if = "is_default")]
@@ -33,9 +45,11 @@ pub struct LinesDrawable {
    #[serde(skip_serializing_if = "is_default")]
    pub color_choice: ColorChoice,
    #[serde(skip_serializing_if = "is_default")]
-   pub start: Vec<[f64; 2]>,
-   #[serde(skip_serializing_if = "is_default")]
-   pub end: Vec<[f64; 2]>,
+   pub coords: Vec<([f64; 2], [f64; 2])>,
+   // #[serde(skip_serializing_if = "is_default")]
+   // pub start: Vec<[f64; 2]>,
+   // #[serde(skip_serializing_if = "is_default")]
+   // pub end: Vec<[f64; 2]>,
    // If offsets is empty, draw single line with no offset.
    #[serde(skip_serializing_if = "is_default")]
    pub offsets: Option<Vec<[f64; 2]>>,

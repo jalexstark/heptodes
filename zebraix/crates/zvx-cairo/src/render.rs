@@ -12,28 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use zvx_drawable::choices::CanvasLayout;
-use zvx_drawable::choices::ColorChoice;
-use zvx_drawable::choices::DiagramChoices;
-use zvx_drawable::choices::LineChoice;
-use zvx_drawable::choices::LineClosureChoice;
-use zvx_drawable::choices::PointChoice;
-use zvx_drawable::choices::TextAnchorChoice;
-use zvx_drawable::choices::TextAnchorHorizontal;
-use zvx_drawable::choices::TextAnchorVertical;
-use zvx_drawable::choices::TextOffsetChoice;
-use zvx_drawable::choices::TextSizeChoice;
-use zvx_docagram::diagram::SpartanDiagram;
-use zvx_drawable::kinds::ArcDrawable;
-use zvx_drawable::kinds::CirclesDrawable;
-use zvx_drawable::kinds::CubicDrawable;
-use zvx_drawable::kinds::LinesDrawable;
-use zvx_drawable::kinds::OneOfDrawable;
-use zvx_drawable::kinds::PointsDrawable;
-use zvx_drawable::kinds::PolylineDrawable;
-use zvx_drawable::kinds::QualifiedDrawable;
-use zvx_drawable::kinds::TextDrawable;
-use zvx_drawable::kinds::TextSingle;
 use cairo::Context as CairoContext;
 use cairo::Matrix;
 use cairo::SvgSurface;
@@ -45,6 +23,28 @@ use pangocairo::functions::create_context as pangocairo_create_context;
 use pangocairo::functions::show_layout as pangocairo_show_layout;
 use std::f64::consts::PI;
 use std::io::Write;
+use zvx_docagram::diagram::SpartanDiagram;
+use zvx_drawable::choices::CanvasLayout;
+use zvx_drawable::choices::ColorChoice;
+use zvx_drawable::choices::DiagramChoices;
+use zvx_drawable::choices::LineChoice;
+use zvx_drawable::choices::PointChoice;
+use zvx_drawable::choices::TextAnchorChoice;
+use zvx_drawable::choices::TextAnchorHorizontal;
+use zvx_drawable::choices::TextAnchorVertical;
+use zvx_drawable::choices::TextOffsetChoice;
+use zvx_drawable::choices::TextSizeChoice;
+use zvx_drawable::kinds::ArcDrawable;
+use zvx_drawable::kinds::CirclesDrawable;
+use zvx_drawable::kinds::CubicDrawable;
+use zvx_drawable::kinds::LineClosureChoice;
+use zvx_drawable::kinds::LinesDrawable;
+use zvx_drawable::kinds::OneOfDrawable;
+use zvx_drawable::kinds::PointsDrawable;
+use zvx_drawable::kinds::PolylineDrawable;
+use zvx_drawable::kinds::QualifiedDrawable;
+use zvx_drawable::kinds::TextDrawable;
+use zvx_drawable::kinds::TextSingle;
 
 #[derive(Debug, Default)]
 #[allow(clippy::module_name_repetitions)]
@@ -108,16 +108,21 @@ impl CairoSpartanRender {
       self.set_color(context, diagram_choices, drawable.color_choice);
 
       self.save_set_path_transform(canvas_layout, context);
-      assert_eq!(drawable.start.len(), drawable.end.len());
-      for i in 0..drawable.start.len() {
+      for i in 0..drawable.coords.len() {
          if let Some(offset_vector) = &drawable.offsets {
             for offset in offset_vector {
-               context.move_to(drawable.start[i][0] + offset[0], drawable.start[i][1] + offset[1]);
-               context.line_to(drawable.end[i][0] + offset[0], drawable.end[i][1] + offset[1]);
+               context.move_to(
+                  drawable.coords[i].0[0] + offset[0],
+                  drawable.coords[i].0[1] + offset[1],
+               );
+               context.line_to(
+                  drawable.coords[i].1[0] + offset[0],
+                  drawable.coords[i].1[1] + offset[1],
+               );
             }
          } else {
-            context.move_to(drawable.start[i][0], drawable.start[i][1]);
-            context.line_to(drawable.end[i][0], drawable.end[i][1]);
+            context.move_to(drawable.coords[i].0[0], drawable.coords[i].0[1]);
+            context.line_to(drawable.coords[i].1[0], drawable.coords[i].1[1]);
          }
       }
       self.restore_transform(context);
@@ -370,7 +375,7 @@ impl CairoSpartanRender {
       for i in 1..drawable.locations.len() {
          context.line_to(drawable.locations[i][0], drawable.locations[i][1]);
       }
-      if drawable.line_closure_choice == LineClosureChoice::Closed {
+      if drawable.line_closure_choice == LineClosureChoice::Closes {
          context.close_path();
       }
       self.restore_transform(context);

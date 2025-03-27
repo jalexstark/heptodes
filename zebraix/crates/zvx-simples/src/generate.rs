@@ -137,13 +137,17 @@ pub fn draw_sample_rat_quad(
          vec![control_points_vec[0], control_points_vec[0]]
       };
 
+      assert_eq!(end_points_vec.len(), 2);
+      assert_eq!(expanded_control_points_vec.len(), 2);
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.control_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
             line_choice: curve_config.control_line_choice,
             color_choice,
-            start: end_points_vec,
-            end: expanded_control_points_vec,
+            coords: vec![
+               (end_points_vec[0], expanded_control_points_vec[0]),
+               (end_points_vec[1], expanded_control_points_vec[1]),
+            ],
             ..Default::default()
          }),
       });
@@ -319,13 +323,17 @@ pub fn draw_sample_cubilinear(
          }),
       });
 
+      assert_eq!(end_points_vec.len(), 2);
+      assert_eq!(control_points_vec.len(), 2);
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.control_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
             line_choice: curve_config.control_line_choice,
             color_choice,
-            start: end_points_vec,
-            end: control_points_vec,
+            coords: vec![
+               (end_points_vec[0], control_points_vec[0]),
+               (end_points_vec[1], control_points_vec[1]),
+            ],
             ..Default::default()
          }),
       });

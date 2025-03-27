@@ -76,14 +76,6 @@ pub enum TextAnchorChoice {
    ThreeByThree(TextAnchorHorizontal, TextAnchorVertical),
 }
 
-// Directions (horizontal, vertical) over which to offset anchoring.
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub enum LineClosureChoice {
-   #[default]
-   Open,
-   Closed,
-}
-
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ColorChoice {
    #[default]

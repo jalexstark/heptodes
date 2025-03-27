@@ -10,7 +10,7 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closed",
+          "line_closure_choice": "Closes",
           "locations": [
             [
               -5.0,
@@ -36,16 +36,16 @@
       "drawable": {
         "Lines": {
           "line_choice": "Light",
-          "start": [
+          "coords": [
             [
-              -5.0,
-              0.0
-            ]
-          ],
-          "end": [
-            [
-              5.0,
-              0.0
+              [
+                -5.0,
+                0.0
+              ],
+              [
+                5.0,
+                0.0
+              ]
             ]
           ],
           "offsets": [
@@ -93,16 +93,16 @@
       "drawable": {
         "Lines": {
           "line_choice": "Light",
-          "start": [
+          "coords": [
             [
-              0.0,
-              -5.0
-            ]
-          ],
-          "end": [
-            [
-              0.0,
-              5.0
+              [
+                0.0,
+                -5.0
+              ],
+              [
+                0.0,
+                5.0
+              ]
             ]
           ],
           "offsets": [
@@ -260,7 +260,7 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closed",
+          "line_closure_choice": "Closes",
           "color_choice": "Green",
           "locations": [
             [
