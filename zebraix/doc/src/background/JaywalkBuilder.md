@@ -18,7 +18,7 @@ as in figure captions.
 
 --------------------------------------------------------------------------------
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 ---
 title: Building Jaywalks
@@ -27,7 +27,7 @@ author:
 date: 2003--2023
 ...
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 # Task
 
@@ -71,7 +71,7 @@ the top-left and bottom-right quadrants have a reachability relationship only in
 the co-dominance drawing. On the axes, we employ a lexicographic comparison so
 here vertices are reachable only in the dominance. Therefore dominance and
 co-dominance drawings are not quite complementary in regard to handling
-comparisons for reachability\label{figA}.](figs/Builder-A.svg)
+comparisons for reachability\label{figA}.](figs-builder/Builder-A.svg)
 
 In the figure\text{ (see figure \ref{figA})} we clarify the comparison of
 indices and how that tests for reachability. Notice in particular that in a
@@ -104,7 +104,7 @@ integral. We do not assume that the values form a contiguous sequence.
 
 ![An example jaywalk and its corresponding co-dominance drawing. This can be
 obtained by inverting the obverse values, or equivalently by reversing the oDFS
-order\label{figB}.](figs/Builder-B.svg)
+order\label{figB}.](figs-builder/Builder-B.svg)
 
 If we reverse the oDFS order, or alternatively negate the obverse coordinates,
 we convert the dominance drawing of a jaywalk to its co-dominance drawing. Note,
@@ -149,7 +149,7 @@ vertices share principal and obverse coordinates. Lexicographic comparison can
 be used to test order and reachability. The right drawing is substantially more
 compact, with a $6\times 5$ grid instead of a $13\times 13$ grid, but the result
 is not necessarily more readable. Some edges have more prominence, and some
-appear to have different meaning\label{figC}.](figs/Builder-C.svg)
+appear to have different meaning\label{figC}.](figs-builder/Builder-C.svg)
 
 While rendering is not part of the present discussion, we do consider methods
 for compacting layouts. An example is illustrated\text{ (see figure
@@ -166,7 +166,7 @@ code entities. These arrive with sorted vertices and contiguous coordinates.
 
 ![Examples of trees: A shallow tree has few levels compared to the number of
 vertices (left), whereas a narrow and deep tree is used more like a chain of
-states with short side off-shoots (right)\label{figD}.](figs/Builder-D.svg)
+states with short side off-shoots (right)\label{figD}.](figs-builder/Builder-D.svg)
 
 Many of the jaywalks we use in practice will be trees. We wish to handle these
 well, especially those that are either shallow or deep. Hierarchicial
@@ -181,7 +181,7 @@ illustration\text{, figure \ref{figD}}.
 graph. This illustrates how a graph with few edges can have a corresponding
 graph with many. If we stretch the graph spacing in the direction bottom-left to
 top-right, the co-dominance graph will become simpler and the dominance graph
-more complex.\label{figE}.](figs/Builder-E.svg)
+more complex.\label{figE}.](figs-builder/Builder-E.svg)
 
 While st-planar graphs, which have no crossings, are always order-dimension 2,
 and so can be plotted in a dominance drawing without crossings, the converse is
@@ -252,7 +252,7 @@ really preferrable to one that is efficient with non-zero $a_2$.
 
 ![The vertex A has children B, C, D and E. Vertices right and above are
 reachable from A, but any beyond the dashed line are also reachable from B, C, D
-or E and so are not children of A.\label{figF}.](figs/Builder-F.svg)
+or E and so are not children of A.\label{figF}.](figs-builder/Builder-F.svg)
 
 The most basic algorithm is to go through each vertex and find its children by
 scanning through all vertices with higher principal index. The process is
@@ -271,7 +271,7 @@ but only those traversed during the principal depth-first search. An example is
 shown\text{ (figure \ref{figG})}.
 
 ![An order-dimension 2 graph (top), its pDFS tree (left), and oDFS tree
-(right)\label{figG}.](figs/Builder-G.svg)
+(right)\label{figG}.](figs-builder/Builder-G.svg)
 
 It gets confusing to talk of left versus right when specifying the search order,
 because this changes with the angle of view. Even anti-clockwise vs clockwise
@@ -300,7 +300,7 @@ bottom-right drawing we see this vertex is now at the top of the unparented
 stack. Three vertices were popped from the stack and are children (in the pDFS
 tree) of this vertex. Lastly, the bottom-left drawing shows the roots of the
 final pDFS tree comprising the unparented
-stack\label{figH}.](figs/Builder-H.svg)
+stack\label{figH}.](figs-builder/Builder-H.svg)
 
 The above provides the basis for an algorithm for building trees from principal
 and obverse coordinates. The process is illustrated\text{ (see
@@ -374,7 +374,7 @@ built if that were useful to the follow-on algorithm,
 ![Four trees that can be constructed efficiently and the DAG created by merging
 them. The four trees, clockwise from top-left, are pDFS, oDFS, 180-oDFS,
 180-pDFS. In this case the central merged DAG is
-complete\label{figI}.](figs/Builder-I.svg)
+complete\label{figI}.](figs-builder/Builder-I.svg)
 
 ## Four trees
 
@@ -397,7 +397,7 @@ reasonable efficiency?
 ![Two similar arrangements, one (left) without crossings and the other (right)
 with crossings. Note in particular that the dashed edge is missed by the
 four-tree algorithm because it is not the first or last, parent or child,
-connection for any vertex\label{figJ}.](figs/Builder-J.svg)
+connection for any vertex\label{figJ}.](figs-builder/Builder-J.svg)
 
 Simply put, the four-tree algorithm will miss edges that are not the first or
 last, nor the parent or child, of any vertex. These are the edges that the trees
@@ -409,11 +409,11 @@ edges as *middle edges*.
 ![A portion of an incomplete graph. In the built jaywalk there are edges from B
 to X and Z, and edges from A and C to Y. In the text we show that if AY crosses
 BX, and BZ crosses CY, there must be a middle edge from B to
-Y\label{figK}.](figs/Builder-K.svg)
+Y\label{figK}.](figs-builder/Builder-K.svg)
 
 ![Limits on the relative locations of vertices in the preceding figure\text{
 (see figure \ref{figK})}. Because transitive reduction, A, C, X and Z must be in
-the indicated zones relative to B and Y\label{figL}.](figs/Builder-L.svg)
+the indicated zones relative to B and Y\label{figL}.](figs-builder/Builder-L.svg)
 
 *   Lemma:
 
@@ -447,7 +447,7 @@ the indicated zones relative to B and Y\label{figL}.](figs/Builder-L.svg)
 
 ![Example of part of a graph illustrating how a search for middle edges would
 have to know how to skip configurations where there is an intermediate vertex
-such as P\label{figM}.](figs/Builder-M.svg)
+such as P\label{figM}.](figs-builder/Builder-M.svg)
 
 This analysis shows that middle adges are closely tied to crossings. In
 particular, if the merged four trees graph is planar, we know that it is
@@ -500,7 +500,7 @@ ancestor. The purpose of these ranges is to check which locations in the right
 subgraph a vertex can link, and likewise those in the left that can link to a
 vertex in the right. Observe that B is in the active range of A, but A is not
 within the active range of B. This is because it is reachable via an
-intermediate vertex .\label{figN}.](figs/Builder-N.svg)
+intermediate vertex .\label{figN}.](figs-builder/Builder-N.svg)
 
 The basic idea behind this algorithm is to subdivide the graph by ranges of
 principal coordinate. The key task is then to reverse this division, that is to
@@ -552,7 +552,7 @@ the lower bound since those have been removed.
 right subgraph are rotated 180 degrees. This illustrates that nested overlaps
 are possible, but not staggered overlaps. Further, the inner range is further
 away from the other subgraph (the side of the dashed line in the preceding
-figure\text{, figure \ref{figN}})\label{figO}.](figs/Builder-O.svg)
+figure\text{, figure \ref{figN}})\label{figO}.](figs-builder/Builder-O.svg)
 
 For the present prupose we are interested in the active set for the right
 subgraph. It turns out, as illustrated\text (figure \ref{figO})}, that while
@@ -698,7 +698,7 @@ coordinate than B. Therefore B can be the last parent of C, and we can skip all
 vertices with lower obverse when considering A and not as a consequence miss any
 parents of C. In the diagram areas cannot have bertices since these would either
 be parents in place of B, or be another parent of A after
-B.\label{figP}.](figs/Builder-P.svg)
+B.\label{figP}.](figs-builder/Builder-P.svg)
 
 The method for skipping left vertices may require more work than the savings it
 brings. Basically, we construct a full pDFS tree in advance. When we finish
@@ -747,7 +747,7 @@ locations of single children coincide. The counts used as coordinates are
 obtained by traversing the vertices in pDFS and oDFS trees. The count for a
 vertex is incremented if it is not the first child traversed. Equivalently, this
 is if the vertex is not the child of the previous
-vertex.\label{figQ}.](figs/Builder-Q.svg)
+vertex.\label{figQ}.](figs-builder/Builder-Q.svg)
 
 In this and subsequent layout schemes we use an increment of 1 and hence grid
 separation of 1 for the base layout component. Our basic compaction is designed
@@ -785,7 +785,7 @@ whenever we *descend* along a sole edge. The right graph goes further, adding
 offsets to the left graph so that tree leaves are aligned. The offsets are
 counters incremented whenever we *ascend* a sole edge. In this case the
 incremented counter is not written to the parent, because that vertex was
-previously visited.\label{figR}.](figs/Builder-R.svg)
+previously visited.\label{figR}.](figs-builder/Builder-R.svg)
 
 There is a fairly natural way to eliminate coincidence of vertices, as
 illustrated\text{ (figure \ref{figR})}. We do this in the form of supplementatl
@@ -829,7 +829,7 @@ zero. This can be achieved, as in the second pair of drawings\text{ (figure
 \ref{figR})}, if we only increment when descending or ascending edges that are
 the sole child edge *and* sole parent edge. Observe that while "subsequent
 child" is the same for a tree and the complete graph, "sole edge" is tested
-against the complete graph.](figs/Builder-S.svg)
+against the complete graph.](figs-builder/Builder-S.svg)
 
 Until now we have focussed on trees. We need to clarify how the layout scheme
 should handle non-tree DAGs. The approach that we propose is illustrated\text{
@@ -905,7 +905,7 @@ dominance graph.
 
 ![Example graph with dominance drawing (left) and co-dominance drawing (right).
 In the subsequent drawings\text{ (figure \ref{figT2})} we illustrate how these
-can be built.\label{figT1}.](figs/Builder-T-1.svg)
+can be built.\label{figT1}.](figs-builder/Builder-T-1.svg)
 
 ![Steps in building the two graphs illustrated above\text{ (figure
 \ref{figT1})}. The top-left and top-right drawings show the oDFS trees for the
@@ -916,7 +916,7 @@ parent in the pDFS tree. The remining parents are found by traversing children
 in the partially constructed co-dominance graph. Likewise the first co-dominance
 parent is found from the oDFS tree and remining parents are found by traversing
 its children in the partial dominance
-graph.\label{figT2}.](figs/Builder-T-2.svg)
+graph.\label{figT2}.](figs-builder/Builder-T-2.svg)
 
 # Other ideas
 

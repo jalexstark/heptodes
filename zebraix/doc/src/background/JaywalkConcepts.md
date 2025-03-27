@@ -18,7 +18,7 @@ as in figure captions.
 
 --------------------------------------------------------------------------------
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 ---
 title: Jaywalk Concepts and Ideas
@@ -27,7 +27,7 @@ author:
 date: 2003--2022
 ...
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 # Overview
 
@@ -78,7 +78,7 @@ The starting point for jaywalks was the desire for simple representation and
 handling of directed graphs, especially small trees. Small loops would be normal
 enough to require efficient treatment.
 
-![A simple tree.](figs/Concepts-A.svg)
+![A simple tree.](figs-concepts/Concepts-A.svg)
 
 This was, so-to-speak, the beginning of time for jaywalks. There was, in
 context, a before-time desire to handle shallower trees for things such as
@@ -111,7 +111,7 @@ ranges of indices.
 ![A tree with the order (reversed) in which the vertices are visited in a
 depth-first search (DFS) visiting the rightmost children first. We refer to this
 numbering as the *principal ordering*, and the *principal
-indices*.](figs/Concepts-C.svg)
+indices*.](figs-concepts/Concepts-C.svg)
 
 Here vertex 10 is the first vertex finished in the depth-first search (DFS). An
 example is that the subtree rooted at vertex 4 has vertices numbered between 4
@@ -147,7 +147,7 @@ order in the jaywalk representation.
 ### Order dimension
 
 ![A tree with principal and obverse indices (shown as pairs) that are found by
-depth-first search.](figs/Concepts-E.svg)
+depth-first search.](figs-concepts/Concepts-E.svg)
 
 The principal vs obverse DFS numbering means that we can delimit on either side
 of a subtree. For instance $(p,q)$ is within the subtree rooted at $(4,2)$ iff
@@ -168,7 +168,7 @@ subgraph is a combination of ancestor and descendant constraints.
 
 ![Within a graph, a subgraph can be defined as all nodes that are descendents of
 an ancestor vertex and also ancestors of a descendent vertex. Here the ancestor
-is A and the descendent D.](figs/Concepts-F.svg)
+is A and the descendent D.](figs-concepts/Concepts-F.svg)
 
 The vertices (and edges that connect them) are descendants of A and ancestors of
 D.
@@ -180,7 +180,7 @@ small number of inequality constraints. There is still a limitation with our
 ability to distinguish edges.
 
 ![Part of a graph where D is reachable from A both via I and directly.
-Transitive reduction will remove the direct edge.](figs/Concepts-G.svg)
+Transitive reduction will remove the direct edge.](figs-concepts/Concepts-G.svg)
 
 In this subgraph we cannot simply specify the edge going directly from A to D.
 If we constrain $(p,q)$ to $p_A<p<p_D$ and $q_A<q<q_D$, the region will include
@@ -197,7 +197,7 @@ subdivided with the insertion of what we call a *waypoint* vertex.
 ![Part of a graph where a *waypoint* has been added along the direct path
 between A and D so that the path is not removed by transitive reduction. This
 has the important result that we can distinguish which edges we "are on" when in
-a transitionary pseudo-state between A and D. ](figs/Concepts-H.svg)
+a transitionary pseudo-state between A and D. ](figs-concepts/Concepts-H.svg)
 
 In graph theory this is a key concept. A graph undergoes transitive reduction
 when all transitively unnecessary paths are removed. In the example above we can
@@ -224,7 +224,7 @@ and all sinks be together on the outside. Then we can create an extrapolated
 global sink that connects to all the real sinks. A tree is a straightforward
 example, with each leaf being a sink.
 
-![A the leaves of a tree can always be connected to an extrapolated global sink.](figs/Concepts-I.svg)
+![A the leaves of a tree can always be connected to an extrapolated global sink.](figs-concepts/Concepts-I.svg)
 
 The root vertex is already a global source, and the graph can be extended for
 processing by connecting all the leaves to a virtual global sink.
@@ -232,7 +232,7 @@ processing by connecting all the leaves to a virtual global sink.
 ![A graph with multiple sources or multiple sinks is an acceptable jaywalk if
 all the sources and sinks are external and could, in principle, be connected to
 a global source and global sink without introducing
-crossings.](figs/Concepts-X.svg)
+crossings.](figs-concepts/Concepts-X.svg)
 
 A graph can have multiple sources and sinks but these cannot be interleaved or
 the edges to the extrapolated source and sink would cross.
@@ -295,7 +295,7 @@ st-planar graph. Jaywalks are DAGs that are transitively irreducible, and have
 external sources and sinks. The graph is shown as a dominance drawing with
 coordinates that correspond to principal and obverse orderings. All jaywalks are
 posets of order-dimension 2, so the orderings are sufficient for a
-jaywalk.\label{figO1}](figs/Concepts-O-1.svg)
+jaywalk.\label{figO1}](figs-concepts/Concepts-O-1.svg)
 
 ### Co-dominance
 
@@ -308,7 +308,7 @@ so-to-speak, in the co-dominance graph.
 ![Co-dominance drawing, and hence graph, corresponding to the jaywalk in the
 preceding figure\text{ (figure \ref{figO1})}. Notice that this has non-global
 sources and sinks, two of which are both source and sink, and so
-isolated.\label{figO2}.](figs/Concepts-O-2.svg)
+isolated.\label{figO2}.](figs-concepts/Concepts-O-2.svg)
 
 We depart from other practice with dominance and co-dominance graphs in that we
 consider one vertex to be reachable from another in the *dominance* graph if
@@ -321,7 +321,7 @@ graph and not both.
 ![The graphs in the preceding figures\text{ (figures \ref{figO1} and
 \ref{figO2})}, presented in more natural horizontal and vertical arrangement. If
 we choose any two vertices, one is reachable from the other in one graph but not
-the other.](figs/Concepts-P.svg)
+the other.](figs-concepts/Concepts-P.svg)
 
 ### Crossings
 
@@ -339,7 +339,7 @@ graph can have a co-dominance graph with many crossings.
 ![A complicated dominance graph can have a simple corresponding co-dominance
 graph, and vice versa. The worst-case complexity is a graph with the number of
 edges proportional to the square of the number of vertices. This has implicates
-for some construction algorithms (discussed elsewhere).](figs/Concepts-Q.svg)
+for some construction algorithms (discussed elsewhere).](figs-concepts/Concepts-Q.svg)
 
 This illustrates that dominance (likewise co-dominance) graphs can have the
 worst-case complexity of edges: $\mathcal{O}(N^2)$.
@@ -408,7 +408,7 @@ larger than the depth. Thus nodes with lots of children should not need lots of
 annotation. Leaves should be essentially free. An example is illustrated\text{
 (see figure \ref{figR})}.
 
-![An example shallow tree\label{figR}.](figs/Concepts-R.svg)
+![An example shallow tree\label{figR}.](figs-concepts/Concepts-R.svg)
 
 ### Reconstruction, overall
 
@@ -428,7 +428,7 @@ actual tree construction and simplifying the intermediate data structures.
 
 ### Reconstructing the oDFS tree, treenum case
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 ---------------------------------------------------------------------------------------
 Principal         oDFS   Parent       Compressed    Child         Reconstruction
@@ -474,7 +474,7 @@ so it is preferable to specify links from parent to child.  We will address what
 we call *canonical* compression later.  The last column shows the evolving
 stack, from bottom to top, with labels truncated for brevity.\label{tabR}
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 The treenum oDFS tree reconstruction algorithm has the following general
 features.
@@ -592,14 +592,14 @@ and all other connected vertices are converted to siblings by connecting them
 instead to that parent. An example is illustrated\text{ (see figure
 \ref{figS})}.
 
-![Graph rewrite rule for family gathering\label{figS}.](figs/Concepts-S.svg)
+![Graph rewrite rule for family gathering\label{figS}.](figs-concepts/Concepts-S.svg)
 
 The result is an incomplete oDFS tree. The task of reconstruction is to complete
 the tree, giving a parent to every vertex that lacks one.
 
 ![An example of an anomalous combination of explicit edges. When the resolution
 rules are applied to the graph on the left, in two applications, the result is
-arguably not what we would expect\label{figT}.](figs/Concepts-T.svg)
+arguably not what we would expect\label{figT}.](figs-concepts/Concepts-T.svg)
 
 Potential complications arise when the first explicit edge does not span the
 whole family. An example is illustrated\text{ (see figure \ref{figT})}. For now
@@ -634,9 +634,9 @@ An example is illustrated\text{ (see figure \ref{figU})}.
 
 ![An example of a complicated tree that is somewhat deep rather than shallow.
 This is better handled by chainum than treenum
-compression\label{figU}.](figs/Concepts-U.svg)
+compression\label{figU}.](figs-concepts/Concepts-U.svg)
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 ------------------------------------------------------------------
 pDFS           parent    compressed   Child &amp;   Reconstruction
@@ -680,7 +680,7 @@ canonical familial links that are well-suited to human readability.  In many
 cases these explicit edges will establish alternative paths in a graph of
 states.\label{tabU}
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 Reconstruction of chainum oDFS trees is much like the process for treenums. An
 example is shown in the table above\text{ (table \ref{tabU} and figure
@@ -744,7 +744,7 @@ but in the oDFS subtree for B rather than A. Notice that the two hashed areas
 show where vertices in the oDFS subtree of A lie, and that in this case the
 range of pDFS indices is not continuous. That is, the pDFS indices of the oDFS
 descendants of A are interrupted by
-D\label{figV}.](figs/Concepts-V.svg){ width=4.2in }
+D\label{figV}.](figs-concepts/Concepts-V.svg){ width=4.2in }
 
 The scenario is complicated further by vertices like D that are not descendants
 of A in the oDFS tree and so further split the set of vertices that are
@@ -771,9 +771,9 @@ and L. The compression proceeds smoothly thereafter.
 ![An example of a non-tree DAG with merging edges at M and P. This results in
 discontinuous ranges of pDFS indices in the oDFS subrees of 7 and 9. The
 descendants of 9 are (10, 11, 12) which have pDFS indices (N, P, Q). Similarly
-the descendants of 7 do not include L or O.\label{figW}.](figs/Concepts-W.svg)
+the descendants of 7 do not include L or O.\label{figW}.](figs-concepts/Concepts-W.svg)
 
-<!-- md-formatter off (Document metadata) -->
+<!-- mdformat off (Document metadata) -->
 
 --------------------------------------------------------------------------------
 pDFS       oDFS       pDFS       oDFS       treenum   chainum     Reconstruction
@@ -824,7 +824,7 @@ Nonetheless both schemes recover after the merges at M and P.  The
 reconstruction is applied in reverse pDFS order, and we see both schemes working
 well from K down to A.\label{tabW}
 
-<!-- md-formatter on -->
+<!-- mdformat on -->
 
 ## Compression and canonical compression
 
