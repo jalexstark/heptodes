@@ -128,6 +128,21 @@ pub struct PolylineDrawable {
 }
 
 #[derive(Serialize, Debug, Default, PartialEq)]
+pub enum OneOfSegment {
+   #[default]
+   Nothing,
+   Arc(ArcDrawable),
+   Cubic(CubicDrawable),
+   Polyline(PolylineDrawable),
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct SegmentSequence {
+   #[serde(skip_serializing_if = "is_default")]
+   pub segments: Vec<OneOfSegment>,
+}
+
+#[derive(Serialize, Debug, Default, PartialEq)]
 pub enum OneOfDrawable {
    #[default]
    Nothing,
@@ -138,6 +153,7 @@ pub enum OneOfDrawable {
    Text(TextDrawable),
    Circles(CirclesDrawable),
    Polyline(PolylineDrawable),
+   SegmentSequence(SegmentSequence),
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]

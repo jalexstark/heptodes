@@ -31,7 +31,7 @@ pub enum LineChoice {
 #[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ContinuationChoice {
    #[default]
-   Isolated,
+   Starts,
    Continues,
 }
 
@@ -40,8 +40,9 @@ pub enum ContinuationChoice {
 #[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum LineClosureChoice {
    #[default]
-   Open,
+   OpenEnd,
    Closes,
+   Unfinished,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]

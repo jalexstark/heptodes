@@ -24,27 +24,15 @@ use pangocairo::functions::show_layout as pangocairo_show_layout;
 use std::f64::consts::PI;
 use std::io::Write;
 use zvx_docagram::diagram::SpartanDiagram;
-use zvx_drawable::choices::CanvasLayout;
-use zvx_drawable::choices::ColorChoice;
-use zvx_drawable::choices::DiagramChoices;
-use zvx_drawable::choices::LineChoice;
-use zvx_drawable::choices::LineClosureChoice;
-use zvx_drawable::choices::PointChoice;
-use zvx_drawable::choices::TextAnchorChoice;
-use zvx_drawable::choices::TextAnchorHorizontal;
-use zvx_drawable::choices::TextAnchorVertical;
-use zvx_drawable::choices::TextOffsetChoice;
-use zvx_drawable::choices::TextSizeChoice;
-use zvx_drawable::kinds::ArcDrawable;
-use zvx_drawable::kinds::CirclesDrawable;
-use zvx_drawable::kinds::CubicDrawable;
-use zvx_drawable::kinds::LinesDrawable;
-use zvx_drawable::kinds::OneOfDrawable;
-use zvx_drawable::kinds::PointsDrawable;
-use zvx_drawable::kinds::PolylineDrawable;
-use zvx_drawable::kinds::QualifiedDrawable;
-use zvx_drawable::kinds::TextDrawable;
-use zvx_drawable::kinds::TextSingle;
+use zvx_drawable::choices::{
+   CanvasLayout, ColorChoice, ContinuationChoice, DiagramChoices, LineChoice, LineClosureChoice,
+   PointChoice, TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical, TextOffsetChoice,
+   TextSizeChoice,
+};
+use zvx_drawable::kinds::{
+   ArcDrawable, CirclesDrawable, CubicDrawable, LinesDrawable, OneOfDrawable, OneOfSegment,
+   PointsDrawable, PolylineDrawable, QualifiedDrawable, SegmentSequence, TextDrawable, TextSingle,
+};
 
 #[derive(Debug, Default)]
 #[allow(clippy::module_name_repetitions)]
@@ -216,10 +204,24 @@ impl CairoSpartanRender {
       context.transform(arc_transformation_matrix);
 
       // Logically circle is center (0.0, 0.0) radius 1.0.
-      context.move_to(drawable.angle_range[0].cos(), drawable.angle_range[0].sin());
+      if drawable.segment_choices.continuation == ContinuationChoice::Starts {
+         context.move_to(drawable.angle_range[0].cos(), drawable.angle_range[0].sin());
+      }
       context.arc(0.0, 0.0, 1.0, drawable.angle_range[0], drawable.angle_range[1]);
-      self.restore_transform(context);
-      context.stroke().unwrap();
+      match drawable.segment_choices.closure {
+         LineClosureChoice::Closes => {
+            context.close_path();
+            self.restore_transform(context);
+            context.stroke().unwrap();
+         }
+         LineClosureChoice::OpenEnd => {
+            self.restore_transform(context);
+            context.stroke().unwrap();
+         }
+         LineClosureChoice::Unfinished => {
+            self.restore_transform(context);
+         }
+      }
    }
 
    fn draw_cubic(
@@ -234,7 +236,9 @@ impl CairoSpartanRender {
 
       self.save_set_path_transform(canvas_layout, context);
 
-      context.move_to(drawable.x[0], drawable.y[0]);
+      if drawable.segment_choices.continuation == ContinuationChoice::Starts {
+         context.move_to(drawable.x[0], drawable.y[0]);
+      }
       context.curve_to(
          drawable.x[1],
          drawable.y[1],
@@ -243,9 +247,20 @@ impl CairoSpartanRender {
          drawable.x[3],
          drawable.y[3],
       );
-
-      self.restore_transform(context);
-      context.stroke().unwrap();
+      match drawable.segment_choices.closure {
+         LineClosureChoice::Closes => {
+            context.close_path();
+            self.restore_transform(context);
+            context.stroke().unwrap();
+         }
+         LineClosureChoice::OpenEnd => {
+            self.restore_transform(context);
+            context.stroke().unwrap();
+         }
+         LineClosureChoice::Unfinished => {
+            self.restore_transform(context);
+         }
+      }
    }
 
    // This function is (somewhat) disassociated from the renderer and from Cairo, and is specific to Pango.
@@ -371,15 +386,26 @@ impl CairoSpartanRender {
 
       self.save_set_path_transform(canvas_layout, context);
       assert!(!drawable.locations.is_empty());
-      context.move_to(drawable.locations[0][0], drawable.locations[0][1]);
+      if drawable.segment_choices.continuation == ContinuationChoice::Starts {
+         context.move_to(drawable.locations[0][0], drawable.locations[0][1]);
+      }
       for i in 1..drawable.locations.len() {
          context.line_to(drawable.locations[i][0], drawable.locations[i][1]);
       }
-      if drawable.segment_choices.closure == LineClosureChoice::Closes {
-         context.close_path();
+      match drawable.segment_choices.closure {
+         LineClosureChoice::Closes => {
+            context.close_path();
+            self.restore_transform(context);
+            context.stroke().unwrap();
+         }
+         LineClosureChoice::OpenEnd => {
+            self.restore_transform(context);
+            context.stroke().unwrap();
+         }
+         LineClosureChoice::Unfinished => {
+            self.restore_transform(context);
+         }
       }
-      self.restore_transform(context);
-      context.stroke().unwrap();
    }
 
    fn draw_circles_set(
@@ -403,6 +429,29 @@ impl CairoSpartanRender {
       }
       self.restore_transform(context);
       context.stroke().unwrap();
+   }
+
+   fn draw_segment_sequence(
+      &mut self,
+      context: &CairoContext,
+      segment_sequence: &SegmentSequence,
+      canvas_layout: &CanvasLayout,
+      diagram_choices: &DiagramChoices,
+   ) {
+      for segment in &segment_sequence.segments {
+         match &segment {
+            OneOfSegment::Arc(drawable) => {
+               self.draw_arc(context, drawable, canvas_layout, diagram_choices);
+            }
+            OneOfSegment::Cubic(drawable) => {
+               self.draw_cubic(context, drawable, canvas_layout, diagram_choices);
+            }
+            OneOfSegment::Polyline(drawable) => {
+               self.draw_polyine(context, drawable, canvas_layout, diagram_choices);
+            }
+            OneOfSegment::Nothing => {}
+         }
+      }
    }
 
    #[allow(clippy::missing_panics_doc)]
@@ -438,6 +487,9 @@ impl CairoSpartanRender {
             }
             OneOfDrawable::Polyline(drawable) => {
                self.draw_polyine(context, drawable, canvas_layout, diagram_choices);
+            }
+            OneOfDrawable::SegmentSequence(drawable) => {
+               self.draw_segment_sequence(context, drawable, canvas_layout, diagram_choices);
             }
             OneOfDrawable::Nothing => {}
          }
