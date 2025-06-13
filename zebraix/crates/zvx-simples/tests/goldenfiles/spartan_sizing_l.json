@@ -10,7 +10,9 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closes",
+          "segment_choices": {
+            "closure": "Closes"
+          },
           "locations": [
             [
               -5.0,
@@ -223,7 +225,9 @@
     {
       "drawable": {
         "Polyline": {
-          "color_choice": "Red",
+          "segment_choices": {
+            "color": "Red"
+          },
           "locations": [
             [
               -3.0,
@@ -260,8 +264,10 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closes",
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green",
+            "closure": "Closes"
+          },
           "locations": [
             [
               -3.0,

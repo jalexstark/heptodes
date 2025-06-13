@@ -30,6 +30,7 @@ use zvx_drawable::kinds::OneOfDrawable;
 use zvx_drawable::kinds::PointsDrawable;
 use zvx_drawable::kinds::PolylineDrawable;
 use zvx_drawable::kinds::QualifiedDrawable;
+use zvx_drawable::kinds::SegmentChoices;
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum SampleOption {
@@ -206,10 +207,12 @@ pub fn draw_sample_rat_quad(
          spartan.drawables.push(QualifiedDrawable {
             layer: curve_config.main_line_layer,
             drawable: OneOfDrawable::Polyline(PolylineDrawable {
-               color_choice,
-               line_choice: curve_config.main_line_choice,
+               segment_choices: SegmentChoices {
+                  color: color_choice,
+                  line_choice: curve_config.main_line_choice,
+                  ..Default::default()
+               },
                locations: pattern_vec,
-               ..Default::default()
             }),
          });
       } else {
@@ -231,8 +234,11 @@ pub fn draw_sample_rat_quad(
                spartan.drawables.push(QualifiedDrawable {
                   layer: curve_config.main_line_layer,
                   drawable: OneOfDrawable::Arc(ArcDrawable {
-                     color_choice,
-                     line_choice: curve_config.main_line_choice,
+                     segment_choices: SegmentChoices {
+                        color: color_choice,
+                        line_choice: curve_config.main_line_choice,
+                        ..Default::default()
+                     },
                      angle_range: [-angle_range, angle_range],
                      center: [mx, my],
                      transform: [cx, cy, sx, sy],
@@ -250,8 +256,11 @@ pub fn draw_sample_rat_quad(
                   spartan.drawables.push(QualifiedDrawable {
                      layer: curve_config.main_line_layer,
                      drawable: OneOfDrawable::Cubic(CubicDrawable {
-                        color_choice,
-                        line_choice: curve_config.main_line_choice,
+                        segment_choices: SegmentChoices {
+                           color: color_choice,
+                           line_choice: curve_config.main_line_choice,
+                           ..Default::default()
+                        },
                         x: four_x,
                         y: four_y,
                      }),
@@ -279,10 +288,12 @@ pub fn draw_sample_rat_quad(
                spartan.drawables.push(QualifiedDrawable {
                   layer: curve_config.main_line_layer,
                   drawable: OneOfDrawable::Polyline(PolylineDrawable {
-                     color_choice,
-                     line_choice: curve_config.main_line_choice,
+                     segment_choices: SegmentChoices {
+                        color: color_choice,
+                        line_choice: curve_config.main_line_choice,
+                        ..Default::default()
+                     },
                      locations: pattern_vec,
-                     ..Default::default()
                   }),
                });
             }
@@ -369,8 +380,11 @@ pub fn draw_sample_cubilinear(
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.main_line_layer,
          drawable: OneOfDrawable::Cubic(CubicDrawable {
-            color_choice,
-            line_choice: curve_config.main_line_choice,
+            segment_choices: SegmentChoices {
+               color: color_choice,
+               line_choice: curve_config.main_line_choice,
+               ..Default::default()
+            },
             x: four_point.x,
             y: four_point.y,
          }),

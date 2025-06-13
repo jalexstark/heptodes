@@ -28,6 +28,7 @@ use zvx_drawable::choices::CanvasLayout;
 use zvx_drawable::choices::ColorChoice;
 use zvx_drawable::choices::DiagramChoices;
 use zvx_drawable::choices::LineChoice;
+use zvx_drawable::choices::LineClosureChoice;
 use zvx_drawable::choices::PointChoice;
 use zvx_drawable::choices::TextAnchorChoice;
 use zvx_drawable::choices::TextAnchorHorizontal;
@@ -37,7 +38,6 @@ use zvx_drawable::choices::TextSizeChoice;
 use zvx_drawable::kinds::ArcDrawable;
 use zvx_drawable::kinds::CirclesDrawable;
 use zvx_drawable::kinds::CubicDrawable;
-use zvx_drawable::kinds::LineClosureChoice;
 use zvx_drawable::kinds::LinesDrawable;
 use zvx_drawable::kinds::OneOfDrawable;
 use zvx_drawable::kinds::PointsDrawable;
@@ -81,9 +81,9 @@ impl CairoSpartanRender {
       &self,
       context: &CairoContext,
       _diagram_choices: &DiagramChoices,
-      color_choice: ColorChoice,
+      color: ColorChoice,
    ) {
-      let (r, g, b) = color_choice.to_rgb();
+      let (r, g, b) = color.to_rgb();
       context.set_source_rgb(r, g, b);
    }
 
@@ -200,8 +200,8 @@ impl CairoSpartanRender {
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, drawable.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, drawable.color_choice);
+      Self::set_line_choice(context, drawable.segment_choices.line_choice, diagram_choices);
+      self.set_color(context, diagram_choices, drawable.segment_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
 
@@ -229,8 +229,8 @@ impl CairoSpartanRender {
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, drawable.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, drawable.color_choice);
+      Self::set_line_choice(context, drawable.segment_choices.line_choice, diagram_choices);
+      self.set_color(context, diagram_choices, drawable.segment_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
 
@@ -366,8 +366,8 @@ impl CairoSpartanRender {
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, drawable.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, drawable.color_choice);
+      Self::set_line_choice(context, drawable.segment_choices.line_choice, diagram_choices);
+      self.set_color(context, diagram_choices, drawable.segment_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
       assert!(!drawable.locations.is_empty());
@@ -375,7 +375,7 @@ impl CairoSpartanRender {
       for i in 1..drawable.locations.len() {
          context.line_to(drawable.locations[i][0], drawable.locations[i][1]);
       }
-      if drawable.line_closure_choice == LineClosureChoice::Closes {
+      if drawable.segment_choices.closure == LineClosureChoice::Closes {
          context.close_path();
       }
       self.restore_transform(context);

@@ -14,7 +14,9 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closes",
+          "segment_choices": {
+            "closure": "Closes"
+          },
           "locations": [
             [
               -4.5,
@@ -257,7 +259,9 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "angle_range": [
             -0.4636476090008061,
             0.4636476090008061
@@ -398,7 +402,9 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "angle_range": [
             -1.1071487177940904,
             1.1071487177940904
@@ -420,7 +426,9 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "color_choice": "RedRedBlue",
+          "segment_choices": {
+            "color": "RedRedBlue"
+          },
           "angle_range": [
             -1.5707963267948966,
             1.5707963267948966

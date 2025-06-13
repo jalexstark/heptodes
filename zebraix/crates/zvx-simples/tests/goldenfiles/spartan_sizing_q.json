@@ -13,7 +13,9 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closes",
+          "segment_choices": {
+            "closure": "Closes"
+          },
           "locations": [
             [
               -1.5,
@@ -193,7 +195,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "x": [
             0.0,
             -0.5,
@@ -276,7 +280,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "BrightBlue",
+          "segment_choices": {
+            "color": "BrightBlue"
+          },
           "x": [
             2.0,
             1.5,
@@ -390,7 +396,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "x": [
             1.880689576695494,
             1.7560136351942375,
@@ -473,7 +481,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "BrightBlue",
+          "segment_choices": {
+            "color": "BrightBlue"
+          },
           "x": [
             4.0,
             3.5,
@@ -591,7 +601,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "x": [
             3.856,
             3.80875,

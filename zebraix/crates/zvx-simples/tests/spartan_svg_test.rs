@@ -28,6 +28,7 @@ use zvx_docagram::axes::AxisNumbering;
 use zvx_docagram::diagram::SizingScheme;
 use zvx_drawable::choices::ColorChoice;
 use zvx_drawable::choices::LineChoice;
+use zvx_drawable::choices::LineClosureChoice;
 use zvx_drawable::choices::PointChoice;
 use zvx_drawable::choices::TextAnchorChoice;
 use zvx_drawable::choices::TextAnchorHorizontal;
@@ -35,12 +36,12 @@ use zvx_drawable::choices::TextAnchorVertical;
 use zvx_drawable::choices::TextOffsetChoice;
 use zvx_drawable::choices::TextSizeChoice;
 use zvx_drawable::kinds::CirclesDrawable;
-use zvx_drawable::kinds::LineClosureChoice;
 use zvx_drawable::kinds::LinesDrawable;
 use zvx_drawable::kinds::OneOfDrawable;
 use zvx_drawable::kinds::PointsDrawable;
 use zvx_drawable::kinds::PolylineDrawable;
 use zvx_drawable::kinds::QualifiedDrawable;
+use zvx_drawable::kinds::SegmentChoices;
 use zvx_drawable::kinds::TextDrawable;
 use zvx_drawable::kinds::TextSingle;
 use zvx_golden::filtered::JsonGoldenTest;
@@ -925,8 +926,11 @@ fn spartan_sizing_l_test() {
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: drawable_layer,
       drawable: OneOfDrawable::Polyline(PolylineDrawable {
-         color_choice: ColorChoice::Red,
-         // line_closure_choice: LineClosureChoice::Open,
+         segment_choices: SegmentChoices {
+            color: ColorChoice::Red,
+            // line_closure_choice: LineClosureChoice::Open,
+            ..Default::default()
+         },
          locations: vec![
             [-3.0, 2.0],
             [-2.0, 3.0],
@@ -944,8 +948,11 @@ fn spartan_sizing_l_test() {
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: drawable_layer,
       drawable: OneOfDrawable::Polyline(PolylineDrawable {
-         color_choice: ColorChoice::Green,
-         line_closure_choice: LineClosureChoice::Closes,
+         segment_choices: SegmentChoices {
+            color: ColorChoice::Green,
+            closure: LineClosureChoice::Closes,
+            ..Default::default()
+         },
          locations: vec![
             [-3.0, -2.0],
             [-2.0, -3.0],

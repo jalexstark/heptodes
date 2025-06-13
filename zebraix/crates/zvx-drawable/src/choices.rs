@@ -27,6 +27,23 @@ pub enum LineChoice {
    Light,
 }
 
+// Non-sequential drawables should not use continuation, since their order is not guaranteed.
+#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum ContinuationChoice {
+   #[default]
+   Isolated,
+   Continues,
+}
+
+// Some non-sequential drawables can form closed paths, but their begin and end points should
+// match.
+#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum LineClosureChoice {
+   #[default]
+   Open,
+   Closes,
+}
+
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum PointChoice {
    #[default]
