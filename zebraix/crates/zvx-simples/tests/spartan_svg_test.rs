@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use serde_json::to_writer_pretty;
+use std::collections::VecDeque;
 use std::io::Write;
 use zvx_cairo::render::CairoSpartanCombo;
 use zvx_curves::base::BaseRatQuad;
@@ -26,27 +27,21 @@ use zvx_docagram::axes::AxesSpec;
 use zvx_docagram::axes::AxesStyle;
 use zvx_docagram::axes::AxisNumbering;
 use zvx_docagram::diagram::SizingScheme;
-use zvx_drawable::choices::ColorChoice;
-use zvx_drawable::choices::LineChoice;
-use zvx_drawable::choices::PointChoice;
-use zvx_drawable::choices::TextAnchorChoice;
-use zvx_drawable::choices::TextAnchorHorizontal;
-use zvx_drawable::choices::TextAnchorVertical;
-use zvx_drawable::choices::TextOffsetChoice;
-use zvx_drawable::choices::TextSizeChoice;
-use zvx_drawable::kinds::CirclesDrawable;
-use zvx_drawable::kinds::LineClosureChoice;
-use zvx_drawable::kinds::LinesDrawable;
-use zvx_drawable::kinds::OneOfDrawable;
-use zvx_drawable::kinds::PointsDrawable;
-use zvx_drawable::kinds::PolylineDrawable;
-use zvx_drawable::kinds::QualifiedDrawable;
-use zvx_drawable::kinds::TextDrawable;
-use zvx_drawable::kinds::TextSingle;
+use zvx_drawable::choices::{
+   ColorChoice, ContinuationChoice, LineChoice, LineClosureChoice, PointChoice, TextAnchorChoice,
+   TextAnchorHorizontal, TextAnchorVertical, TextOffsetChoice, TextSizeChoice,
+};
+use zvx_drawable::kinds::{
+   CirclesDrawable, LinesDrawable, OneOfDrawable, PointsDrawable, PolylineDrawable,
+   QualifiedDrawable, SegmentChoices, TextDrawable, TextSingle,
+};
 use zvx_golden::filtered::JsonGoldenTest;
 use zvx_golden::filtered::SvgGoldenTest;
 use zvx_simples::generate::draw_sample_cubilinear;
 use zvx_simples::generate::draw_sample_rat_quad;
+use zvx_simples::generate::draw_sample_segment_sequence;
+use zvx_simples::generate::ManagedSegment;
+use zvx_simples::generate::OneOfManagedSegment;
 use zvx_simples::generate::SampleCurveConfig;
 use zvx_simples::generate::SampleOption;
 
@@ -925,8 +920,11 @@ fn spartan_sizing_l_test() {
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: drawable_layer,
       drawable: OneOfDrawable::Polyline(PolylineDrawable {
-         color_choice: ColorChoice::Red,
-         // line_closure_choice: LineClosureChoice::Open,
+         segment_choices: SegmentChoices {
+            color: ColorChoice::Red,
+            // line_closure_choice: LineClosureChoice::Open,
+            ..Default::default()
+         },
          locations: vec![
             [-3.0, 2.0],
             [-2.0, 3.0],
@@ -944,8 +942,11 @@ fn spartan_sizing_l_test() {
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: drawable_layer,
       drawable: OneOfDrawable::Polyline(PolylineDrawable {
-         color_choice: ColorChoice::Green,
-         line_closure_choice: LineClosureChoice::Closes,
+         segment_choices: SegmentChoices {
+            color: ColorChoice::Green,
+            closure: LineClosureChoice::Closes,
+            ..Default::default()
+         },
          locations: vec![
             [-3.0, -2.0],
             [-2.0, -3.0],
@@ -2160,6 +2161,15 @@ fn spartan_sizing_t_test() {
    run_json_svg("spartan_sizing_t", &mut cairo_spartan);
 }
 
+fn translate_vec(coords: Vec<[f64; 2]>, offset: [f64; 2]) -> Vec<[f64; 2]> {
+   let mut result: Vec<[f64; 2]> = Vec::new();
+   result.resize(coords.len(), [0.0, 0.0]);
+   for i in 0..coords.len() {
+      result[i] = [coords[i][0] + offset[0], coords[i][1] + offset[1]];
+   }
+   result
+}
+
 fn rotate_3_simply(p: ([f64; 3], [f64; 3]), transformation: [f64; 4]) -> ([f64; 3], [f64; 3]) {
    let t = &transformation;
    let x = &p.0;
@@ -2203,6 +2213,15 @@ fn translate_4_simply(p: ([f64; 4], [f64; 4]), offset: [f64; 2]) -> ([f64; 4], [
    let y = &p.1;
    let result_x = [x[0] + t[0], x[1] + t[0], x[2] + t[0], x[3] + t[0]];
    let result_y = [y[0] + t[1], y[1] + t[1], y[2] + t[1], y[3] + t[1]];
+   (result_x, result_y)
+}
+
+fn scale_4_simply(p: ([f64; 4], [f64; 4]), scale: f64) -> ([f64; 4], [f64; 4]) {
+   let s = &scale;
+   let x = &p.0;
+   let y = &p.1;
+   let result_x = [x[0] * s, x[1] * s, x[2] * s, x[3] * s];
+   let result_y = [y[0] * s, y[1] * s, y[2] * s, y[3] * s];
    (result_x, result_y)
 }
 
@@ -3139,4 +3158,317 @@ fn spartan_sizing_y_test() {
    }
 
    run_json_svg("spartan_sizing_y", &mut cairo_spartan);
+}
+
+// Mid-range tangent.
+#[test]
+fn segment_sequence_a_test() {
+   let t_range = [-3.0, 3.0];
+   let sizing = TestSizing {
+      sizing_scheme: SizingScheme::SquareCenter,
+      canvas_size: [200.0, 150.0],
+      axes_range: vec![-1.2, -1.4, 3.1, 1.4],
+      padding: vec![0.05],
+      axes_spec: AxesSpec {
+         axes_style: AxesStyle::Boxed,
+         grid_precision: vec![1],
+         axis_numbering: AxisNumbering::None,
+         ..Default::default()
+      },
+      ..Default::default()
+   };
+   let drawable_layer = 30;
+
+   let mut cairo_spartan = create_sized_diagram(&sizing);
+   cairo_spartan.spartan.prepare();
+   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   {
+      let mut managed_segments: VecDeque<ManagedSegment> = VecDeque::new();
+
+      {
+         let shift = [2.1, -0.7];
+         let loopy_size = 1.5;
+         let (x, y) = translate_4_simply(
+            ([0.0, loopy_size, 0.0 * loopy_size, 0.0], [0.0, 0.0 * loopy_size, loopy_size, 0.0]),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+
+         managed_segments.push_back(ManagedSegment {
+            managed_to_draw: OneOfManagedSegment::ManagedCubic(managed_curve),
+            segment_choices: SegmentChoices {
+               color: ColorChoice::Blue,
+               closure: LineClosureChoice::Closes,
+               ..Default::default()
+            },
+            layer: drawable_layer,
+         });
+      }
+      draw_sample_segment_sequence(&managed_segments, &mut cairo_spartan.spartan);
+
+      managed_segments.clear();
+      {
+         let shift = [2.3, 0.2];
+         let loopy_size = 1.5;
+         let (x, y) = translate_4_simply(
+            ([0.0, loopy_size, 0.0 * loopy_size, 0.0], [0.0, 0.0 * loopy_size, loopy_size, 0.0]),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+         managed_segments.push_back(ManagedSegment {
+            managed_to_draw: OneOfManagedSegment::ManagedCubic(managed_curve),
+            segment_choices: SegmentChoices {
+               color: ColorChoice::Green,
+               closure: LineClosureChoice::OpenEnd,
+               ..Default::default()
+            },
+            layer: drawable_layer,
+         });
+      }
+      draw_sample_segment_sequence(&managed_segments, &mut cairo_spartan.spartan);
+
+      managed_segments.clear();
+
+      {
+         let shift = [0.9, -1.1];
+         let loopy_size = 1.0;
+         let (x, y) = translate_4_simply(
+            ([0.0, 0.0 * loopy_size, loopy_size, loopy_size], [0.0, loopy_size, loopy_size, 0.0]),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+
+         managed_segments.push_back(ManagedSegment {
+            managed_to_draw: OneOfManagedSegment::ManagedCubic(managed_curve),
+            segment_choices: SegmentChoices {
+               color: ColorChoice::Blue,
+               closure: LineClosureChoice::Unfinished,
+               ..Default::default()
+            },
+            layer: drawable_layer,
+         });
+
+         let polyline_locations = translate_vec(vec![[loopy_size, 0.0], [0.0, 0.0]], shift);
+
+         managed_segments.push_back(ManagedSegment {
+            managed_to_draw: OneOfManagedSegment::Polyline(polyline_locations),
+            segment_choices: SegmentChoices {
+               color: ColorChoice::Blue,
+               continuation: ContinuationChoice::Continues,
+               closure: LineClosureChoice::Closes,
+               ..Default::default()
+            },
+            layer: drawable_layer,
+         });
+      }
+      draw_sample_segment_sequence(&managed_segments, &mut cairo_spartan.spartan);
+
+      managed_segments.clear();
+      {
+         let shift = [1.1, 0.4];
+         let loopy_size = 1.0;
+         let (x, y) = translate_4_simply(
+            ([0.0, 0.0 * loopy_size, loopy_size, loopy_size], [0.0, loopy_size, loopy_size, 0.0]),
+            shift,
+         );
+
+         let managed_curve = ManagedCubic::create_from_control_points(
+            &CubiLinear { r: t_range, x, y, sigma: 1.0, ..Default::default() },
+            cairo_spartan.spartan.prep.axes_range,
+         );
+
+         managed_segments.push_back(ManagedSegment {
+            managed_to_draw: OneOfManagedSegment::ManagedCubic(managed_curve),
+            segment_choices: SegmentChoices {
+               color: ColorChoice::Green,
+               closure: LineClosureChoice::Unfinished,
+               ..Default::default()
+            },
+            layer: drawable_layer,
+         });
+
+         let polyline_locations = translate_vec(vec![[loopy_size, 0.0], [0.0, 0.0]], shift);
+
+         managed_segments.push_back(ManagedSegment {
+            managed_to_draw: OneOfManagedSegment::Polyline(polyline_locations),
+            segment_choices: SegmentChoices {
+               color: ColorChoice::Green,
+               continuation: ContinuationChoice::Continues,
+               closure: LineClosureChoice::OpenEnd,
+               ..Default::default()
+            },
+            layer: drawable_layer,
+         });
+      }
+      draw_sample_segment_sequence(&managed_segments, &mut cairo_spartan.spartan);
+
+      managed_segments.clear();
+      {
+         let shift = [-0.6, -1.2];
+         {
+            let (x, y) = translate_4_simply(
+               scale_4_simply(([0.0, 1.0, 1.0, 0.0], [0.0, 0.65, 3.6, 2.7]), 0.2),
+               shift,
+            );
+            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               cairo_spartan.spartan.prep.axes_range,
+            );
+            managed_curve.raise_to_symmetric_range().unwrap();
+            managed_curve.raise_to_regularized_symmetric().unwrap();
+            managed_curve.raise_to_offset_odd_even().unwrap();
+
+            managed_segments.push_back(ManagedSegment {
+               managed_to_draw: OneOfManagedSegment::ManagedRatQuad(managed_curve),
+               segment_choices: SegmentChoices {
+                  color: ColorChoice::Blue,
+                  closure: LineClosureChoice::Unfinished,
+                  ..Default::default()
+               },
+               layer: drawable_layer,
+            });
+         }
+
+         {
+            let (x, y) = translate_4_simply(
+               scale_4_simply(([0.0, -1.0, -1.0, 0.0], [2.7, 3.6, 0.65, 0.0]), 0.2),
+               shift,
+            );
+            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               cairo_spartan.spartan.prep.axes_range,
+            );
+            managed_curve.raise_to_symmetric_range().unwrap();
+            managed_curve.raise_to_regularized_symmetric().unwrap();
+            managed_curve.raise_to_offset_odd_even().unwrap();
+
+            managed_segments.push_back(ManagedSegment {
+               managed_to_draw: OneOfManagedSegment::ManagedRatQuad(managed_curve),
+               segment_choices: SegmentChoices {
+                  color: ColorChoice::Blue,
+                  continuation: ContinuationChoice::Continues,
+                  closure: LineClosureChoice::Closes,
+                  ..Default::default()
+               },
+               layer: drawable_layer,
+            });
+         }
+      }
+      draw_sample_segment_sequence(&managed_segments, &mut cairo_spartan.spartan);
+
+      managed_segments.clear();
+      {
+         let shift = [0.3, -1.2];
+         {
+            let (x, y) = translate_4_simply(
+               scale_4_simply(([0.0, 1.0, 1.0, 0.0], [0.0, 0.65, 3.6, 2.7]), 0.2),
+               shift,
+            );
+            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               cairo_spartan.spartan.prep.axes_range,
+            );
+            managed_curve.raise_to_symmetric_range().unwrap();
+            managed_curve.raise_to_regularized_symmetric().unwrap();
+            managed_curve.raise_to_offset_odd_even().unwrap();
+
+            managed_segments.push_back(ManagedSegment {
+               managed_to_draw: OneOfManagedSegment::ManagedRatQuad(managed_curve),
+               segment_choices: SegmentChoices {
+                  color: ColorChoice::Green,
+                  closure: LineClosureChoice::Unfinished,
+                  ..Default::default()
+               },
+               layer: drawable_layer,
+            });
+         }
+
+         {
+            let (x, y) = translate_4_simply(
+               scale_4_simply(([0.0, -1.0, -1.0, 0.0], [2.7, 3.6, 0.65, 0.0]), 0.2),
+               shift,
+            );
+            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               cairo_spartan.spartan.prep.axes_range,
+            );
+            managed_curve.raise_to_symmetric_range().unwrap();
+            managed_curve.raise_to_regularized_symmetric().unwrap();
+            managed_curve.raise_to_offset_odd_even().unwrap();
+
+            managed_segments.push_back(ManagedSegment {
+               managed_to_draw: OneOfManagedSegment::ManagedRatQuad(managed_curve),
+               segment_choices: SegmentChoices {
+                  color: ColorChoice::Green,
+                  continuation: ContinuationChoice::Continues,
+                  closure: LineClosureChoice::OpenEnd,
+                  ..Default::default()
+               },
+               layer: drawable_layer,
+            });
+         }
+      }
+      draw_sample_segment_sequence(&managed_segments, &mut cairo_spartan.spartan);
+
+      managed_segments.clear();
+      {
+         let tri_size = 1.7;
+
+         {
+            let shift = [tri_size - 0.9, 1.1];
+
+            let polyline_locations = translate_vec(
+               vec![[-tri_size, 0.0], [0.0, -0.3 * tri_size], [0.0, 0.0], [-tri_size, 0.0]],
+               shift,
+            );
+
+            managed_segments.push_back(ManagedSegment {
+               managed_to_draw: OneOfManagedSegment::Polyline(polyline_locations),
+               segment_choices: SegmentChoices {
+                  color: ColorChoice::Green,
+                  continuation: ContinuationChoice::Starts,
+                  closure: LineClosureChoice::OpenEnd,
+                  ..Default::default()
+               },
+               layer: drawable_layer,
+            });
+         }
+         {
+            let shift = [-0.9, 1.1 - 0.4 * tri_size];
+
+            let polyline_locations = translate_vec(
+               vec![[tri_size, 0.0], [0.0, 0.3 * tri_size], [0.0, 0.0], [tri_size, 0.0]],
+               shift,
+            );
+
+            managed_segments.push_back(ManagedSegment {
+               managed_to_draw: OneOfManagedSegment::Polyline(polyline_locations),
+               segment_choices: SegmentChoices {
+                  color: ColorChoice::Blue,
+                  continuation: ContinuationChoice::Starts,
+                  closure: LineClosureChoice::Closes,
+                  ..Default::default()
+               },
+               layer: drawable_layer,
+            });
+         }
+      }
+      draw_sample_segment_sequence(&managed_segments, &mut cairo_spartan.spartan);
+
+      managed_segments.clear();
+   }
+
+   run_json_svg("segment_sequence_a", &mut cairo_spartan);
 }

@@ -13,8 +13,9 @@
 // limitations under the License.
 
 use crate::choices::ColorChoice;
+use crate::choices::ContinuationChoice;
 use crate::choices::LineChoice;
-// use crate::choices::LineClosureChoice;
+use crate::choices::LineClosureChoice;
 use crate::choices::PointChoice;
 use crate::choices::TextAnchorChoice;
 use crate::choices::TextOffsetChoice;
@@ -23,21 +24,20 @@ use serde::Serialize;
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
 
-#[derive(Serialize, Debug, Default, PartialEq)]
-pub enum Continuation {
-   #[default]
-   Isolated,
-   Continues,
+#[derive(Serialize, Debug, Copy, Clone, DefaultFromSerde, PartialEq, Eq)]
+pub struct SegmentChoices {
+   #[serde(skip_serializing_if = "is_default")]
+   pub line_choice: LineChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub color: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub continuation: ContinuationChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub closure: LineClosureChoice,
 }
 
-// Directions (horizontal, vertical) over which to offset anchoring.
-#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub enum LineClosureChoice {
-   #[default]
-   Open,
-   Closes,
-}
-
+// Single-segment lines are more naturally one-stage polylines rather than single-element lines
+// sets.
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct LinesDrawable {
    #[serde(skip_serializing_if = "is_default")]
@@ -46,10 +46,6 @@ pub struct LinesDrawable {
    pub color_choice: ColorChoice,
    #[serde(skip_serializing_if = "is_default")]
    pub coords: Vec<([f64; 2], [f64; 2])>,
-   // #[serde(skip_serializing_if = "is_default")]
-   // pub start: Vec<[f64; 2]>,
-   // #[serde(skip_serializing_if = "is_default")]
-   // pub end: Vec<[f64; 2]>,
    // If offsets is empty, draw single line with no offset.
    #[serde(skip_serializing_if = "is_default")]
    pub offsets: Option<Vec<[f64; 2]>>,
@@ -58,9 +54,7 @@ pub struct LinesDrawable {
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct ArcDrawable {
    #[serde(skip_serializing_if = "is_default")]
-   pub line_choice: LineChoice,
-   #[serde(skip_serializing_if = "is_default")]
-   pub color_choice: ColorChoice,
+   pub segment_choices: SegmentChoices,
    #[serde(skip_serializing_if = "is_default")]
    pub angle_range: [f64; 2],
    #[serde(skip_serializing_if = "is_default")]
@@ -73,9 +67,7 @@ pub struct ArcDrawable {
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct CubicDrawable {
    #[serde(skip_serializing_if = "is_default")]
-   pub line_choice: LineChoice,
-   #[serde(skip_serializing_if = "is_default")]
-   pub color_choice: ColorChoice,
+   pub segment_choices: SegmentChoices,
    #[serde(skip_serializing_if = "is_default")]
    pub x: [f64; 4],
    #[serde(skip_serializing_if = "is_default")]
@@ -130,13 +122,24 @@ pub struct CirclesDrawable {
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct PolylineDrawable {
    #[serde(skip_serializing_if = "is_default")]
-   pub line_choice: LineChoice,
-   #[serde(skip_serializing_if = "is_default")]
-   pub line_closure_choice: LineClosureChoice,
-   #[serde(skip_serializing_if = "is_default")]
-   pub color_choice: ColorChoice,
+   pub segment_choices: SegmentChoices,
    #[serde(skip_serializing_if = "is_default")]
    pub locations: Vec<[f64; 2]>,
+}
+
+#[derive(Serialize, Debug, Default, PartialEq)]
+pub enum OneOfSegment {
+   #[default]
+   Nothing,
+   Arc(ArcDrawable),
+   Cubic(CubicDrawable),
+   Polyline(PolylineDrawable),
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct SegmentSequence {
+   #[serde(skip_serializing_if = "is_default")]
+   pub segments: Vec<OneOfSegment>,
 }
 
 #[derive(Serialize, Debug, Default, PartialEq)]
@@ -150,6 +153,7 @@ pub enum OneOfDrawable {
    Text(TextDrawable),
    Circles(CirclesDrawable),
    Polyline(PolylineDrawable),
+   SegmentSequence(SegmentSequence),
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]

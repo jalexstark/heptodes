@@ -13,7 +13,9 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closes",
+          "segment_choices": {
+            "closure": "Closes"
+          },
           "locations": [
             [
               -4.5,
@@ -261,7 +263,9 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "locations": [
             [
               -2.061559595959596,
@@ -395,7 +399,9 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "color_choice": "BrightBlue",
+          "segment_choices": {
+            "color": "BrightBlue"
+          },
           "angle_range": [
             -2.433730768688996,
             2.433730768688996

@@ -1,0 +1,335 @@
+{
+  "sizing_scheme": "SquareCenter",
+  "base_width": 200.0,
+  "base_height": 150.0,
+  "axes_range": [
+    -1.2,
+    -1.4,
+    3.1,
+    1.4
+  ],
+  "padding": [
+    0.05
+  ],
+  "drawables": [
+    {
+      "drawable": {
+        "Polyline": {
+          "segment_choices": {
+            "closure": "Closes"
+          },
+          "locations": [
+            [
+              -1.2,
+              -1.4
+            ],
+            [
+              -1.2,
+              1.4
+            ],
+            [
+              3.1,
+              1.4
+            ],
+            [
+              3.1,
+              -1.4
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Cubic": {
+          "segment_choices": {
+            "color": "Blue",
+            "closure": "Closes"
+          },
+          "x": [
+            2.1,
+            3.6,
+            2.1,
+            2.1
+          ],
+          "y": [
+            -0.7,
+            -0.7,
+            0.8,
+            -0.7
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Cubic": {
+          "segment_choices": {
+            "color": "Green"
+          },
+          "x": [
+            2.3,
+            3.8,
+            2.3,
+            2.3
+          ],
+          "y": [
+            0.2,
+            0.2,
+            1.7,
+            0.2
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Cubic": {
+          "segment_choices": {
+            "color": "Blue",
+            "closure": "Unfinished"
+          },
+          "x": [
+            0.9,
+            0.9,
+            1.9,
+            1.9
+          ],
+          "y": [
+            -1.1,
+            -0.10000000000000009,
+            -0.10000000000000009,
+            -1.1
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Polyline": {
+          "segment_choices": {
+            "color": "Blue",
+            "continuation": "Continues",
+            "closure": "Closes"
+          },
+          "locations": [
+            [
+              1.9,
+              -1.1
+            ],
+            [
+              0.9,
+              -1.1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Cubic": {
+          "segment_choices": {
+            "color": "Green",
+            "closure": "Unfinished"
+          },
+          "x": [
+            1.1,
+            1.1,
+            2.1,
+            2.1
+          ],
+          "y": [
+            0.4,
+            1.4,
+            1.4,
+            0.4
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Polyline": {
+          "segment_choices": {
+            "color": "Green",
+            "continuation": "Continues"
+          },
+          "locations": [
+            [
+              2.1,
+              0.4
+            ],
+            [
+              1.1,
+              0.4
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Arc": {
+          "segment_choices": {
+            "color": "Blue",
+            "closure": "Unfinished"
+          },
+          "angle_range": [
+            -1.7101356675526658,
+            1.7101356675526658
+          ],
+          "center": [
+            -0.557513768686074,
+            -0.8970731707317072
+          ],
+          "transform": [
+            0.30590086546026746,
+            0.23707317073170747,
+            -6.96528225332221e-17,
+            0.27264245873826204
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Arc": {
+          "segment_choices": {
+            "color": "Blue",
+            "continuation": "Continues",
+            "closure": "Closes"
+          },
+          "angle_range": [
+            -1.710135667552666,
+            1.710135667552666
+          ],
+          "center": [
+            -0.6424862313139259,
+            -0.8970731707317072
+          ],
+          "transform": [
+            -0.3059008654602676,
+            0.23707317073170747,
+            0.0,
+            -0.27264245873826215
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Arc": {
+          "segment_choices": {
+            "color": "Green",
+            "closure": "Unfinished"
+          },
+          "angle_range": [
+            -1.710135667552666,
+            1.710135667552666
+          ],
+          "center": [
+            0.34248623131392597,
+            -0.8970731707317072
+          ],
+          "transform": [
+            0.3059008654602676,
+            0.23707317073170736,
+            -1.1937518019851725e-18,
+            0.27264245873826215
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Arc": {
+          "segment_choices": {
+            "color": "Green",
+            "continuation": "Continues"
+          },
+          "angle_range": [
+            -1.7101356675526658,
+            1.7101356675526658
+          ],
+          "center": [
+            0.25751376868607406,
+            -0.8970731707317072
+          ],
+          "transform": [
+            -0.30590086546026757,
+            0.23707317073170747,
+            0.0,
+            -0.2726424587382621
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Polyline": {
+          "segment_choices": {
+            "color": "Green"
+          },
+          "locations": [
+            [
+              -0.9,
+              1.1
+            ],
+            [
+              0.7999999999999999,
+              0.5900000000000001
+            ],
+            [
+              0.7999999999999999,
+              1.1
+            ],
+            [
+              -0.9,
+              1.1
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 30,
+      "drawable": {
+        "Polyline": {
+          "segment_choices": {
+            "color": "Blue",
+            "closure": "Closes"
+          },
+          "locations": [
+            [
+              0.7999999999999999,
+              0.42000000000000004
+            ],
+            [
+              -0.9,
+              0.93
+            ],
+            [
+              -0.9,
+              0.42000000000000004
+            ],
+            [
+              0.7999999999999999,
+              0.42000000000000004
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

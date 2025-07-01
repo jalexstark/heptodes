@@ -15,7 +15,9 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closes",
+          "segment_choices": {
+            "closure": "Closes"
+          },
           "locations": [
             [
               -3.2,
@@ -177,7 +179,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "x": [
             -2.2,
             -1.8,
@@ -392,7 +396,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "x": [
             3.8,
             4.2,
@@ -435,7 +441,9 @@
       "layer": 30,
       "drawable": {
         "Cubic": {
-          "color_choice": "Blue",
+          "segment_choices": {
+            "color": "Blue"
+          },
           "x": [
             4.0,
             4.0,

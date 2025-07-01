@@ -13,7 +13,9 @@
     {
       "drawable": {
         "Polyline": {
-          "line_closure_choice": "Closes",
+          "segment_choices": {
+            "closure": "Closes"
+          },
           "locations": [
             [
               -3.5,
@@ -192,7 +194,9 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "locations": [
             [
               -2.9999999999999996,
@@ -451,7 +455,9 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "locations": [
             [
               0.0,
@@ -710,7 +716,9 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "color_choice": "Green",
+          "segment_choices": {
+            "color": "Green"
+          },
           "locations": [
             [
               3.0000000000000004,

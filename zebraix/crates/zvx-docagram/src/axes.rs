@@ -17,16 +17,17 @@ use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
 use zvx_drawable::choices::LineChoice;
+use zvx_drawable::choices::LineClosureChoice;
 use zvx_drawable::choices::TextAnchorChoice;
 use zvx_drawable::choices::TextAnchorHorizontal;
 use zvx_drawable::choices::TextAnchorVertical;
 use zvx_drawable::choices::TextOffsetChoice;
 use zvx_drawable::choices::TextSizeChoice;
-use zvx_drawable::kinds::LineClosureChoice;
 use zvx_drawable::kinds::LinesDrawable;
 use zvx_drawable::kinds::OneOfDrawable;
 use zvx_drawable::kinds::PolylineDrawable;
 use zvx_drawable::kinds::QualifiedDrawable;
+use zvx_drawable::kinds::SegmentChoices;
 use zvx_drawable::kinds::TextDrawable;
 use zvx_drawable::kinds::TextSingle;
 
@@ -198,14 +199,16 @@ impl AxesSpec {
             diagram.drawables.push(QualifiedDrawable {
                drawable: OneOfDrawable::Polyline(PolylineDrawable {
                   // This should be miter-join even if we switch default later.
-                  line_closure_choice: LineClosureChoice::Closes,
+                  segment_choices: SegmentChoices {
+                     closure: LineClosureChoice::Closes,
+                     ..Default::default()
+                  },
                   locations: vec![
                      [range[0], range[1]],
                      [range[0], range[3]],
                      [range[2], range[3]],
                      [range[2], range[1]],
                   ],
-                  ..Default::default()
                }),
                ..Default::default()
             });
