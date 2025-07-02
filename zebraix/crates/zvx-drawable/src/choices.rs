@@ -31,7 +31,7 @@ pub enum LineChoice {
 #[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ContinuationChoice {
    #[default]
-   Starts,
+   Starts, // Default is behaviour for isolated line or curve.
    Continues,
 }
 
@@ -40,9 +40,18 @@ pub enum ContinuationChoice {
 #[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum LineClosureChoice {
    #[default]
-   OpenEnd,
+   OpenEnd, // Default is behaviour for isolated line or curve.
    Closes,
    Unfinished,
+}
+
+// Some non-sequential drawables can form closed paths, but their begin and end points should
+// match.
+#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+pub enum PathCompletion {
+   #[default]
+   Open,
+   Closed,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -94,6 +103,8 @@ pub enum TextAnchorChoice {
    ThreeByThree(TextAnchorHorizontal, TextAnchorVertical),
 }
 
+// This is really too high-level. Colour palettes will move higher up, and the lower level will
+// be a choice between RGB and CMYK, with conversion.
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum ColorChoice {
    #[default]

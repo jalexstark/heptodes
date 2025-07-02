@@ -12,27 +12,29 @@
   "drawables": [
     {
       "drawable": {
-        "Polyline": {
-          "segment_choices": {
-            "closure": "Closes"
-          },
-          "locations": [
-            [
-              -3.5,
-              -2.5
-            ],
-            [
-              -3.5,
-              2.5
-            ],
-            [
-              3.5,
-              2.5
-            ],
-            [
-              3.5,
-              -2.5
-            ]
+        "SegmentSequence": {
+          "completion": "Closed",
+          "segments": [
+            {
+              "Polyline": [
+                [
+                  -3.5,
+                  -2.5
+                ],
+                [
+                  -3.5,
+                  2.5
+                ],
+                [
+                  3.5,
+                  2.5
+                ],
+                [
+                  3.5,
+                  -2.5
+                ]
+              ]
+            }
           ]
         }
       }
@@ -40,7 +42,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -81,7 +85,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -194,10 +200,10 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "segment_choices": {
+          "path_choices": {
             "color": "Green"
           },
-          "locations": [
+          "path": [
             [
               -2.9999999999999996,
               -2.0
@@ -455,10 +461,10 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "segment_choices": {
+          "path_choices": {
             "color": "Green"
           },
-          "locations": [
+          "path": [
             [
               0.0,
               -1.9999999999999993
@@ -716,10 +722,10 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "segment_choices": {
+          "path_choices": {
             "color": "Green"
           },
-          "locations": [
+          "path": [
             [
               3.0000000000000004,
               -2.0

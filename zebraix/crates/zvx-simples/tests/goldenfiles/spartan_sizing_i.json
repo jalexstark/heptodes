@@ -50,7 +50,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [

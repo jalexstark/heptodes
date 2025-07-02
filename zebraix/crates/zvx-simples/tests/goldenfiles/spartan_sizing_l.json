@@ -9,27 +9,29 @@
   "drawables": [
     {
       "drawable": {
-        "Polyline": {
-          "segment_choices": {
-            "closure": "Closes"
-          },
-          "locations": [
-            [
-              -5.0,
-              -5.0
-            ],
-            [
-              -5.0,
-              5.0
-            ],
-            [
-              5.0,
-              5.0
-            ],
-            [
-              5.0,
-              -5.0
-            ]
+        "SegmentSequence": {
+          "completion": "Closed",
+          "segments": [
+            {
+              "Polyline": [
+                [
+                  -5.0,
+                  -5.0
+                ],
+                [
+                  -5.0,
+                  5.0
+                ],
+                [
+                  5.0,
+                  5.0
+                ],
+                [
+                  5.0,
+                  -5.0
+                ]
+              ]
+            }
           ]
         }
       }
@@ -37,7 +39,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -94,7 +98,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -225,10 +231,10 @@
     {
       "drawable": {
         "Polyline": {
-          "segment_choices": {
+          "path_choices": {
             "color": "Red"
           },
-          "locations": [
+          "path": [
             [
               -3.0,
               2.0
@@ -263,40 +269,44 @@
     },
     {
       "drawable": {
-        "Polyline": {
-          "segment_choices": {
-            "color": "Green",
-            "closure": "Closes"
+        "SegmentSequence": {
+          "completion": "Closed",
+          "path_choices": {
+            "color": "Green"
           },
-          "locations": [
-            [
-              -3.0,
-              -2.0
-            ],
-            [
-              -2.0,
-              -3.0
-            ],
-            [
-              -1.0,
-              -1.0
-            ],
-            [
-              0.0,
-              -3.0
-            ],
-            [
-              1.0,
-              -1.0
-            ],
-            [
-              2.0,
-              -3.0
-            ],
-            [
-              3.0,
-              -2.0
-            ]
+          "segments": [
+            {
+              "Polyline": [
+                [
+                  -3.0,
+                  -2.0
+                ],
+                [
+                  -2.0,
+                  -3.0
+                ],
+                [
+                  -1.0,
+                  -1.0
+                ],
+                [
+                  0.0,
+                  -3.0
+                ],
+                [
+                  1.0,
+                  -1.0
+                ],
+                [
+                  2.0,
+                  -3.0
+                ],
+                [
+                  3.0,
+                  -2.0
+                ]
+              ]
+            }
           ]
         }
       }
