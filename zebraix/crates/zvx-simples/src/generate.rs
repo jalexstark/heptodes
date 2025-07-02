@@ -67,10 +67,14 @@ pub fn create_rat_quad_segment(
       RatQuadOoeSubtype::Parabolic => {
          let (x, y) = rat_quad.characterize_endpoints();
          let f = 1.0 / 3.0;
-         let four_x = [x[0], x[0] + f * x[1], x[3] - f * x[2], x[3]];
-         let four_y = [y[0], y[0] + f * y[1], y[3] - f * y[2], y[3]];
+         let four_c = [
+            [x[0], y[0]],
+            [x[0] + f * x[1], y[0] + f * y[1]],
+            [x[3] - f * x[2], y[3] - f * y[2]],
+            [x[3], y[3]],
+         ];
 
-         OneOfSegment::Cubic(CubicDrawable { segment_choices, x: four_x, y: four_y })
+         OneOfSegment::Cubic(CubicDrawable { segment_choices, c: four_c })
       }
 
       // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
@@ -411,8 +415,12 @@ pub fn draw_sample_cubilinear(
                line_choice: curve_config.main_line_choice,
                ..Default::default()
             },
-            x: four_point.x,
-            y: four_point.y,
+            c: [
+               [four_point.x[0], four_point.y[0]],
+               [four_point.x[1], four_point.y[1]],
+               [four_point.x[2], four_point.y[2]],
+               [four_point.x[3], four_point.y[3]],
+            ],
          }),
       });
    }
@@ -446,8 +454,12 @@ pub fn draw_sample_segment_sequence(
                layer: segment.layer,
                drawable: OneOfDrawable::Cubic(CubicDrawable {
                   segment_choices: segment.segment_choices,
-                  x: four_point.x,
-                  y: four_point.y,
+                  c: [
+                     [four_point.x[0], four_point.y[0]],
+                     [four_point.x[1], four_point.y[1]],
+                     [four_point.x[2], four_point.y[2]],
+                     [four_point.x[3], four_point.y[3]],
+                  ],
                }),
             });
          }

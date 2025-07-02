@@ -69,9 +69,7 @@ pub struct CubicDrawable {
    #[serde(skip_serializing_if = "is_default")]
    pub segment_choices: SegmentChoices,
    #[serde(skip_serializing_if = "is_default")]
-   pub x: [f64; 4],
-   #[serde(skip_serializing_if = "is_default")]
-   pub y: [f64; 4],
+   pub c: [[f64; 2]; 4],
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]

@@ -237,15 +237,15 @@ impl CairoSpartanRender {
       self.save_set_path_transform(canvas_layout, context);
 
       if drawable.segment_choices.continuation == ContinuationChoice::Starts {
-         context.move_to(drawable.x[0], drawable.y[0]);
+         context.move_to(drawable.c[0][0], drawable.c[0][1]);
       }
       context.curve_to(
-         drawable.x[1],
-         drawable.y[1],
-         drawable.x[2],
-         drawable.y[2],
-         drawable.x[3],
-         drawable.y[3],
+         drawable.c[1][0],
+         drawable.c[1][1],
+         drawable.c[2][0],
+         drawable.c[2][1],
+         drawable.c[3][0],
+         drawable.c[3][1],
       );
       match drawable.segment_choices.closure {
          LineClosureChoice::Closes => {
