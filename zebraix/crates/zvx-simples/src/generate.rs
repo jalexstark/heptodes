@@ -21,10 +21,10 @@ use zvx_curves::base::SpecifiedRatQuad;
 use zvx_curves::managed::ManagedCubic;
 use zvx_curves::managed::ManagedRatQuad;
 use zvx_docagram::diagram::SpartanDiagram;
-use zvx_drawable::choices::{ColorChoice, LineChoice, PointChoice};
+use zvx_drawable::choices::{ColorChoice, LineChoice, PathCompletion, PointChoice};
 use zvx_drawable::kinds::{
-   ArcDrawable, CubicDrawable, LinesDrawable, OneOfDrawable, OneOfSegment, PointsDrawable,
-   PolylineDrawable, QualifiedDrawable, SegmentChoices,
+   ArcDrawable, ArcPath, CubicDrawable, CubicPath, LinesDrawable, OneOfDrawable, OneOfSegment,
+   PathChoices, PointsDrawable, PolylineDrawable, QualifiedDrawable, SegmentSequence,
 };
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -36,11 +36,12 @@ pub enum SampleOption {
 
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
-pub fn create_rat_quad_segment(
+#[must_use]
+pub fn create_rat_quad_path(
    num_segments_hyperbolic: i32,
    rat_quad: &BaseRatQuad,
    ooe_rat_quad: &BaseRatQuad,
-   segment_choices: SegmentChoices,
+   // path_choices: PathChoices,
 ) -> OneOfSegment {
    assert_eq!(ooe_rat_quad.state, RatQuadState::OffsetOddEven);
 
@@ -56,8 +57,7 @@ pub fn create_rat_quad_segment(
          // The arc range is [-angle_range, angle_range].
          let angle_range = 2.0 * (r * (ooe_rat_quad.a[2] / ooe_rat_quad.a[0]).sqrt()).atan();
 
-         OneOfSegment::Arc(ArcDrawable {
-            segment_choices,
+         OneOfSegment::Arc(ArcPath {
             angle_range: [-angle_range, angle_range],
             center: [mx, my],
             transform: [cx, cy, sx, sy],
@@ -67,14 +67,14 @@ pub fn create_rat_quad_segment(
       RatQuadOoeSubtype::Parabolic => {
          let (x, y) = rat_quad.characterize_endpoints();
          let f = 1.0 / 3.0;
-         let four_c = [
+         let four_c: CubicPath = [
             [x[0], y[0]],
             [x[0] + f * x[1], y[0] + f * y[1]],
             [x[3] - f * x[2], y[3] - f * y[2]],
             [x[3], y[3]],
          ];
 
-         OneOfSegment::Cubic(CubicDrawable { segment_choices, c: four_c })
+         OneOfSegment::Cubic(four_c)
       }
 
       // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
@@ -99,7 +99,7 @@ pub fn create_rat_quad_segment(
          //    }
          // }
 
-         OneOfSegment::Polyline(PolylineDrawable { segment_choices, locations: pattern_vec })
+         OneOfSegment::Polyline(pattern_vec)
       }
    }
 }
@@ -110,29 +110,31 @@ pub fn push_rat_quad_drawable(
    spartan: &mut SpartanDiagram,
    rat_quad: &BaseRatQuad,
    ooe_rat_quad: &BaseRatQuad,
-   segment_choices: SegmentChoices,
+   path_choices: PathChoices,
    layer: i32,
 ) {
    assert_eq!(ooe_rat_quad.state, RatQuadState::OffsetOddEven);
 
-   let segment = create_rat_quad_segment(
-      spartan.num_segments_hyperbolic,
-      rat_quad,
-      ooe_rat_quad,
-      segment_choices,
-   );
+   let one_of_path = create_rat_quad_path(spartan.num_segments_hyperbolic, rat_quad, ooe_rat_quad);
 
-   match segment {
-      OneOfSegment::Arc(arc) => {
-         spartan.drawables.push(QualifiedDrawable { layer, drawable: OneOfDrawable::Arc(arc) });
+   match one_of_path {
+      OneOfSegment::Arc(path) => {
+         spartan.drawables.push(QualifiedDrawable {
+            layer,
+            drawable: OneOfDrawable::Arc(ArcDrawable { path, path_choices }),
+         });
       }
-      OneOfSegment::Cubic(cubic) => {
-         spartan.drawables.push(QualifiedDrawable { layer, drawable: OneOfDrawable::Cubic(cubic) });
+      OneOfSegment::Cubic(path) => {
+         spartan.drawables.push(QualifiedDrawable {
+            layer,
+            drawable: OneOfDrawable::Cubic(CubicDrawable { path, path_choices }),
+         });
       }
-      OneOfSegment::Polyline(polyline) => {
-         spartan
-            .drawables
-            .push(QualifiedDrawable { layer, drawable: OneOfDrawable::Polyline(polyline) });
+      OneOfSegment::Polyline(path) => {
+         spartan.drawables.push(QualifiedDrawable {
+            layer,
+            drawable: OneOfDrawable::Polyline(PolylineDrawable { path, path_choices }),
+         });
       }
       OneOfSegment::Nothing => {
          panic!("Unreachable code.");
@@ -243,8 +245,10 @@ pub fn draw_sample_rat_quad(
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.control_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
-            line_choice: curve_config.control_line_choice,
-            color_choice,
+            path_choices: PathChoices {
+               color: color_choice,
+               line_choice: curve_config.control_line_choice,
+            },
             coords: vec![
                (end_points_vec[0], expanded_control_points_vec[0]),
                (end_points_vec[1], expanded_control_points_vec[1]),
@@ -307,12 +311,11 @@ pub fn draw_sample_rat_quad(
          spartan.drawables.push(QualifiedDrawable {
             layer: curve_config.main_line_layer,
             drawable: OneOfDrawable::Polyline(PolylineDrawable {
-               segment_choices: SegmentChoices {
+               path_choices: PathChoices {
                   color: color_choice,
                   line_choice: curve_config.main_line_choice,
-                  ..Default::default()
                },
-               locations: pattern_vec,
+               path: pattern_vec,
             }),
          });
       } else {
@@ -321,11 +324,7 @@ pub fn draw_sample_rat_quad(
             spartan,
             rat_quad,
             ooe_rat_quad,
-            SegmentChoices {
-               color: color_choice,
-               line_choice: curve_config.main_line_choice,
-               ..Default::default()
-            },
+            PathChoices { color: color_choice, line_choice: curve_config.main_line_choice },
             curve_config.main_line_layer,
          );
       }
@@ -369,8 +368,10 @@ pub fn draw_sample_cubilinear(
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.control_layer,
          drawable: OneOfDrawable::Lines(LinesDrawable {
-            line_choice: curve_config.control_line_choice,
-            color_choice,
+            path_choices: PathChoices {
+               color: color_choice,
+               line_choice: curve_config.control_line_choice,
+            },
             coords: vec![
                (end_points_vec[0], control_points_vec[0]),
                (end_points_vec[1], control_points_vec[1]),
@@ -410,12 +411,11 @@ pub fn draw_sample_cubilinear(
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.main_line_layer,
          drawable: OneOfDrawable::Cubic(CubicDrawable {
-            segment_choices: SegmentChoices {
+            path_choices: PathChoices {
                color: color_choice,
                line_choice: curve_config.main_line_choice,
-               ..Default::default()
             },
-            c: [
+            path: [
                [four_point.x[0], four_point.y[0]],
                [four_point.x[1], four_point.y[1]],
                [four_point.x[2], four_point.y[2]],
@@ -433,56 +433,51 @@ pub enum OneOfManagedSegment {
    Polyline(Vec<[f64; 2]>),
 }
 
-pub struct ManagedSegment {
-   pub managed_to_draw: OneOfManagedSegment,
-   pub segment_choices: SegmentChoices,
-   pub layer: i32,
-}
-
 #[allow(clippy::missing_panics_doc)]
 #[allow(clippy::suboptimal_flops)]
 pub fn draw_sample_segment_sequence(
-   segments: &VecDeque<ManagedSegment>,
+   segments: &VecDeque<OneOfManagedSegment>,
+   path_choices: PathChoices,
+   completion: PathCompletion,
+   layer: i32,
    spartan: &mut SpartanDiagram,
 ) {
+   let mut segments_paths: Vec<OneOfSegment> = Vec::new();
+
    for segment in segments {
-      match &segment.managed_to_draw {
+      match &segment {
          OneOfManagedSegment::ManagedCubic(managed_cubic) => {
             let four_point = &managed_cubic.four_point;
 
-            spartan.drawables.push(QualifiedDrawable {
-               layer: segment.layer,
-               drawable: OneOfDrawable::Cubic(CubicDrawable {
-                  segment_choices: segment.segment_choices,
-                  c: [
-                     [four_point.x[0], four_point.y[0]],
-                     [four_point.x[1], four_point.y[1]],
-                     [four_point.x[2], four_point.y[2]],
-                     [four_point.x[3], four_point.y[3]],
-                  ],
-               }),
-            });
+            segments_paths.push(OneOfSegment::Cubic([
+               [four_point.x[0], four_point.y[0]],
+               [four_point.x[1], four_point.y[1]],
+               [four_point.x[2], four_point.y[2]],
+               [four_point.x[3], four_point.y[3]],
+            ]));
          }
+
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
             let rat_quad: &BaseRatQuad = managed_rat_quad.get_poly_rat_quad();
             let ooe_rat_quad: &BaseRatQuad = managed_rat_quad.get_ooe_rat_quad();
-            push_rat_quad_drawable(
-               spartan,
+            segments_paths.push(create_rat_quad_path(
+               spartan.num_segments_hyperbolic,
                rat_quad,
                ooe_rat_quad,
-               segment.segment_choices,
-               segment.layer,
-            );
+            ));
          }
          OneOfManagedSegment::Polyline(locations) => {
-            spartan.drawables.push(QualifiedDrawable {
-               layer: segment.layer,
-               drawable: OneOfDrawable::Polyline(PolylineDrawable {
-                  segment_choices: segment.segment_choices,
-                  locations: locations.clone(),
-               }),
-            });
+            segments_paths.push(OneOfSegment::Polyline(locations.clone()));
          }
       }
    }
+
+   spartan.drawables.push(QualifiedDrawable {
+      layer,
+      drawable: OneOfDrawable::SegmentSequence(SegmentSequence {
+         path_choices,
+         completion,
+         segments: segments_paths,
+      }),
+   });
 }

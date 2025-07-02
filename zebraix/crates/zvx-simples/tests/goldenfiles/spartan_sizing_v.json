@@ -13,27 +13,29 @@
   "drawables": [
     {
       "drawable": {
-        "Polyline": {
-          "segment_choices": {
-            "closure": "Closes"
-          },
-          "locations": [
-            [
-              -4.5,
-              -3.5
-            ],
-            [
-              -4.5,
-              3.5
-            ],
-            [
-              2.5,
-              3.5
-            ],
-            [
-              2.5,
-              -3.5
-            ]
+        "SegmentSequence": {
+          "completion": "Closed",
+          "segments": [
+            {
+              "Polyline": [
+                [
+                  -4.5,
+                  -3.5
+                ],
+                [
+                  -4.5,
+                  3.5
+                ],
+                [
+                  2.5,
+                  3.5
+                ],
+                [
+                  2.5,
+                  -3.5
+                ]
+              ]
+            }
           ]
         }
       }
@@ -41,7 +43,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -90,7 +94,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -173,8 +179,10 @@
       "layer": 10,
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
-          "color_choice": "YellowBrown",
+          "path_choices": {
+            "line_choice": "Light",
+            "color": "YellowBrown"
+          },
           "coords": [
             [
               [
@@ -259,23 +267,25 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "segment_choices": {
+          "path_choices": {
             "color": "Green"
           },
-          "angle_range": [
-            -0.4636476090008061,
-            0.4636476090008061
-          ],
-          "center": [
-            -0.9999999999999998,
-            1.1102230246251565e-16
-          ],
-          "transform": [
-            2.7391832724372414,
-            1.3975424859373682,
-            -1.2298373876248838,
-            1.1180339887498947
-          ]
+          "path": {
+            "angle_range": [
+              -0.4636476090008061,
+              0.4636476090008061
+            ],
+            "center": [
+              -0.9999999999999998,
+              1.1102230246251565e-16
+            ],
+            "transform": [
+              2.7391832724372414,
+              1.3975424859373682,
+              -1.2298373876248838,
+              1.1180339887498947
+            ]
+          }
         }
       }
     },
@@ -316,8 +326,10 @@
       "layer": 10,
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
-          "color_choice": "YellowBrown",
+          "path_choices": {
+            "line_choice": "Light",
+            "color": "YellowBrown"
+          },
           "coords": [
             [
               [
@@ -402,23 +414,25 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "segment_choices": {
+          "path_choices": {
             "color": "Green"
           },
-          "angle_range": [
-            -1.1071487177940904,
-            1.1071487177940904
-          ],
-          "center": [
-            -1.0,
-            0.0
-          ],
-          "transform": [
-            -1.229837387624885,
-            1.1180339887498953,
-            -2.739183272437243,
-            -1.397542485937369
-          ]
+          "path": {
+            "angle_range": [
+              -1.1071487177940904,
+              1.1071487177940904
+            ],
+            "center": [
+              -1.0,
+              0.0
+            ],
+            "transform": [
+              -1.229837387624885,
+              1.1180339887498953,
+              -2.739183272437243,
+              -1.397542485937369
+            ]
+          }
         }
       }
     },
@@ -426,23 +440,25 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "segment_choices": {
+          "path_choices": {
             "color": "RedRedBlue"
           },
-          "angle_range": [
-            -1.5707963267948966,
-            1.5707963267948966
-          ],
-          "center": [
-            -1.0000000000000004,
-            -1.1102230246251565e-16
-          ],
-          "transform": [
-            -0.12500000000000033,
-            -1.6250000000000004,
-            -3.0,
-            -0.75
-          ]
+          "path": {
+            "angle_range": [
+              -1.5707963267948966,
+              1.5707963267948966
+            ],
+            "center": [
+              -1.0000000000000004,
+              -1.1102230246251565e-16
+            ],
+            "transform": [
+              -0.12500000000000033,
+              -1.6250000000000004,
+              -3.0,
+              -0.75
+            ]
+          }
         }
       }
     }

@@ -10,27 +10,29 @@
   "drawables": [
     {
       "drawable": {
-        "Polyline": {
-          "segment_choices": {
-            "closure": "Closes"
-          },
-          "locations": [
-            [
-              -5.0,
-              -5.0
-            ],
-            [
-              -5.0,
-              5.0
-            ],
-            [
-              5.0,
-              5.0
-            ],
-            [
-              5.0,
-              -5.0
-            ]
+        "SegmentSequence": {
+          "completion": "Closed",
+          "segments": [
+            {
+              "Polyline": [
+                [
+                  -5.0,
+                  -5.0
+                ],
+                [
+                  -5.0,
+                  5.0
+                ],
+                [
+                  5.0,
+                  5.0
+                ],
+                [
+                  5.0,
+                  -5.0
+                ]
+              ]
+            }
           ]
         }
       }
@@ -38,7 +40,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -95,7 +99,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -227,7 +233,9 @@
       "layer": 15,
       "drawable": {
         "Circles": {
-          "color_choice": "BrightRed",
+          "path_choices": {
+            "color": "BrightRed"
+          },
           "radius": 1.2,
           "centers": [
             [
@@ -246,7 +254,9 @@
       "layer": 10,
       "drawable": {
         "Circles": {
-          "color_choice": "Blue",
+          "path_choices": {
+            "color": "Blue"
+          },
           "radius": 1.2,
           "centers": [
             [

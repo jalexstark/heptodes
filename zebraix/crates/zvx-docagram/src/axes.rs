@@ -16,20 +16,14 @@ use crate::diagram::SpartanDiagram;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
-use zvx_drawable::choices::LineChoice;
-use zvx_drawable::choices::LineClosureChoice;
-use zvx_drawable::choices::TextAnchorChoice;
-use zvx_drawable::choices::TextAnchorHorizontal;
-use zvx_drawable::choices::TextAnchorVertical;
-use zvx_drawable::choices::TextOffsetChoice;
-use zvx_drawable::choices::TextSizeChoice;
-use zvx_drawable::kinds::LinesDrawable;
-use zvx_drawable::kinds::OneOfDrawable;
-use zvx_drawable::kinds::PolylineDrawable;
-use zvx_drawable::kinds::QualifiedDrawable;
-use zvx_drawable::kinds::SegmentChoices;
-use zvx_drawable::kinds::TextDrawable;
-use zvx_drawable::kinds::TextSingle;
+use zvx_drawable::choices::{
+   LineChoice, PathCompletion, TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical,
+   TextOffsetChoice, TextSizeChoice,
+};
+use zvx_drawable::kinds::{
+   LinesDrawable, OneOfDrawable, OneOfSegment, PathChoices, QualifiedDrawable, SegmentSequence,
+   TextDrawable, TextSingle,
+};
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 #[allow(clippy::module_name_repetitions)]
@@ -178,37 +172,39 @@ impl AxesSpec {
       let axes_layer = 0;
       let mut lines_ordinary = LinesDrawable {
          offsets: Some(vec![[0.0, 0.0]]),
-         color_choice: diagram.base_color_choice,
+         path_choices: PathChoices { color: diagram.base_color_choice, ..Default::default() },
          ..Default::default()
       };
       let mut horizontal_light = LinesDrawable {
          coords: vec![([range[0], 0.0], [range[2], 0.0])],
-         line_choice: LineChoice::Light,
-         color_choice: diagram.light_color_choice,
+         path_choices: PathChoices {
+            line_choice: LineChoice::Light,
+            color: diagram.light_color_choice,
+         },
          offsets: Some(Vec::<[f64; 2]>::new()),
       };
       let mut vertical_light = LinesDrawable {
          coords: vec![([0.0, range[1]], [0.0, range[3]])],
-         line_choice: LineChoice::Light,
-         color_choice: diagram.light_color_choice,
+         path_choices: PathChoices {
+            line_choice: LineChoice::Light,
+            color: diagram.light_color_choice,
+         },
          ..Default::default()
       };
 
       match self.axes_style {
          AxesStyle::BoxCross | AxesStyle::Boxed => {
             diagram.drawables.push(QualifiedDrawable {
-               drawable: OneOfDrawable::Polyline(PolylineDrawable {
+               drawable: OneOfDrawable::SegmentSequence(SegmentSequence {
                   // This should be miter-join even if we switch default later.
-                  segment_choices: SegmentChoices {
-                     closure: LineClosureChoice::Closes,
-                     ..Default::default()
-                  },
-                  locations: vec![
+                  completion: PathCompletion::Closed,
+                  segments: vec![OneOfSegment::Polyline(vec![
                      [range[0], range[1]],
                      [range[0], range[3]],
                      [range[2], range[3]],
                      [range[2], range[1]],
-                  ],
+                  ])],
+                  path_choices: PathChoices::default(),
                }),
                ..Default::default()
             });

@@ -12,27 +12,29 @@
   "drawables": [
     {
       "drawable": {
-        "Polyline": {
-          "segment_choices": {
-            "closure": "Closes"
-          },
-          "locations": [
-            [
-              -4.5,
-              -2.5
-            ],
-            [
-              -4.5,
-              2.5
-            ],
-            [
-              1.5,
-              2.5
-            ],
-            [
-              1.5,
-              -2.5
-            ]
+        "SegmentSequence": {
+          "completion": "Closed",
+          "segments": [
+            {
+              "Polyline": [
+                [
+                  -4.5,
+                  -2.5
+                ],
+                [
+                  -4.5,
+                  2.5
+                ],
+                [
+                  1.5,
+                  2.5
+                ],
+                [
+                  1.5,
+                  -2.5
+                ]
+              ]
+            }
           ]
         }
       }
@@ -40,7 +42,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -81,7 +85,9 @@
     {
       "drawable": {
         "Lines": {
-          "line_choice": "Light",
+          "path_choices": {
+            "line_choice": "Light"
+          },
           "coords": [
             [
               [
@@ -263,10 +269,10 @@
       "layer": 30,
       "drawable": {
         "Polyline": {
-          "segment_choices": {
+          "path_choices": {
             "color": "Green"
           },
-          "locations": [
+          "path": [
             [
               -2.061559595959596,
               1.2121212121212122
@@ -399,23 +405,25 @@
       "layer": 30,
       "drawable": {
         "Arc": {
-          "segment_choices": {
+          "path_choices": {
             "color": "BrightBlue"
           },
-          "angle_range": [
-            -2.433730768688996,
-            2.433730768688996
-          ],
-          "center": [
-            -1.6015467065868256,
-            -0.1197604790419162
-          ],
-          "transform": [
-            1.4725591503040303,
-            -0.4935070726887075,
-            -1.0131630509468093,
-            -1.4717346643960303
-          ]
+          "path": {
+            "angle_range": [
+              -2.433730768688996,
+              2.433730768688996
+            ],
+            "center": [
+              -1.6015467065868256,
+              -0.1197604790419162
+            ],
+            "transform": [
+              1.4725591503040303,
+              -0.4935070726887075,
+              -1.0131630509468093,
+              -1.4717346643960303
+            ]
+          }
         }
       }
     }
