@@ -124,7 +124,7 @@ fn write_full_sample_to_write<W: Write + 'static>(
       // Strikethrough is top of line above baseline.
       let strikethrough_center =
          metrics.strikethrough_position() as f64 - metrics.strikethrough_thickness() as f64 * 0.5;
-      assert_eq!(strikethrough_center, 3041.0);
+      assert!((strikethrough_center - 3041.0).abs() < 1e-10);
 
       let (_text_width, text_height) = text_layout.size();
       assert_eq!(text_height, 13947);

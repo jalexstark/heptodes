@@ -44,8 +44,8 @@ use zvx_simples::generate::OneOfManagedSegment;
 use zvx_simples::generate::SampleCurveConfig;
 use zvx_simples::generate::SampleOption;
 
-fn scale_coord_vec(v: &Vec<[f64; 2]>, s: f64) -> Vec<[f64; 2]> {
-   let mut result = v.clone();
+fn scale_coord_vec(v: &[[f64; 2]], s: f64) -> Vec<[f64; 2]> {
+   let mut result = v.to_owned();
    for i in 0..v.len() {
       result[i] = [v[i][0] * s, v[i][1] * s];
    }
@@ -76,8 +76,8 @@ fn create_sized_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
    cairo_spartan.spartan.sizing_scheme = sizing.sizing_scheme;
    cairo_spartan.spartan.base_width = sizing.canvas_size[0];
    cairo_spartan.spartan.base_height = sizing.canvas_size[1];
-   cairo_spartan.spartan.axes_range = sizing.axes_range.clone();
-   cairo_spartan.spartan.padding = sizing.padding.clone();
+   cairo_spartan.spartan.axes_range.clone_from(&sizing.axes_range);
+   cairo_spartan.spartan.padding.clone_from(&sizing.padding);
 
    cairo_spartan
 }
@@ -99,7 +99,6 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
             offsets: Some(vec![[0.0, 0.0], [sizing.debug_box[2] - sizing.debug_box[0], 0.0]]),
             ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -120,9 +119,7 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
                ),
             ],
             offsets: Some(vec![[0.0, 0.0]]),
-            ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -258,7 +255,6 @@ fn spartan_sizing_g_test() {
          grid_precision: vec![0, 1],
          ..Default::default()
       },
-      ..Default::default()
    };
    spartan_sizing("spartan_sizing_g", &sizing);
 }
@@ -278,9 +274,7 @@ fn spartan_sizing_h_test() {
          axis_numbering: AxisNumbering::Before,
          grid_interval: [0.4, 0.75],
          grid_precision: vec![1, 2],
-         ..Default::default()
       },
-      ..Default::default()
    };
 
    let mut cairo_spartan = build_diagram(&sizing);
@@ -303,7 +297,6 @@ fn spartan_sizing_h_test() {
          }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: title_layer,
@@ -321,7 +314,6 @@ fn spartan_sizing_h_test() {
          }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    run_json_svg("spartan_sizing_h", &mut cairo_spartan);
 }
@@ -359,7 +351,6 @@ fn spartan_sizing_i_test() {
             offsets: None,
             ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -377,7 +368,6 @@ fn spartan_sizing_i_test() {
             ],
             ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -393,7 +383,6 @@ fn spartan_sizing_i_test() {
             centers: pattern_vec.clone(),
             ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -406,7 +395,6 @@ fn spartan_sizing_i_test() {
             centers: scale_coord_vec(&pattern_vec, 2.0),
             ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -419,7 +407,6 @@ fn spartan_sizing_i_test() {
             centers: scale_coord_vec(&pattern_vec, 3.0),
             ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -432,7 +419,6 @@ fn spartan_sizing_i_test() {
             centers: scale_coord_vec(&pattern_vec, 4.0),
             ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -484,9 +470,7 @@ fn spartan_sizing_j_test() {
             point_choice: PointChoice::Dot,
             color_choice: ColorChoice::Gray,
             centers: scale_coord_vec(&pattern_vec, 1.0),
-            ..Default::default()
          }),
-         ..Default::default()
       });
    }
    {
@@ -496,9 +480,7 @@ fn spartan_sizing_j_test() {
             point_choice: PointChoice::Dot,
             color_choice: ColorChoice::Gray,
             centers: scale_coord_vec(&pattern_vec, -1.0),
-            ..Default::default()
          }),
-         ..Default::default()
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
    }
@@ -513,7 +495,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: "o+=-x-=+o".to_string(), location: [0.0, 0.0] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -526,9 +507,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Middle,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 1.5] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -541,9 +520,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Middle,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 0.0] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -556,9 +533,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Middle,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, -1.5] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -572,7 +547,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, -3.0] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -586,7 +560,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: "xopqgox".to_string(), location: [4.0, 1.5] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -600,7 +573,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [4.0, 0.0] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -614,7 +586,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: "xodflox".to_string(), location: [4.0, -1.5] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -627,7 +598,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 3.0] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -640,9 +610,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Bottom,
          ),
          texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 1.5] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -655,9 +623,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Bottom,
          ),
          texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 3.0] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -671,7 +637,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 4.5] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -684,9 +649,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Middle,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 1.5] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -699,9 +662,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Middle,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 0.0] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -714,9 +675,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Middle,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, -1.5] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -733,7 +692,6 @@ fn spartan_sizing_j_test() {
          }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -750,7 +708,6 @@ fn spartan_sizing_j_test() {
          }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -767,7 +724,6 @@ fn spartan_sizing_j_test() {
          }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -780,7 +736,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 3.0] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -794,7 +749,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, -3.0] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -807,9 +761,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Top,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -1.5] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -822,9 +774,7 @@ fn spartan_sizing_j_test() {
             TextAnchorVertical::Top,
          ),
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -3.0] }],
-         ..Default::default()
       }),
-      ..Default::default()
    });
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
@@ -838,7 +788,6 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -4.5] }],
          ..Default::default()
       }),
-      ..Default::default()
    });
 
    run_json_svg("spartan_sizing_j", &mut cairo_spartan);
@@ -876,9 +825,7 @@ fn spartan_sizing_k_test() {
          path_choices: PathChoices { color: ColorChoice::BrightRed, ..Default::default() },
          radius: 1.2,
          centers: vec![[-1.5, 3.0], [1.5, 3.0]],
-         ..Default::default()
       }),
-      ..Default::default()
    });
 
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
@@ -887,9 +834,7 @@ fn spartan_sizing_k_test() {
          path_choices: PathChoices { color: ColorChoice::Blue, ..Default::default() },
          radius: 1.2,
          centers: vec![[-3.0, 3.0], [0.0, 3.0], [3.0, 3.0]],
-         ..Default::default()
       }),
-      ..Default::default()
    });
 
    run_json_svg("spartan_sizing_k", &mut cairo_spartan);
@@ -930,9 +875,7 @@ fn spartan_sizing_l_test() {
             [2.0, 3.0],
             [3.0, 2.0],
          ],
-         ..Default::default()
       }),
-      ..Default::default()
    });
 
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
@@ -949,9 +892,7 @@ fn spartan_sizing_l_test() {
             [2.0, -3.0],
             [3.0, -2.0],
          ])],
-         ..Default::default()
       }),
-      ..Default::default()
    });
 
    run_json_svg("spartan_sizing_l", &mut cairo_spartan);
@@ -1342,8 +1283,8 @@ fn rat_quad_test() {
 
    let t_int: Vec<i32> = (0..12).collect();
    let mut t = Vec::<f64>::with_capacity(t_int.len());
-   for i in 0..t_int.len() {
-      t.push(t_int[i] as f64 / 3.0 - 2.0);
+   for item in t_int {
+      t.push(item as f64 / 3.0 - 2.0);
    }
 
    let a_1 = orig_quad.a[1];
@@ -1352,10 +1293,10 @@ fn rat_quad_test() {
    let sigma = ((a_s - a_1 * r) / (a_s + a_1 * r)).abs().sqrt();
 
    let mut unwarped_t = Vec::<f64>::with_capacity(t.len());
-   for i in 0..t.len() {
+   for item in &t {
       unwarped_t.push(
-         r * ((sigma - 1.0) * r + (sigma + 1.0) * t[i])
-            / ((sigma + 1.0) * r + (sigma - 1.0) * t[i]),
+         r * ((sigma - 1.0) * r + (sigma + 1.0) * item)
+            / ((sigma + 1.0) * r + (sigma - 1.0) * item),
       );
    }
 
@@ -1431,7 +1372,6 @@ fn spartan_sizing_q_test() {
          grid_interval: [1.0, 1.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -1538,7 +1478,6 @@ fn spartan_sizing_r_test() {
          grid_interval: [1.0, 1.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -1853,7 +1792,6 @@ fn spartan_sizing_s_test() {
          grid_interval: [1.0, 1.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -1954,20 +1892,6 @@ fn spartan_sizing_s_test() {
             },
          );
       }
-
-      // managed_curve.raise_to_symmetric_range().unwrap();
-      // managed_curve.raise_to_regularized_symmetric().unwrap();
-      // managed_curve.raise_to_offset_odd_even().unwrap();
-
-      // draw_sample_rat_quad(
-      //    &managed_curve,
-      //    &mut cairo_spartan.spartan,
-      //    &SampleCurveConfig {
-      //       main_color: Some(ColorChoice::Green),
-      //       points_color: None,
-      //       ..Default::default()
-      //    },
-      // );
    }
 
    run_json_svg("spartan_sizing_s", &mut cairo_spartan);
@@ -1989,7 +1913,6 @@ fn spartan_sizing_t_test() {
          grid_interval: [1.0, 1.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -2154,7 +2077,7 @@ fn spartan_sizing_t_test() {
    run_json_svg("spartan_sizing_t", &mut cairo_spartan);
 }
 
-fn translate_vec(coords: Vec<[f64; 2]>, offset: [f64; 2]) -> Vec<[f64; 2]> {
+fn translate_vec(coords: &[[f64; 2]], offset: [f64; 2]) -> Vec<[f64; 2]> {
    let mut result: Vec<[f64; 2]> = Vec::new();
    result.resize(coords.len(), [0.0, 0.0]);
    for i in 0..coords.len() {
@@ -2233,7 +2156,6 @@ fn spartan_sizing_u_test() {
          grid_interval: [1.0, 1.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -2558,6 +2480,7 @@ fn spartan_sizing_u_test() {
 }
 
 #[test]
+#[allow(clippy::many_single_char_names)]
 fn spartan_sizing_v_test() {
    // let t_range = [-1.0, 1.0];
    let t_range = [-1.0, 11.0];
@@ -2572,7 +2495,6 @@ fn spartan_sizing_v_test() {
          grid_interval: [1.0, 1.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -2725,7 +2647,6 @@ fn spartan_sizing_w_test() {
          grid_interval: [1.0, 1.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -2776,7 +2697,6 @@ fn spartan_sizing_x_test() {
          grid_interval: [6.0, 100.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -2822,14 +2742,12 @@ fn spartan_sizing_x_test() {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
-                  ..Default::default()
                },
                coords: vec![(
                   [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
                   [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
                )],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
-               ..Default::default()
             }),
             ..Default::default()
          };
@@ -2844,7 +2762,6 @@ fn spartan_sizing_x_test() {
                   ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
                ],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
-               ..Default::default()
             }),
             ..Default::default()
          };
@@ -2856,14 +2773,12 @@ fn spartan_sizing_x_test() {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Blue,
-                  ..Default::default()
                },
                coords: vec![([-c_x, 0.0], [c_x, 0.0])],
                offsets: Some(vec![
                   [0.0 + shift[0], 0.0 + shift[1]],
                   [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
                ]),
-               ..Default::default()
             }),
             ..Default::default()
          };
@@ -2955,14 +2870,9 @@ fn spartan_sizing_x_test() {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
-                  ..Default::default()
                },
                coords: vec![([-c_x, 0.0], [c_x, 0.0])],
-               offsets: Some(vec![
-                  [0.0 + shift[0], 0.0 + shift[1]],
-                  // [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
-               ]),
-               ..Default::default()
+               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
             }),
             ..Default::default()
          };
@@ -2989,7 +2899,6 @@ fn spartan_sizing_y_test() {
          grid_interval: [6.0, 100.0],
          grid_precision: vec![1],
          axis_numbering: AxisNumbering::None,
-         ..Default::default()
       },
       ..Default::default()
    };
@@ -3035,14 +2944,12 @@ fn spartan_sizing_y_test() {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
-                  ..Default::default()
                },
                coords: vec![(
                   [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
                   [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
                )],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
-               ..Default::default()
             }),
             ..Default::default()
          };
@@ -3057,7 +2964,6 @@ fn spartan_sizing_y_test() {
                   ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
                ],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
-               ..Default::default()
             }),
             ..Default::default()
          };
@@ -3069,14 +2975,12 @@ fn spartan_sizing_y_test() {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Blue,
-                  ..Default::default()
                },
                coords: vec![([-c_x, 0.0], [c_x, 0.0])],
                offsets: Some(vec![
                   [0.0 + shift[0], 0.0 + shift[1]],
                   [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
                ]),
-               ..Default::default()
             }),
             ..Default::default()
          };
@@ -3125,48 +3029,17 @@ fn spartan_sizing_y_test() {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
-                  ..Default::default()
                },
                coords: vec![(
                   [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
                   [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
                )],
                offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
-               ..Default::default()
             }),
             ..Default::default()
          };
          cairo_spartan.spartan.drawables.push(qualified_drawable);
       }
-      // {
-      //    let qualified_drawable = QualifiedDrawable {
-      //       drawable: OneOfDrawable::Lines(LinesDrawable {
-      //          path_choices: PathChoices { line_choice: LineChoice::Light, ..Default::default() },
-      //          coords: vec![([-c_x + a_x, a_y], [-c_x - a_x, -a_y], [c_x + b_x, b_y], [c_x - b_x, -b_y])],
-      //          offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
-      //          ..Default::default()
-      //       }),
-      //       ..Default::default()
-      //    };
-      //    cairo_spartan.spartan.drawables.push(qualified_drawable);
-      // }
-      // {
-      //    let qualified_drawable = QualifiedDrawable {
-      //       drawable: OneOfDrawable::Lines(LinesDrawable {
-      //          line_choice: LineChoice::Ordinary,
-      //
-      // path_choices: PathChoices { color: ColorChoice::Blue, ..Default::default() }    ,
-      //          coords: vec![([-c_x, 0.0],[c_x, 0.0])],
-      //          offsets: Some(vec![
-      //             [0.0 + shift[0], 0.0 + shift[1]],
-      //             [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
-      //          ]),
-      //          ..Default::default()
-      //       }),
-      //       ..Default::default()
-      //    };
-      //    cairo_spartan.spartan.drawables.push(qualified_drawable);
-      // }
    }
 
    run_json_svg("spartan_sizing_y", &mut cairo_spartan);
@@ -3260,7 +3133,7 @@ fn segment_sequence_a_test() {
 
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
 
-         let polyline_locations = translate_vec(vec![[loopy_size, 0.0], [0.0, 0.0]], shift);
+         let polyline_locations = translate_vec(&[[loopy_size, 0.0], [0.0, 0.0]], shift);
 
          managed_segments.push_back(OneOfManagedSegment::Polyline(polyline_locations));
       }
@@ -3288,7 +3161,7 @@ fn segment_sequence_a_test() {
 
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
 
-         let polyline_locations = translate_vec(vec![[loopy_size, 0.0], [0.0, 0.0]], shift);
+         let polyline_locations = translate_vec(&[[loopy_size, 0.0], [0.0, 0.0]], shift);
 
          managed_segments.push_back(OneOfManagedSegment::Polyline(polyline_locations));
       }
@@ -3394,7 +3267,7 @@ fn segment_sequence_a_test() {
             let shift = [tri_size - 0.9, 1.1];
 
             let polyline_locations = translate_vec(
-               vec![[-tri_size, 0.0], [0.0, -0.3 * tri_size], [0.0, 0.0], [-tri_size, 0.0]],
+               &[[-tri_size, 0.0], [0.0, -0.3 * tri_size], [0.0, 0.0], [-tri_size, 0.0]],
                shift,
             );
 
@@ -3417,7 +3290,7 @@ fn segment_sequence_a_test() {
             let shift = [-0.9, 1.1 - 0.4 * tri_size];
 
             let polyline_locations = translate_vec(
-               vec![[tri_size, 0.0], [0.0, 0.3 * tri_size], [0.0, 0.0], [tri_size, 0.0]],
+               &[[tri_size, 0.0], [0.0, 0.3 * tri_size], [0.0, 0.0], [tri_size, 0.0]],
                shift,
             );
 

@@ -70,7 +70,13 @@ fn test_json_failure() {
       json_golden.writeln_as_bytes(in_text);
    }
    let update_var = env::var("UPDATE_GOLDENFILES");
-   if !(update_var.is_ok() && update_var.unwrap() == "1") {
+   if update_var.is_ok() && update_var.unwrap() == "1" {
+      let mut mint = Mint::new("tests/goldenfiles");
+      let mut error_mint = mint.new_goldenfile("json_failure_test_error.txt").unwrap();
+
+      let error_text = "  left: `\"{\\n  \\\"k\\\": 1\\n}\"`\n right: `\"{\\n  \\\"k\\\": 0\\n}\"`\n\nDifferences (-left|+right):\n {\n-  \"k\": 1\n+  \"k\": 0\n }\n\n";
+      writeln!(error_mint, "{error_text}").unwrap();
+   } else {
       let failure_result = panic::catch_unwind(|| {
          let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", "json_failure_test_data");
 
@@ -86,6 +92,7 @@ fn test_json_failure() {
             let mut mint = Mint::new("tests/goldenfiles");
             let mut error_mint = mint.new_goldenfile("json_failure_test_error.txt").unwrap();
 
+            #[allow(clippy::option_if_let_else)]
             let diff_result = if let Some(s) = error.downcast_ref::<&str>() {
                (*s).to_string()
             } else if let Some(s) = error.downcast_ref::<String>() {
@@ -105,12 +112,6 @@ fn test_json_failure() {
             writeln!(error_mint, "{cleaned_diff_result}").unwrap();
          }
       }
-   } else {
-      let mut mint = Mint::new("tests/goldenfiles");
-      let mut error_mint = mint.new_goldenfile("json_failure_test_error.txt").unwrap();
-
-      let error_text = "  left: `\"{\\n  \\\"k\\\": 1\\n}\"`\n right: `\"{\\n  \\\"k\\\": 0\\n}\"`\n\nDifferences (-left|+right):\n {\n-  \"k\": 1\n+  \"k\": 0\n }\n\n";
-      writeln!(error_mint, "{error_text}").unwrap();
    }
 
    {

@@ -21,6 +21,8 @@ use std::io::Write;
 use zvx_golden::filtered::SvgGoldenTest;
 
 // After dependency to test_utils is added, use type-def for the result box.
+#[allow(clippy::missing_panics_doc)]
+#[allow(clippy::missing_errors_doc)]
 pub fn write_sample_to_write<W: Write + 'static>(
    out_stream: W,
 ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
