@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use zvx_base::is_default;
-use zvx_base::default_unit_f64;
-use zvx_base::is_default_unit_f64;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
+use zvx_base::default_unit_f64;
+use zvx_base::is_default;
+use zvx_base::is_default_unit_f64;
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq)]
 pub enum ZebraixAngle {
@@ -54,15 +54,15 @@ impl Default for ZebraixAngle {
       Self::Quadrant(1.0)
    }
 }
+
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum RatQuadState {
    #[default]
-   RationalPoly,
-   SymmetricRange,       // RationalPoly[nomial] with symmetric range.
-   RegularizedSymmetric, // SymmetricRange with zero middle denominator coefficient.
-   OffsetOddEven,        // O-O-E weightings of RegularizedSymmetric.
-
-   FourPoint,        // Like cubic.
+   // RationalPoly,
+   // SymmetricRange,       // RationalPoly[nomial] with symmetric range.
+   // RegularizedSymmetric, // SymmetricRange with zero middle denominator coefficient.
+   // OffsetOddEven,        // O-O-E weightings of RegularizedSymmetric.
+   FourPoint, // Like cubic.
    ThreePointAngle,  // Form a,b,angle, sigma.
    RationalWeighted, // Polynomial-like, by  difference from end points.
 }
@@ -109,17 +109,8 @@ impl Default for FourPointRatQuad {
 //    }
 // }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub enum RatQuadOoeSubtype {
-   #[default]
-   Elliptical,
-   Parabolic,
-   Hyperbolic,
-}
-
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
-pub struct BaseRatQuad {
-   pub state: RatQuadState,
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct RatQuadRepr {
    pub r: [f64; 2], // Range.
    pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
    pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
@@ -128,27 +119,52 @@ pub struct BaseRatQuad {
    pub angle: ZebraixAngle,
    #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
    pub sigma: f64,
-   pub ooe_subtype: RatQuadOoeSubtype,
 }
 
-#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq)]
-pub enum SpecifiedRatQuad {
-   #[default]
-   None, // For, say, polynomial directly specified.
-   // Base(BaseRatQuad), // Three-points and angle, for example.
-   FourPoint(FourPointRatQuad),
-   ThreePointAngle(BaseRatQuad),
-   // ThreePointAngle(ThreePointAngleRatQuad),
-}
+impl RatQuadRepr {
+   #[allow(clippy::suboptimal_flops)]
+   #[must_use]
+   #[allow(clippy::many_single_char_names)]
+   pub fn rq_apply_bilinear_unranged(
+      &self,
+      mut w: f64,
+      mut x: f64,
+      mut y: f64,
+      mut z: f64,
+   ) -> Self {
+      let norm = 1.0 / ((w * w + x * x) * (y * y + z * z)).sqrt().sqrt();
+      w *= norm;
+      x *= norm;
+      y *= norm;
+      z *= norm;
 
-impl BaseRatQuad {
-   // pub fn new(r: [f64; 2], a: [f64; 3], b: [f64; 3], c: [f64; 3]) -> Self {
-   //    Self { r, a, b, c, form: RatQuadState::RationalPoly }
-   // }
+      // println!("w: {}, x: {} y: {}, z: {}", w, x, y, z);
+
+      let a = [
+         self.a[0] * z * z + self.a[1] * x * z + self.a[2] * x * x,
+         2.0 * self.a[0] * y * z + self.a[1] * (x * y + w * z) + 2.0 * self.a[2] * w * x,
+         self.a[0] * y * y + self.a[1] * w * y + self.a[2] * w * w,
+      ];
+      let b = [
+         self.b[0] * z * z + self.b[1] * x * z + self.b[2] * x * x,
+         2.0 * self.b[0] * y * z + self.b[1] * (x * y + w * z) + 2.0 * self.b[2] * w * x,
+         self.b[0] * y * y + self.b[1] * w * y + self.b[2] * w * w,
+      ];
+      let c = [
+         self.c[0] * z * z + self.c[1] * x * z + self.c[2] * x * x,
+         2.0 * self.c[0] * y * z + self.c[1] * (x * y + w * z) + 2.0 * self.c[2] * w * x,
+         self.c[0] * y * y + self.c[1] * w * y + self.c[2] * w * w,
+      ];
+
+      // println!("c[0]: {}, c[1]: {} c[2]: {}", c[0], c[1], c[2]);
+
+      Self { a, b, c, r: self.r, sigma: self.sigma, ..Default::default() }
+   }
 
    #[must_use]
-   pub fn eval_quad(&self, t: &[f64]) -> Vec<[f64; 2]> {
+   pub fn rq_eval_quad(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+
       for item in t {
          let denom_reciprocal = 1.0 / self.a[2].mul_add(*item, self.a[1]).mul_add(*item, self.a[0]);
          ret_val.push([
@@ -156,133 +172,21 @@ impl BaseRatQuad {
             self.c[2].mul_add(*item, self.c[1]).mul_add(*item, self.c[0]) * denom_reciprocal,
          ]);
       }
+
       ret_val
    }
 
-   #[inline]
-   // Applies bilinear substitution of the form (wt + x) / (yt + z) with normalization.
-   //
-   // This function should be applied by a knowledgeable caller, that is one that handles the
-   // state of the RatQuad.
-   #[allow(clippy::suboptimal_flops)]
-   pub fn apply_bilinear_unranged(&mut self, mut w: f64, mut x: f64, mut y: f64, mut z: f64) {
-      #[allow(clippy::suboptimal_flops)]
-      let norm = 1.0 / ((w * w + x * x) * (y * y + z * z)).sqrt().sqrt();
-      w *= norm;
-      x *= norm;
-      y *= norm;
-      z *= norm;
-      self.a = [
-         self.a[0] * z * z + self.a[1] * x * z + self.a[2] * x * x,
-         2.0 * self.a[0] * y * z + self.a[1] * (x * y + w * z) + 2.0 * self.a[2] * w * x,
-         self.a[0] * y * y + self.a[1] * w * y + self.a[2] * w * w,
-      ];
-      self.b = [
-         self.b[0] * z * z + self.b[1] * x * z + self.b[2] * x * x,
-         2.0 * self.b[0] * y * z + self.b[1] * (x * y + w * z) + 2.0 * self.b[2] * w * x,
-         self.b[0] * y * y + self.b[1] * w * y + self.b[2] * w * w,
-      ];
-      self.c = [
-         self.c[0] * z * z + self.c[1] * x * z + self.c[2] * x * x,
-         2.0 * self.c[0] * y * z + self.c[1] * (x * y + w * z) + 2.0 * self.c[2] * w * x,
-         self.c[0] * y * y + self.c[1] * w * y + self.c[2] * w * w,
-      ];
-   }
-   #[inline]
-   // Applies bilinear transformation with factor sigma, preserving the range.
-   #[allow(clippy::suboptimal_flops)]
-   #[allow(clippy::missing_errors_doc)]
-   pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
-      match self.state {
-         RatQuadState::OffsetOddEven => {
-            Err("Unable to convert offset-even-odd form to symmetric-range form.")
-         }
-         RatQuadState::RegularizedSymmetric => {
-            Err("Applying bilinear to regularized will downgrade it.")
-         }
-         RatQuadState::SymmetricRange => {
-            let r = self.r[1];
-            self.apply_bilinear_unranged(
-               (sigma + 1.0) * r,
-               (sigma - 1.0) * r * r,
-               sigma - 1.0,
-               (sigma + 1.0) * r,
-            );
-            Ok(())
-         }
-         RatQuadState::RationalPoly => {
-            let p = self.r[0];
-            let q = self.r[1];
-            self.apply_bilinear_unranged(
-               sigma * q - p,
-               -(sigma - 1.0) * p * q,
-               sigma - 1.0,
-               q - sigma * p,
-            );
-            Ok(())
-         }
-         RatQuadState::FourPoint => {
-            Err("Bilinear is applicable to four-point form, but not implemented.")
-         }
-         RatQuadState::ThreePointAngle => {
-            Err("Bilinear is applicable to three-point-angle form, but not implemented.")
-         }
-         RatQuadState::RationalWeighted => {
-            Err("Bilinear is applicable to rational-weighted form, but not implemented.")
-         }
-      }
-   }
-
-   #[allow(clippy::suboptimal_flops)]
-   #[allow(clippy::missing_errors_doc)]
-   pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
-      if self.state == RatQuadState::OffsetOddEven {
-         return Err("Unable to convert offset-even-odd form to symmetric-range form.");
-      }
-      // Replace t with t - d.
-      let d = 0.5 * (self.r[0] + self.r[1]);
-      let r = 0.5 * (self.r[1] - self.r[0]);
-
-      self.a =
-         [d * (d * self.a[2] + self.a[1]) + self.a[0], 2.0 * d * self.a[2] + self.a[1], self.a[2]];
-      self.b =
-         [d * (d * self.b[2] + self.b[1]) + self.b[0], 2.0 * d * self.b[2] + self.b[1], self.b[2]];
-      self.c =
-         [d * (d * self.c[2] + self.c[1]) + self.c[0], 2.0 * d * self.c[2] + self.c[1], self.c[2]];
-
-      self.r = [-r, r];
-      self.state = RatQuadState::SymmetricRange;
-      Ok(())
-   }
-
-   #[allow(clippy::suboptimal_flops)]
-   #[allow(clippy::missing_panics_doc)]
-   #[allow(clippy::missing_errors_doc)]
-   pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
-      if self.state != RatQuadState::SymmetricRange {
-         return Err("Can only raise from symmetric-range to regularized-symmetric form.");
-      }
-      let r = self.r[1];
-      let a_s = self.a[2] * r * r + self.a[0];
-      // let a_d = self.a[2] * r * r - self.a[0];
-      let combo_s = a_s + self.a[1] * r;
-      let combo_d = a_s - self.a[1] * r;
-
-      let sigma = combo_d.abs().sqrt() / combo_s.abs().sqrt();
-
-      self.apply_bilinear(sigma)?;
-
-      assert!(self.a[1].abs() < 0.001);
-      self.state = RatQuadState::RegularizedSymmetric;
-
-      Ok(())
-   }
-
+   // Only used at present to characterize for case of OOE subtype parabola.
    #[inline]
    #[must_use]
-   pub fn characterize_endpoints(&self) -> ([f64; 4], [f64; 4]) {
+   pub fn rq_characterize_endpoints(&self) -> ([f64; 4], [f64; 4]) {
       let mut x = [0.0; 4];
       let mut y = [0.0; 4];
+
+      // assert!(matches!(self, BaseRatQuad::OffsetOddEven { .. }));
+      // if let BaseRatQuad::OffsetOddEven(rat_ooe) = self {
+      //    assert!(matches!(rat_ooe, RatQuadOoeSubtype::Parabolic { .. }));
+      //    if let RatQuadOoeSubtype::Parabolic(rat_poly) = rat_ooe {
       let speed_scale = self.r[1] - self.r[0];
       for (outer, inner, t) in [(0, 1, self.r[0]), (3, 2, self.r[1])] {
          let recip_a = 1.0 / self.a[2].mul_add(t, self.a[1]).mul_add(t, self.a[0]);
@@ -296,7 +200,272 @@ impl BaseRatQuad {
          x[inner] = (-b * da).mul_add(recip_a, db) * recip_a;
          y[inner] = (-c * da).mul_add(recip_a, dc) * recip_a;
       }
+      //    }
+      // }
       (x, y)
+   }
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Copy, Clone, PartialEq)]
+pub enum RatQuadOoeSubtype {
+   #[default]
+   Nothing,
+   Elliptical(RatQuadRepr),
+   Parabolic(RatQuadRepr),
+   Hyperbolic(RatQuadRepr),
+}
+
+#[derive(Debug, Serialize, Default, PartialEq, Copy, Clone)]
+pub enum BaseRatQuad {
+   #[default]
+   Nothing,
+   RationalPoly(RatQuadRepr),
+   SymmetricRange(RatQuadRepr), // RationalPoly[nomial] with symmetric range.
+   RegularizedSymmetric(RatQuadRepr), // SymmetricRange with zero middle denominator coefficient.
+   OffsetOddEven(RatQuadOoeSubtype), // O-O-E weightings of RegularizedSymmetric.
+
+   FourPoint(RatQuadRepr),        // Like cubic.
+   ThreePointAngle(RatQuadRepr),  // Form a,b,angle, sigma.
+   RationalWeighted(RatQuadRepr), // Polynomial-like, by  difference from end points.
+}
+
+#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq)]
+pub enum SpecifiedRatQuad {
+   #[default]
+   None, // For, say, polynomial directly specified.
+   // Base(BaseRatQuad), // Three-points and angle, for example.
+   FourPoint(FourPointRatQuad),
+   ThreePointAngle(RatQuadRepr),
+   // ThreePointAngle(ThreePointAngleRatQuad),
+}
+
+impl BaseRatQuad {
+   #[allow(clippy::match_same_arms)]
+   #[allow(clippy::missing_errors_doc)]
+   pub const fn get_poly(&self) -> Result<&RatQuadRepr, &'static str> {
+      match self {
+         Self::RegularizedSymmetric(repr) => Ok(repr),
+         Self::SymmetricRange(repr) => Ok(repr),
+         Self::RationalPoly(repr) => Ok(repr),
+         Self::Nothing
+         | Self::OffsetOddEven(_)
+         | Self::FourPoint(_)
+         | Self::ThreePointAngle(_)
+         | Self::RationalWeighted(_) => Err("QR not  proper rational poly."),
+      }
+   }
+   // pub fn new(r: [f64; 2], a: [f64; 3], b: [f64; 3], c: [f64; 3]) -> Self {
+   //    Self { r, a, b, c, form: RatQuadState::RationalPoly }
+   // }
+
+   #[must_use]
+   #[allow(clippy::missing_panics_doc)]
+   pub fn eval_quad(&self, t: &[f64]) -> Vec<[f64; 2]> {
+      let ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+
+      assert!(matches!(self, Self::RationalPoly { .. }));
+      if let Self::RationalPoly(rat_poly) = self {
+         rat_poly.rq_eval_quad(t)
+      } else {
+         ret_val
+      }
+   }
+
+   #[inline]
+   // Applies bilinear substitution of the form (wt + x) / (yt + z) with normalization.
+   //
+   // This function should be applied by a knowledgeable caller, that is one that handles the
+   // state of the RatQuad.
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::missing_errors_doc)]
+   pub fn apply_bilinear_unranged(
+      &mut self,
+      w: f64,
+      x: f64,
+      y: f64,
+      z: f64,
+   ) -> Result<(), &'static str> {
+      // let rat_poly = self.get_poly().expect("Not poly-type");
+      // // assert!(matches!(self, Self::RationalPoly { .. }));
+      // // if let Self::RationalPoly(rat_poly) = self {
+      // *self = Self::RationalPoly(rat_poly.rq_apply_bilinear_unranged(w, x, y, z));
+      //  // }
+
+      match self {
+         Self::Nothing => unimplemented!("Nothing form is invalid from construction."),
+         Self::OffsetOddEven(_) => Err("Unable apply bilinear to offset-even-odd form."),
+         Self::RegularizedSymmetric(_) => {
+            Err("Applying bilinear to regularized will downgrade it.")
+         }
+         Self::SymmetricRange(rat_poly) => {
+            *self = Self::SymmetricRange(rat_poly.rq_apply_bilinear_unranged(w, x, y, z));
+            Ok(())
+         }
+         Self::RationalPoly(rat_poly) => {
+            *self = Self::RationalPoly(rat_poly.rq_apply_bilinear_unranged(w, x, y, z));
+            Ok(())
+         }
+         Self::FourPoint(_) => {
+            Err("Bilinear is applicable to four-point form, but not implemented.")
+         }
+         Self::ThreePointAngle(_) => {
+            Err("Bilinear is applicable to three-point-angle form, but not implemented.")
+         }
+         Self::RationalWeighted(_) => {
+            Err("Bilinear is applicable to rational-weighted form, but not implemented.")
+         }
+      }
+   }
+
+   #[inline]
+   // Applies bilinear transformation with factor sigma, preserving the range.
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::missing_errors_doc)]
+   #[allow(clippy::missing_panics_doc)]
+   pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
+      match self {
+         Self::Nothing => unimplemented!("Nothing form is invalid from construction."),
+         Self::OffsetOddEven(_) => {
+            Err("Unable to convert offset-even-odd form to symmetric-range form.")
+         }
+         Self::RegularizedSymmetric(_) => {
+            Err("Applying bilinear to regularized will downgrade it.")
+         }
+         Self::SymmetricRange(rat_poly) => {
+            let r = rat_poly.r[1];
+            self
+               .apply_bilinear_unranged(
+                  (sigma + 1.0) * r,
+                  (sigma - 1.0) * r * r,
+                  sigma - 1.0,
+                  (sigma + 1.0) * r,
+               )
+               .expect("No more restrictive than caller");
+            Ok(())
+         }
+         Self::RationalPoly(rat_poly) => {
+            let p = rat_poly.r[0];
+            let q = rat_poly.r[1];
+
+            // println!("p: {}, q: {}", p, q);
+
+            self
+               .apply_bilinear_unranged(
+                  sigma * q - p,
+                  -(sigma - 1.0) * p * q,
+                  sigma - 1.0,
+                  q - sigma * p,
+               )
+               .expect("No more restrictive than caller");
+
+            if let Self::RationalPoly(rat_poly_revised) = self {
+               println!("r[0]: {}, r[1]: {}", rat_poly_revised.r[0], rat_poly_revised.r[1]);
+               println!(
+                  "a[0]: {}, a[1]: {} a[2]: {}",
+                  rat_poly_revised.a[0], rat_poly_revised.a[1], rat_poly_revised.a[2]
+               );
+               println!(
+                  "c[0]: {}, c[1]: {} c[2]: {}",
+                  rat_poly_revised.c[0], rat_poly_revised.c[1], rat_poly_revised.c[2]
+               );
+            }
+
+            Ok(())
+         }
+         Self::FourPoint(_) => {
+            Err("Bilinear is applicable to four-point form, but not implemented.")
+         }
+         Self::ThreePointAngle(_) => {
+            Err("Bilinear is applicable to three-point-angle form, but not implemented.")
+         }
+         Self::RationalWeighted(_) => {
+            Err("Bilinear is applicable to rational-weighted form, but not implemented.")
+         }
+      }
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::missing_errors_doc)]
+   #[allow(clippy::many_single_char_names)]
+   pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
+      if let Self::RationalPoly(rat_poly) = self {
+         // Replace t with t - d.
+         let d = 0.5 * (rat_poly.r[0] + rat_poly.r[1]);
+         let r_half = 0.5 * (rat_poly.r[1] - rat_poly.r[0]);
+
+         let a = [
+            d * (d * rat_poly.a[2] + rat_poly.a[1]) + rat_poly.a[0],
+            2.0 * d * rat_poly.a[2] + rat_poly.a[1],
+            rat_poly.a[2],
+         ];
+         let b = [
+            d * (d * rat_poly.b[2] + rat_poly.b[1]) + rat_poly.b[0],
+            2.0 * d * rat_poly.b[2] + rat_poly.b[1],
+            rat_poly.b[2],
+         ];
+         let c = [
+            d * (d * rat_poly.c[2] + rat_poly.c[1]) + rat_poly.c[0],
+            2.0 * d * rat_poly.c[2] + rat_poly.c[1],
+            rat_poly.c[2],
+         ];
+
+         let r = [-r_half, r_half];
+         *self = Self::SymmetricRange(RatQuadRepr {
+            r,
+            a,
+            b,
+            c,
+            sigma: rat_poly.sigma,
+            ..Default::default()
+         });
+         Ok(())
+      } else {
+         Err("Unable to convert offset-even-odd form to symmetric-range form.")
+      }
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::missing_panics_doc)]
+   #[allow(clippy::missing_errors_doc)]
+   pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
+      if let Self::SymmetricRange(rat_poly) = self {
+         let r_both = rat_poly.r[1];
+         let a_s = rat_poly.a[2] * r_both * r_both + rat_poly.a[0];
+         // let a_d = rat_poly.a[2] * r * r - rat_poly.a[0];
+         let combo_s = a_s + rat_poly.a[1] * r_both;
+         let combo_d = a_s - rat_poly.a[1] * r_both;
+
+         let sigma = combo_d.abs().sqrt() / combo_s.abs().sqrt();
+
+         self.apply_bilinear(sigma)?;
+
+         if let Self::SymmetricRange(check_poly) = self {
+            assert!(check_poly.a[1].abs() < 0.001);
+            *self = Self::RegularizedSymmetric(*check_poly);
+         } else {
+            panic!("Unreachable");
+         }
+
+         Ok(())
+      } else {
+         Err("Can only raise from symmetric-range to regularized-symmetric form.")
+      }
+   }
+
+   // Only used at present to characterize for case of OOE subtype parabola.
+   #[inline]
+   #[must_use]
+   #[allow(clippy::missing_panics_doc)]
+   pub fn characterize_endpoints(&self) -> ([f64; 4], [f64; 4]) {
+      let x = [0.0; 4];
+      let y = [0.0; 4];
+
+      assert!(matches!(self, Self::RationalPoly { .. }));
+      if let Self::RationalPoly(rat_poly) = self {
+         rat_poly.rq_characterize_endpoints()
+      } else {
+         (x, y)
+      }
    }
 
    #[allow(clippy::suboptimal_flops)]
@@ -306,105 +475,106 @@ impl BaseRatQuad {
       poly: &Self,
       tolerance: f64,
    ) -> Result<(), &'static str> {
-      if poly.state != RatQuadState::RegularizedSymmetric {
-         return Err("Can only raise from regularized-symmetric form to offset-odd-even form.");
-      }
-      *self = *poly;
+      // assert!(matches!(self, Self::RegularizedSymmetric { .. }));
+      if let Self::RegularizedSymmetric(rat_poly_extracted) = poly {
+         let orig_rat_poly = *rat_poly_extracted;
+         let mut rat_poly = *rat_poly_extracted;
 
-      let r = self.r[1];
-      // assert_eq!(r, 10000.0);
-      if (self.a[2].abs() * r * r) < (self.a[0].abs() * tolerance) {
-         self.ooe_subtype = RatQuadOoeSubtype::Parabolic;
-      } else if self.a[2].signum() == self.a[0].signum() {
-         self.ooe_subtype = RatQuadOoeSubtype::Elliptical;
+         let r = rat_poly.r[1];
+         if (rat_poly.a[2].abs() * r * r) < (rat_poly.a[0].abs() * tolerance) {
+            *self = Self::OffsetOddEven(RatQuadOoeSubtype::Parabolic(orig_rat_poly));
+         } else if rat_poly.a[2].signum() == rat_poly.a[0].signum() {
+            let s = 1.0 / rat_poly.a[0];
+            let f = 1.0 / rat_poly.a[2];
+            rat_poly.a[0] = 1.0;
+            rat_poly.a[2] *= s;
 
-         let s = 1.0 / self.a[0];
-         let f = 1.0 / self.a[2];
-         self.a[0] = 1.0;
-         self.a[2] *= s;
+            {
+               let offset = 0.5 * (s * rat_poly.b[0] + f * rat_poly.b[2]);
+               let even = 0.5 * (s * rat_poly.b[0] - f * rat_poly.b[2]);
+               let odd = rat_poly.b[1] * s;
+               rat_poly.b = [offset, odd, even];
+            }
+            {
+               let offset = 0.5 * (s * rat_poly.c[0] + f * rat_poly.c[2]);
+               let even = 0.5 * (s * rat_poly.c[0] - f * rat_poly.c[2]);
+               let odd = rat_poly.c[1] * s;
+               rat_poly.c = [offset, odd, even];
+            }
 
-         {
-            let offset = 0.5 * (s * self.b[0] + f * self.b[2]);
-            let even = 0.5 * (s * self.b[0] - f * self.b[2]);
-            let odd = self.b[1] * s;
-            self.b = [offset, odd, even];
+            let sss = 1.0 / rat_poly.a[2].sqrt();
+            let (sx, sy) = (0.5 * sss * rat_poly.b[1], 0.5 * sss * rat_poly.c[1]);
+            let (cx, cy) = (rat_poly.b[2], rat_poly.c[2]);
+            let determinant = sx * cy - cx * sy;
+            let frobenius_squared = sx * sx + sy * sy + cx * cx + cy * cy;
+            if determinant.abs() < (frobenius_squared * tolerance) {
+               // From the plotting point of view this is not a degenerate case, but renderers may
+               // want the transformation to be invertible.
+               //
+               // If one singular value is much larger than the other, the frobenius norm
+               // (squared) will be approximately the square of larger.  The determinant is their
+               // product, and so the condition effectively compares their magnitude (for small
+               // tolerances).
+
+               *self = Self::OffsetOddEven(RatQuadOoeSubtype::Parabolic(orig_rat_poly));
+            } else {
+               *self = Self::OffsetOddEven(RatQuadOoeSubtype::Elliptical(rat_poly));
+            }
+         } else {
+            *self = Self::OffsetOddEven(RatQuadOoeSubtype::Hyperbolic(rat_poly));
          }
-         {
-            let offset = 0.5 * (s * self.c[0] + f * self.c[2]);
-            let even = 0.5 * (s * self.c[0] - f * self.c[2]);
-            let odd = self.c[1] * s;
-            self.c = [offset, odd, even];
-         }
 
-         let sss = 1.0 / self.a[2].sqrt();
-         let (sx, sy) = (0.5 * sss * self.b[1], 0.5 * sss * self.c[1]);
-         let (cx, cy) = (self.b[2], self.c[2]);
-         let determinant = sx * cy - cx * sy;
-         let frobenius_squared = sx * sx + sy * sy + cx * cx + cy * cy;
-         if determinant.abs() < (frobenius_squared * tolerance) {
-            // From the plotting point of view this is not a degenerate case, but renderers may
-            // want the transformation to be invertible.
-            //
-            // If one singular value is much larger than the other, the frobenius norm
-            // (squared) will be approximately the square of larger.  The determinant is their
-            // product, and so the condition effectively compares their magnitude (for small
-            // tolerances).
-            *self = *poly;
-            self.ooe_subtype = RatQuadOoeSubtype::Parabolic;
-         }
+         Ok(())
       } else {
-         self.ooe_subtype = RatQuadOoeSubtype::Hyperbolic;
+         Err("Can only raise from regularized-symmetric form to offset-odd-even form.")
       }
-
-      self.state = RatQuadState::OffsetOddEven;
-
-      Ok(())
    }
 
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_errors_doc)]
    pub fn weighted_to_polynomial(&mut self) -> Result<(), &'static str> {
-      if self.state != RatQuadState::RationalWeighted {
-         return Err("Attempted conversion from rational-weighted when not in that state.");
-      }
-      // Get from self.sigma once confirmed working.
-      let sigma = 1.0;
-      let v = self.r[0];
-      let w = self.r[1];
-      // assert_eq!(w, 100.0);
-      {
-         let h0 = self.a[0];
-         let h1 = sigma * self.a[1];
-         let h2 = sigma * sigma * self.a[2];
-         self.a = [
-            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
-            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
-            h0 - 2.0 * h1 + h2,
-         ];
-      }
-      {
-         let h0 = self.b[0];
-         let h1 = sigma * self.b[1];
-         let h2 = sigma * sigma * self.b[2];
-         self.b = [
-            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
-            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
-            h0 - 2.0 * h1 + h2,
-         ];
-      }
-      {
-         let h0 = self.c[0];
-         let h1 = sigma * self.c[1];
-         let h2 = sigma * sigma * self.c[2];
-         self.c = [
-            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
-            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
-            h0 - 2.0 * h1 + h2,
-         ];
-      }
+      if let Self::RationalWeighted(rat_poly) = self {
+         // Get from rat_poly.sigma once confirmed working.
+         let sigma = 1.0;
+         let v = rat_poly.r[0];
+         let w = rat_poly.r[1];
+         // assert_eq!(w, 100.0);
+         {
+            let h0 = rat_poly.a[0];
+            let h1 = sigma * rat_poly.a[1];
+            let h2 = sigma * sigma * rat_poly.a[2];
+            rat_poly.a = [
+               w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+               2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+               h0 - 2.0 * h1 + h2,
+            ];
+         }
+         {
+            let h0 = rat_poly.b[0];
+            let h1 = sigma * rat_poly.b[1];
+            let h2 = sigma * sigma * rat_poly.b[2];
+            rat_poly.b = [
+               w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+               2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+               h0 - 2.0 * h1 + h2,
+            ];
+         }
+         {
+            let h0 = rat_poly.c[0];
+            let h1 = sigma * rat_poly.c[1];
+            let h2 = sigma * sigma * rat_poly.c[2];
+            rat_poly.c = [
+               w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+               2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+               h0 - 2.0 * h1 + h2,
+            ];
+         }
 
-      self.state = RatQuadState::RationalPoly;
-      Ok(())
+         *self = Self::RationalPoly(*rat_poly);
+         Ok(())
+      } else {
+         Err("Attempted conversion from rational-weighted when not in that state.")
+      }
    }
 }
 

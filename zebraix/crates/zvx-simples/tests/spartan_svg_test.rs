@@ -16,11 +16,7 @@ use serde_json::to_writer_pretty;
 use std::collections::VecDeque;
 use std::io::Write;
 use zvx_cairo::render::CairoSpartanCombo;
-use zvx_curves::base::BaseRatQuad;
-use zvx_curves::base::CubiLinear;
-use zvx_curves::base::FourPointRatQuad;
-use zvx_curves::base::RatQuadState;
-use zvx_curves::base::ZebraixAngle;
+use zvx_curves::base::{BaseRatQuad, CubiLinear, FourPointRatQuad, RatQuadRepr, ZebraixAngle};
 use zvx_curves::managed::ManagedCubic;
 use zvx_curves::managed::ManagedRatQuad;
 use zvx_docagram::axes::AxesSpec;
@@ -920,12 +916,12 @@ fn spartan_sizing_m_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let rat_quad = BaseRatQuad {
+   let rat_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
       a: [-21.0, 1.0, -2.0],
       b: [-3.1414, 4.7811, 6.5534],
       r: t_range,
       ..Default::default()
-   };
+   });
 
    let managed_curve =
       ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
@@ -968,13 +964,13 @@ fn spartan_sizing_n_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let rat_quad = BaseRatQuad {
+   let rat_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
       a: [-21.0, 1.0, -2.0],
       b: [-3.1414, 4.7811, 6.5534],
       c: [0.0, 20.0, 0.0],
       r: t_range,
       ..Default::default()
-   };
+   });
 
    let managed_curve =
       ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
@@ -1019,13 +1015,13 @@ fn spartan_sizing_n1_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad {
+      &BaseRatQuad::RationalPoly(RatQuadRepr {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
          c: [0.0, 20.0, 0.0],
          r: t_range,
          ..Default::default()
-      },
+      }),
       cairo_spartan.spartan.prep.axes_range,
    );
    managed_curve.raise_to_symmetric_range().unwrap();
@@ -1070,16 +1066,18 @@ fn spartan_sizing_o_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad {
+      &BaseRatQuad::RationalPoly(RatQuadRepr {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
          c: [0.0, 20.0, 0.0],
          r: t_range,
          ..Default::default()
-      },
+      }),
       cairo_spartan.spartan.prep.axes_range,
    );
+
    managed_curve.apply_bilinear(sigma).unwrap();
+
    draw_sample_rat_quad(
       &managed_curve,
       &mut cairo_spartan.spartan,
@@ -1124,15 +1122,16 @@ fn spartan_sizing_o1_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad {
+      &BaseRatQuad::RationalPoly(RatQuadRepr {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
          c: [0.0, 20.0, 0.0],
          r: t_range,
          ..Default::default()
-      },
+      }),
       cairo_spartan.spartan.prep.axes_range,
    );
+
    managed_curve.raise_to_symmetric_range().unwrap();
    managed_curve.apply_bilinear(sigma).unwrap();
 
@@ -1179,13 +1178,13 @@ fn spartan_sizing_o2_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad {
+      &BaseRatQuad::RationalPoly(RatQuadRepr {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
          c: [0.0, 20.0, 0.0],
          r: t_range,
          ..Default::default()
-      },
+      }),
       cairo_spartan.spartan.prep.axes_range,
    );
    managed_curve.raise_to_symmetric_range().unwrap();
@@ -1230,13 +1229,13 @@ fn spartan_sizing_p_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad {
+      &BaseRatQuad::RationalPoly(RatQuadRepr {
          a: [-21.0, 1.0, -2.0],
          b: [-3.1414, 4.7811, 6.5534],
          c: [0.0, 20.0, 0.0],
          r: t_range,
          ..Default::default()
-      },
+      }),
       cairo_spartan.spartan.prep.axes_range,
    );
 
@@ -1274,7 +1273,7 @@ fn spartan_sizing_p_test() {
 #[test]
 fn rat_quad_test() {
    let r: f64 = 1.5;
-   let orig_quad = BaseRatQuad {
+   let orig_quad = RatQuadRepr {
       a: [-21.0, 1.0, -2.0],
       b: [-3.1414, 4.7811, 6.5534],
       r: [r, r],
@@ -1304,7 +1303,7 @@ fn rat_quad_test() {
    let b_s = r * r * orig_quad.b[2] + orig_quad.b[0];
    let b_d = r * r * orig_quad.b[2] - orig_quad.b[0];
 
-   let inter_quad = BaseRatQuad {
+   let inter_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
       a: [
          r * r
             * ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r - 2.0 * sigma * a_d),
@@ -1319,9 +1318,9 @@ fn rat_quad_test() {
       ],
       r: [r, r],
       ..Default::default()
-   };
+   });
 
-   let t_gold = orig_quad.eval_quad(&unwarped_t);
+   let t_gold = orig_quad.rq_eval_quad(&unwarped_t);
    let t_inter = inter_quad.eval_quad(&t);
 
    for i in 0..t_gold.len() {
@@ -1334,7 +1333,7 @@ fn rat_quad_test() {
    let lambda = (a_s * a_s - a_1 * a_1 * r * r).sqrt() * (a_s + a_1 * r).signum();
    assert!((lambda - sigma * (a_s + a_1 * r)).abs() < 0.0001);
 
-   let final_quad = BaseRatQuad {
+   let final_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
       a: [r * r * lambda * (lambda - a_d), 0.0, lambda * (lambda + a_d)],
       b: [
          r * r * (a_s * b_s - a_1 * b_1 * r * r - lambda * b_d),
@@ -1343,9 +1342,9 @@ fn rat_quad_test() {
       ],
       r: [r, r],
       ..Default::default()
-   };
+   });
 
-   let t_gold = orig_quad.eval_quad(&unwarped_t);
+   let t_gold = orig_quad.rq_eval_quad(&unwarped_t);
    let t_final = final_quad.eval_quad(&t);
 
    for i in 0..t_gold.len() {
@@ -2174,16 +2173,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2209,16 +2208,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2244,16 +2243,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2279,16 +2278,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2314,16 +2313,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(0.05),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2348,16 +2347,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2382,16 +2381,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(0.75),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2416,16 +2415,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(1.25),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2450,16 +2449,16 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Quadrant(1.5),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2529,16 +2528,16 @@ fn spartan_sizing_v_test() {
       );
 
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Radians(t.atan()),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
@@ -2568,16 +2567,16 @@ fn spartan_sizing_v_test() {
       );
 
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad {
-            state: RatQuadState::ThreePointAngle,
+         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
             b: x,
             c: y,
             angle: ZebraixAngle::Radians((1.0 / t).atan()),
             r: t_range,
             ..Default::default()
-         },
+         }),
          cairo_spartan.spartan.prep.axes_range,
-      );
+      )
+      .expect("Failure");
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();

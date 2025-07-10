@@ -16,6 +16,7 @@ use crate::base::BaseRatQuad;
 use crate::base::CubiLinear;
 use crate::base::CubicForm;
 use crate::base::FourPointRatQuad;
+use crate::base::RatQuadRepr;
 use crate::base::RatQuadState;
 use crate::base::SpecifiedRatQuad;
 use serde::Serialize;
@@ -34,7 +35,7 @@ pub struct ManagedRatQuad {
 impl ManagedRatQuad {
    #[must_use]
    pub fn create_from_polynomial(poly: &BaseRatQuad, canvas_range: [f64; 4]) -> Self {
-      assert!(poly.state == RatQuadState::RationalPoly);
+      assert!(matches!(poly, BaseRatQuad::RationalPoly { .. }));
       Self { poly: *poly, ooe: BaseRatQuad::default(), canvas_range, ..Default::default() }
    }
 
@@ -59,54 +60,55 @@ impl ManagedRatQuad {
       let b = [w_a * x[0], w_b_x_m, w_c * x[3]];
       let c = [w_a * y[0], w_b_y_m, w_c * y[3]];
       let a = [w_a, w_b, w_c];
-      let mut rat_quad = BaseRatQuad {
-         state: RatQuadState::RationalWeighted,
+      let mut rat_quad = BaseRatQuad::RationalWeighted(RatQuadRepr {
          r: four_points.r,
          a,
          b,
          c,
          ..Default::default()
-      };
+      });
       rat_quad.weighted_to_polynomial().unwrap();
       Self {
          poly: rat_quad,
          ooe: BaseRatQuad::default(),
          specified: SpecifiedRatQuad::FourPoint(*four_points),
          canvas_range,
-         // ..Default::default()
       }
    }
-   #[must_use]
-   pub fn create_from_three_points(
-      three_point_rat_quad: &BaseRatQuad,
-      canvas_range: [f64; 4],
-   ) -> Self {
-      assert!(three_point_rat_quad.state == RatQuadState::ThreePointAngle);
-      let xs = &three_point_rat_quad.b;
-      let ys = &three_point_rat_quad.c;
-      let f_mult_1p5 = three_point_rat_quad.angle.cos();
-      // Can construct as four-point rat quad with these values.
-      // let x = [xs[0], f * xs[1] + (1.0 - f) * xs[0], f * xs[1] + (1.0 - f) * xs[2], xs[2]];
-      // let y = [ys[0], f * ys[1] + (1.0 - f) * ys[0], f * ys[1] + (1.0 - f) * ys[2], ys[2]];
 
-      let b = [xs[0], f_mult_1p5 * xs[1], xs[2]];
-      let c = [ys[0], f_mult_1p5 * ys[1], ys[2]];
-      let a = [1.0, f_mult_1p5, 1.0];
-      let mut rat_quad = BaseRatQuad {
-         state: RatQuadState::RationalWeighted,
-         r: three_point_rat_quad.r,
-         a,
-         b,
-         c,
-         ..Default::default()
-      };
-      rat_quad.weighted_to_polynomial().unwrap();
-      Self {
-         poly: rat_quad,
-         ooe: BaseRatQuad::default(),
-         specified: SpecifiedRatQuad::ThreePointAngle(*three_point_rat_quad),
-         canvas_range,
-         // ..Default::default()
+   #[allow(clippy::missing_errors_doc)]
+   pub fn create_from_three_points(
+      three_point_rat_quad_base: &BaseRatQuad,
+      canvas_range: [f64; 4],
+   ) -> Result<Self, &'static str> {
+      assert!(matches!(three_point_rat_quad_base, BaseRatQuad::ThreePointAngle { .. }));
+      if let BaseRatQuad::ThreePointAngle(three_point_rat_quad) = three_point_rat_quad_base {
+         let xs = &three_point_rat_quad.b;
+         let ys = &three_point_rat_quad.c;
+         let f_mult_1p5 = three_point_rat_quad.angle.cos();
+         // Can construct as four-point rat quad with these values.
+         // let x = [xs[0], f * xs[1] + (1.0 - f) * xs[0], f * xs[1] + (1.0 - f) * xs[2], xs[2]];
+         // let y = [ys[0], f * ys[1] + (1.0 - f) * ys[0], f * ys[1] + (1.0 - f) * ys[2], ys[2]];
+
+         let b = [xs[0], f_mult_1p5 * xs[1], xs[2]];
+         let c = [ys[0], f_mult_1p5 * ys[1], ys[2]];
+         let a = [1.0, f_mult_1p5, 1.0];
+         let mut rat_quad = BaseRatQuad::RationalWeighted(RatQuadRepr {
+            r: three_point_rat_quad.r,
+            a,
+            b,
+            c,
+            ..Default::default()
+         });
+         rat_quad.weighted_to_polynomial().unwrap();
+         Ok(Self {
+            poly: rat_quad,
+            ooe: BaseRatQuad::default(),
+            specified: SpecifiedRatQuad::ThreePointAngle(*three_point_rat_quad),
+            canvas_range,
+         })
+      } else {
+         Err("Can only create 3-point form from ThreePointAngle.")
       }
    }
 
@@ -114,25 +116,49 @@ impl ManagedRatQuad {
    pub const fn get_ooe_rat_quad(&self) -> &BaseRatQuad {
       &self.ooe
    }
+
    #[must_use]
    pub const fn get_poly_rat_quad(&self) -> &BaseRatQuad {
       &self.poly
    }
 
    #[allow(clippy::missing_errors_doc)]
+   pub const fn get_poly_rat_quad_repr(&self) -> Result<&RatQuadRepr, &'static str> {
+      self.poly.get_poly()
+   }
+
+   #[allow(clippy::missing_errors_doc)]
    // Velocity at beginning multiplied by sigma, and velocity at end divided by sigma.
    pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
       self.poly.apply_bilinear(sigma)
+
+      // let res = self.poly.apply_bilinear(sigma);
+
+      // if let BaseRatQuad::RationalPoly(rat_poly_revised) = self.poly {
+      //    println!("r[0]: {}, r[1]: {}", rat_poly_revised.r[0], rat_poly_revised.r[1]);
+      //    println!(
+      //       "a[0]: {}, a[1]: {} a[2]: {}",
+      //       rat_poly_revised.a[0], rat_poly_revised.a[1], rat_poly_revised.a[2]
+      //    );
+      //    println!(
+      //       "c[0]: {}, c[1]: {} c[2]: {}",
+      //       rat_poly_revised.c[0], rat_poly_revised.c[1], rat_poly_revised.c[2]
+      //    );
+      // }
+
+      // res
    }
 
    #[allow(clippy::missing_errors_doc)]
    pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
       self.poly.raise_to_symmetric_range()
    }
+
    #[allow(clippy::missing_errors_doc)]
    pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
       self.poly.raise_to_regularized_symmetric()
    }
+
    #[allow(clippy::missing_errors_doc)]
    pub fn raise_to_offset_odd_even(&mut self) -> Result<(), &'static str> {
       self.ooe.raise_to_offset_odd_even(&self.poly, 0.01)
