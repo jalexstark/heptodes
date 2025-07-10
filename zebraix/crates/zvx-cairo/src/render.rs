@@ -21,6 +21,7 @@ use pango::FontDescription;
 use pango::Layout as PangoLayout;
 use pangocairo::functions::create_context as pangocairo_create_context;
 use pangocairo::functions::show_layout as pangocairo_show_layout;
+use std::error::Error;
 use std::f64::consts::PI;
 use std::io::Write;
 use zvx_docagram::diagram::SpartanDiagram;
@@ -39,6 +40,139 @@ use zvx_drawable::kinds::{
 #[allow(clippy::module_name_repetitions)]
 pub struct CairoSpartanRender {
    pub saved_matrix: Matrix,
+}
+
+pub struct TextMetrics {
+   pub strikethrough_center: f64,
+   pub even_half_height: f64,
+   pub font_ascent: f64,
+   pub font_descent: f64,
+   pub font_height: f64,
+   // Fields above are generally independent of text content.
+   pub text_width: f64,
+   pub text_height: f64,
+}
+
+// Note on special functions.
+//
+// Rust is (as of rustc 1.85.1) unable to convert a boxed heap object to (a reference to) its
+// concrete implementation type when any kind of non-static lifetime is involved. As a result an
+// implementation such as Cairo+Pango has no means to call functions with its own data. In order
+// to work around this, the `render_layout` method was created for the text layout trait, even
+// though this really is the business of the implementation. In order to future-proof the
+// interface, extra placeholder special functions were added.
+//
+// Refs: https://users.rust-lang.org/t/borrowing-as-any-non-static/131565,
+// https://crates.io/crates/better_any
+
+pub trait ZvxTextLayout {
+   fn set_layout(&mut self, font_family: &str, font_size: f64, text_content: &str);
+   fn get_metrics(&mut self) -> &Option<TextMetrics>;
+   #[allow(clippy::missing_errors_doc)]
+   fn render_layout(&mut self) -> Result<(), Box<dyn Error>>;
+
+   // See note above about special functions.
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_0(&mut self) -> Result<(), Box<dyn Error>>;
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_1(&mut self) -> Result<(), Box<dyn Error>>;
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_2(&mut self) -> Result<(), Box<dyn Error>>;
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_3(&mut self) -> Result<(), Box<dyn Error>>;
+}
+
+pub struct ZvxPangoTextLayout<'parent> {
+   pub pango_text_layout: PangoLayout,
+   pub metrics: Option<TextMetrics>,
+   parent_cairo: &'parent CairoContext,
+}
+
+impl<'parent> ZvxPangoTextLayout<'parent> {
+   #[must_use]
+   pub fn create_pango_layout<'a>(
+      parent_cairo: &'parent CairoContext,
+      text_context: &'a PangoContext,
+   ) -> Box<(dyn ZvxTextLayout + 'a)>
+   where
+      'parent: 'a,
+   {
+      let new_layout: ZvxPangoTextLayout = ZvxPangoTextLayout {
+         pango_text_layout: PangoLayout::new(text_context),
+         metrics: None,
+         parent_cairo,
+      };
+
+      Box::new(new_layout)
+   }
+}
+
+#[allow(clippy::needless_lifetimes)]
+impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
+   fn set_layout(&mut self, font_family: &str, font_size: f64, text_content: &str) {
+      let mut font_description = FontDescription::new();
+
+      font_description.set_family(font_family);
+      font_description.set_absolute_size(font_size * f64::from(pango::SCALE));
+      self.pango_text_layout.set_font_description(Some(&font_description));
+
+      let pango_metrics = self.pango_text_layout.context().metrics(Some(&font_description), None);
+      let font_ascent = f64::from(pango_metrics.ascent());
+      let font_descent = f64::from(pango_metrics.descent());
+      let font_height = f64::from(pango_metrics.height());
+      // Strikethrough is top of line above baseline.
+      let strikethrough_center = 0.5
+         * f64::from(
+            2 * pango_metrics.strikethrough_position() - pango_metrics.strikethrough_thickness(),
+         );
+      let even_half_height =
+         f64::max(font_ascent - strikethrough_center, font_descent + strikethrough_center);
+
+      // Text content dependence below.
+
+      self.pango_text_layout.set_text(text_content);
+
+      let (layout_text_width, layout_text_height) = self.pango_text_layout.size();
+      let text_width = f64::from(layout_text_width);
+      let text_height = f64::from(layout_text_height);
+
+      self.metrics = Some(TextMetrics {
+         strikethrough_center,
+         even_half_height,
+         font_ascent,
+         font_descent,
+         font_height,
+         text_width,
+         text_height,
+      });
+   }
+
+   fn get_metrics(&mut self) -> &Option<TextMetrics> {
+      &self.metrics
+   }
+
+   #[allow(clippy::missing_errors_doc)]
+   fn render_layout(&mut self) -> Result<(), Box<dyn Error>> {
+      pangocairo_show_layout(self.parent_cairo, &self.pango_text_layout);
+      Ok(())
+   }
+
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_0(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_0`.".into())
+   }
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_1(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_1`.".into())
+   }
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_2(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_2`.".into())
+   }
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_3(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_3`.".into())
+   }
 }
 
 impl CairoSpartanRender {
@@ -270,12 +404,13 @@ impl CairoSpartanRender {
    // drawable: The parent of the text, that provides choices such as alignment.
    // prep: Wider choices, such as how fonts are generally scaled in this diagram.
    #[inline]
-   fn layout_text(
-      text_context: &PangoContext,
+   fn figure_text_adjust<'a>(
+      boxed_text_layout: &mut Box<dyn ZvxTextLayout + 'a>,
       single_text: &TextSingle,
       drawable: &TextDrawable,
       diagram_choices: &DiagramChoices,
-   ) -> (PangoLayout, f64, f64) {
+   ) -> (f64, f64) {
+      // ) -> (PangoLayout, f64, f64) {
       let area_based_scale = match drawable.size_choice {
          TextSizeChoice::Normal => 1.0,
          TextSizeChoice::Large => 1.0 / diagram_choices.annotation_area_scale,
@@ -283,24 +418,10 @@ impl CairoSpartanRender {
       };
       let font_size = diagram_choices.font_size * area_based_scale;
 
-      let text_layout = PangoLayout::new(text_context);
+      let text_layout: &mut (dyn ZvxTextLayout + 'a) = boxed_text_layout.as_mut();
 
-      let mut font_description = FontDescription::new();
-      font_description.set_family("sans");
-      font_description.set_absolute_size(font_size * f64::from(pango::SCALE));
-      text_layout.set_font_description(Some(&font_description));
-
-      let metrics = text_layout.context().metrics(Some(&font_description), None);
-      // Strikethrough is top of line above baseline.
-      let strikethrough_center =
-         0.5 * f64::from(2 * metrics.strikethrough_position() - metrics.strikethrough_thickness());
-      let even_half_height = f64::max(
-         f64::from(metrics.ascent()) - strikethrough_center,
-         f64::from(metrics.descent()) + strikethrough_center,
-      );
-
-      text_layout.set_text(&single_text.content);
-      let (text_width, text_height) = text_layout.size();
+      text_layout.set_layout("sans", font_size, &single_text.content);
+      let metrics = text_layout.get_metrics().as_ref().unwrap();
 
       let (offset_x, offset_y) = match drawable.offset_choice {
          TextOffsetChoice::None => (0.0, 0.0),
@@ -314,36 +435,97 @@ impl CairoSpartanRender {
          ),
       };
 
-      let mut height_adjust = f64::from(metrics.ascent()) - strikethrough_center;
-      let multiline_adjust = f64::from(text_height - metrics.height());
+      let mut height_adjust = metrics.font_ascent - metrics.strikethrough_center;
+      let multiline_adjust = metrics.text_height - metrics.font_height;
       let mut width_adjust = 0.0;
 
       match drawable.anchor_choice {
          TextAnchorChoice::Centered => {
             height_adjust += 0.5 * multiline_adjust;
-            width_adjust += 0.5 * f64::from(text_width);
+            width_adjust += 0.5 * metrics.text_width;
          }
 
          TextAnchorChoice::ThreeByThree(horizontal, vertical) => {
             height_adjust += match vertical {
-               TextAnchorVertical::Bottom => even_half_height + multiline_adjust + offset_y,
+               TextAnchorVertical::Bottom => metrics.even_half_height + multiline_adjust + offset_y,
                TextAnchorVertical::Middle => 0.5 * multiline_adjust,
-               TextAnchorVertical::Top => -even_half_height - offset_y,
+               TextAnchorVertical::Top => -metrics.even_half_height - offset_y,
             };
             width_adjust += match horizontal {
                TextAnchorHorizontal::Left => -offset_x,
-               TextAnchorHorizontal::Center => 0.5 * f64::from(text_width),
-               TextAnchorHorizontal::Right => f64::from(text_width) + offset_x,
+               TextAnchorHorizontal::Center => 0.5 * metrics.text_width,
+               TextAnchorHorizontal::Right => metrics.text_width + offset_x,
             };
          }
       }
 
-      (text_layout, width_adjust, height_adjust)
+      (width_adjust, height_adjust)
    }
 
-   fn draw_text_set(
+   // This function is (somewhat) disassociated from the renderer and from Cairo, and is specific to Pango.
+   //
+   // text_context: The Pango context that gives canvas-like rendering information. This
+   // inherits content from the Cairo context.
+   //
+   // single_text: The content and text specific to this "string".
+   // drawable: The parent of the text, that provides choices such as alignment.
+   // prep: Wider choices, such as how fonts are generally scaled in this diagram.
+   #[inline]
+   fn layout_text<'a, 'parent>(
+      cairo_context: &'parent CairoContext,
+      text_context: &'a PangoContext,
+      single_text: &TextSingle,
+      drawable: &TextDrawable,
+      diagram_choices: &DiagramChoices,
+   ) -> (Box<dyn ZvxTextLayout + 'a>, f64, f64)
+   where
+      'parent: 'a,
+   {
+      let mut pango_text_layout: Box<(dyn ZvxTextLayout + 'a)> =
+         ZvxPangoTextLayout::create_pango_layout(cairo_context, text_context);
+
+      let (width_adjust, height_adjust) =
+         Self::figure_text_adjust(&mut pango_text_layout, single_text, drawable, diagram_choices);
+
+      (pango_text_layout, width_adjust, height_adjust)
+   }
+
+   #[inline]
+   fn draw_text_set_with_lifetimes<'semi_global, 'child, 'parent>(
+      &'semi_global mut self,
+      cairo_context: &'parent CairoContext,
+      text_context: &'child PangoContext,
+      single_text: &TextSingle,
+      drawable: &TextDrawable,
+      canvas_layout: &CanvasLayout,
+      diagram_choices: &DiagramChoices,
+   ) where
+      'parent: 'child,
+   {
+      let (mut generic_text_layout, width_adjust, height_adjust): (
+         Box<dyn ZvxTextLayout + 'child>,
+         f64,
+         f64,
+      ) = Self::layout_text(cairo_context, text_context, single_text, drawable, diagram_choices);
+
+      self.set_color(cairo_context, diagram_choices, drawable.color_choice);
+
+      self.save_set_path_transform(canvas_layout, cairo_context);
+      let (tx, ty) = cairo_context.user_to_device(single_text.location[0], single_text.location[1]);
+      self.restore_transform(cairo_context);
+
+      cairo_context.move_to(
+         tx - width_adjust / f64::from(pango::SCALE),
+         ty - height_adjust / f64::from(pango::SCALE),
+      );
+
+      let _ = generic_text_layout.render_layout();
+   }
+
+   #[allow(clippy::needless_lifetimes)]
+   fn draw_text_set<'parent>(
       &mut self,
-      cairo_context: &CairoContext,
+      cairo_context: &'parent CairoContext,
       drawable: &TextDrawable,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
@@ -353,21 +535,14 @@ impl CairoSpartanRender {
          // demonstrates avoiding lots of Pango contexts.
          let text_context: PangoContext = pangocairo_create_context(cairo_context);
 
-         let (text_layout, width_adjust, height_adjust) =
-            Self::layout_text(&text_context, single_text, drawable, diagram_choices);
-
-         self.set_color(cairo_context, diagram_choices, drawable.color_choice);
-
-         self.save_set_path_transform(canvas_layout, cairo_context);
-         let (tx, ty) =
-            cairo_context.user_to_device(single_text.location[0], single_text.location[1]);
-         self.restore_transform(cairo_context);
-
-         cairo_context.move_to(
-            tx - width_adjust / f64::from(pango::SCALE),
-            ty - height_adjust / f64::from(pango::SCALE),
+         self.draw_text_set_with_lifetimes(
+            cairo_context,
+            &text_context,
+            single_text,
+            drawable,
+            canvas_layout,
+            diagram_choices,
          );
-         pangocairo_show_layout(cairo_context, &text_layout);
          cairo_context.stroke().unwrap();
       }
    }
