@@ -148,6 +148,8 @@ pub enum OneOfSegment {
    Arc(ArcPath),
    Cubic(CubicPath),
    Polyline(PolylinePath),
+   // TODO: Add here, and more generally for drawable, a Conic. This can be in regularized
+   // symmetric form (symmetric range with a[1] == 0).
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
