@@ -55,59 +55,13 @@ impl Default for ZebraixAngle {
    }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub enum RatQuadState {
-   #[default]
-   // RationalPoly,
-   // SymmetricRange,       // RationalPoly[nomial] with symmetric range.
-   // RegularizedSymmetric, // SymmetricRange with zero middle denominator coefficient.
-   // OffsetOddEven,        // O-O-E weightings of RegularizedSymmetric.
-   FourPoint, // Like cubic.
-   ThreePointAngle,  // Form a,b,angle, sigma.
-   RationalWeighted, // Polynomial-like, by  difference from end points.
-}
-
-#[derive(Debug, Serialize, PartialEq, Copy, Clone)]
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
 pub struct FourPointRatQuad {
-   pub state: RatQuadState,
    pub r: [f64; 2], // Range.
-   pub x: [f64; 4],
-   pub y: [f64; 4],
+   pub p: [[f64; 2]; 4],
+   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
+   pub sigma: f64,
 }
-
-impl Default for FourPointRatQuad {
-   fn default() -> Self {
-      Self {
-         state: RatQuadState::FourPoint,
-         r: [0.0, 0.0],
-         x: [0.0, 0.0, 0.0, 0.0],
-         y: [0.0, 0.0, 0.0, 0.0],
-      }
-   }
-}
-
-// #[derive(Debug, Serialize, PartialEq, Copy, Clone)]
-// pub struct ThreePointAngleRatQuad {
-//    pub state: RatQuadState,
-//    pub r: [f64; 2], // Range.
-//    pub x: [f64; 3],
-//    pub y: [f64; 3],
-//    pub angle: ZebraixAngle,
-//    pub sigma: f64,
-// }
-
-// impl Default for ThreePointAngleRatQuad {
-//    fn default() -> Self {
-//       Self {
-//          state: RatQuadState::ThreePointAngle,
-//          r: [0.0, 0.0],
-//          x: [0.0, 0.0, 0.0],
-//          y: [0.0, 0.0, 0.0],
-//          angle: ZebraixAngle::Quadrant(1.0),
-//          sigma: 1.0,
-//       }
-//    }
-// }
 
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
 pub struct RatQuadRepr {
@@ -115,10 +69,49 @@ pub struct RatQuadRepr {
    pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
    pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
    pub c: [f64; 3], // Numerator or O-O-E coefficients for y component.
+   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
+   pub sigma: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct ThreePointAngleRepr {
+   pub r: [f64; 2], // Range.
+   pub p: [[f64; 2]; 3],
    #[serde(skip_serializing_if = "is_default")]
    pub angle: ZebraixAngle,
    #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
    pub sigma: f64,
+}
+
+#[derive(Serialize, Deserialize, Default, Debug, Copy, Clone, PartialEq)]
+pub enum RatQuadOoeSubtype {
+   #[default]
+   Nothing,
+   Elliptical(RatQuadRepr),
+   Parabolic(RatQuadRepr),
+   Hyperbolic(RatQuadRepr),
+}
+
+#[derive(Debug, Serialize, Default, PartialEq, Copy, Clone)]
+pub enum BaseRatQuad {
+   #[default]
+   Nothing,
+   RationalPoly(RatQuadRepr),
+   SymmetricRange(RatQuadRepr), // RationalPoly[nomial] with symmetric range.
+   RegularizedSymmetric(RatQuadRepr), // SymmetricRange with zero middle denominator coefficient.
+   OffsetOddEven(RatQuadOoeSubtype), // O-O-E weightings of RegularizedSymmetric.
+
+   FourPoint(FourPointRatQuad),          // Like cubic.
+   ThreePointAngle(ThreePointAngleRepr), // Form p, angle, sigma.
+   RationalWeighted(RatQuadRepr),        // Polynomial-like, by  difference from end points.
+}
+
+#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq)]
+pub enum SpecifiedRatQuad {
+   #[default]
+   None, // For, say, polynomial directly specified.
+   FourPoint(FourPointRatQuad),
+   ThreePointAngle(ThreePointAngleRepr),
 }
 
 impl RatQuadRepr {
@@ -158,7 +151,7 @@ impl RatQuadRepr {
 
       // println!("c[0]: {}, c[1]: {} c[2]: {}", c[0], c[1], c[2]);
 
-      Self { a, b, c, r: self.r, sigma: self.sigma, ..Default::default() }
+      Self { a, b, c, r: self.r, sigma: self.sigma }
    }
 
    #[must_use]
@@ -204,39 +197,6 @@ impl RatQuadRepr {
       // }
       (x, y)
    }
-}
-
-#[derive(Serialize, Deserialize, Default, Debug, Copy, Clone, PartialEq)]
-pub enum RatQuadOoeSubtype {
-   #[default]
-   Nothing,
-   Elliptical(RatQuadRepr),
-   Parabolic(RatQuadRepr),
-   Hyperbolic(RatQuadRepr),
-}
-
-#[derive(Debug, Serialize, Default, PartialEq, Copy, Clone)]
-pub enum BaseRatQuad {
-   #[default]
-   Nothing,
-   RationalPoly(RatQuadRepr),
-   SymmetricRange(RatQuadRepr), // RationalPoly[nomial] with symmetric range.
-   RegularizedSymmetric(RatQuadRepr), // SymmetricRange with zero middle denominator coefficient.
-   OffsetOddEven(RatQuadOoeSubtype), // O-O-E weightings of RegularizedSymmetric.
-
-   FourPoint(RatQuadRepr),        // Like cubic.
-   ThreePointAngle(RatQuadRepr),  // Form a,b,angle, sigma.
-   RationalWeighted(RatQuadRepr), // Polynomial-like, by  difference from end points.
-}
-
-#[derive(Serialize, Debug, Default, Copy, Clone, PartialEq)]
-pub enum SpecifiedRatQuad {
-   #[default]
-   None, // For, say, polynomial directly specified.
-   // Base(BaseRatQuad), // Three-points and angle, for example.
-   FourPoint(FourPointRatQuad),
-   ThreePointAngle(RatQuadRepr),
-   // ThreePointAngle(ThreePointAngleRatQuad),
 }
 
 impl BaseRatQuad {
@@ -410,14 +370,7 @@ impl BaseRatQuad {
          ];
 
          let r = [-r_half, r_half];
-         *self = Self::SymmetricRange(RatQuadRepr {
-            r,
-            a,
-            b,
-            c,
-            sigma: rat_poly.sigma,
-            ..Default::default()
-         });
+         *self = Self::SymmetricRange(RatQuadRepr { r, a, b, c, sigma: rat_poly.sigma });
          Ok(())
       } else {
          Err("Unable to convert offset-even-odd form to symmetric-range form.")

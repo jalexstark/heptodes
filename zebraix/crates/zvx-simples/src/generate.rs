@@ -27,6 +27,22 @@ use zvx_drawable::kinds::{
    PathChoices, PointsDrawable, PolylineDrawable, QualifiedDrawable, SegmentSequence,
 };
 
+const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
+   [p[0][0], p[1][0], p[2][0], p[3][0]]
+}
+
+const fn extract_y_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
+   [p[0][1], p[1][1], p[2][1], p[3][1]]
+}
+
+const fn extract_x_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
+   [p[0][0], p[1][0], p[2][0]]
+}
+
+const fn extract_y_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
+   [p[0][1], p[1][1], p[2][1]]
+}
+
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
 pub enum SampleOption {
    #[default]
@@ -218,15 +234,16 @@ pub fn draw_sample_rat_quad(
          }
          // SpecifiedRatQuad:: Base(BaseRatQuad), // Three-points and angle, for example.
          SpecifiedRatQuad::FourPoint(specified) => {
-            end_points_vec =
-               vec![[specified.x[0], specified.y[0]], [specified.x[3], specified.y[3]]];
-            control_points_vec =
-               vec![[specified.x[1], specified.y[1]], [specified.x[2], specified.y[2]]];
+            let x = extract_x_from_4(&specified.p);
+            let y = extract_y_from_4(&specified.p);
+            end_points_vec = vec![[x[0], y[0]], [x[3], y[3]]];
+            control_points_vec = vec![[x[1], y[1]], [x[2], y[2]]];
          }
          SpecifiedRatQuad::ThreePointAngle(specified) => {
-            end_points_vec =
-               vec![[specified.b[0], specified.c[0]], [specified.b[2], specified.c[2]]];
-            control_points_vec = vec![[specified.b[1], specified.c[1]]];
+            let x = extract_x_from_3(&specified.p);
+            let y = extract_y_from_3(&specified.p);
+            end_points_vec = vec![[x[0], y[0]], [x[2], y[2]]];
+            control_points_vec = vec![[x[1], y[1]]];
          }
       }
 
