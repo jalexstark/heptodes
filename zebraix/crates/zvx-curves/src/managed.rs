@@ -17,7 +17,6 @@ use crate::base::CubiLinear;
 use crate::base::CubicForm;
 use crate::base::FourPointRatQuad;
 use crate::base::RatQuadRepr;
-use crate::base::RatQuadState;
 use crate::base::SpecifiedRatQuad;
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
@@ -29,6 +28,22 @@ pub struct ManagedRatQuad {
    pub poly: BaseRatQuad,
    pub specified: SpecifiedRatQuad, // FourPoint or ThreePointAngle.
    pub canvas_range: [f64; 4],
+}
+
+const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
+   [p[0][0], p[1][0], p[2][0], p[3][0]]
+}
+
+const fn extract_y_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
+   [p[0][1], p[1][1], p[2][1], p[3][1]]
+}
+
+const fn extract_x_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
+   [p[0][0], p[1][0], p[2][0]]
+}
+
+const fn extract_y_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
+   [p[0][1], p[1][1], p[2][1]]
 }
 
 #[allow(clippy::missing_panics_doc)]
@@ -44,9 +59,8 @@ impl ManagedRatQuad {
    #[allow(clippy::similar_names)]
    #[allow(clippy::suboptimal_flops)]
    pub fn create_from_four_points(four_points: &FourPointRatQuad, canvas_range: [f64; 4]) -> Self {
-      assert!(four_points.state == RatQuadState::FourPoint);
-      let x = &four_points.x;
-      let y = &four_points.y;
+      let x = extract_x_from_4(&four_points.p);
+      let y = extract_y_from_4(&four_points.p);
       let delta_x = (x[2] - x[3]) * (y[1] - y[0]);
       let delta_y = (y[2] - y[3]) * (x[1] - x[0]);
       let w_b = delta_x - delta_y;
@@ -83,8 +97,8 @@ impl ManagedRatQuad {
    ) -> Result<Self, &'static str> {
       assert!(matches!(three_point_rat_quad_base, BaseRatQuad::ThreePointAngle { .. }));
       if let BaseRatQuad::ThreePointAngle(three_point_rat_quad) = three_point_rat_quad_base {
-         let xs = &three_point_rat_quad.b;
-         let ys = &three_point_rat_quad.c;
+         let xs = extract_x_from_3(&three_point_rat_quad.p);
+         let ys = extract_y_from_3(&three_point_rat_quad.p);
          let f_mult_1p5 = three_point_rat_quad.angle.cos();
          // Can construct as four-point rat quad with these values.
          // let x = [xs[0], f * xs[1] + (1.0 - f) * xs[0], f * xs[1] + (1.0 - f) * xs[2], xs[2]];

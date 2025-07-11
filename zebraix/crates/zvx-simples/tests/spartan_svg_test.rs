@@ -16,7 +16,9 @@ use serde_json::to_writer_pretty;
 use std::collections::VecDeque;
 use std::io::Write;
 use zvx_cairo::render::CairoSpartanCombo;
-use zvx_curves::base::{BaseRatQuad, CubiLinear, FourPointRatQuad, RatQuadRepr, ZebraixAngle};
+use zvx_curves::base::{
+   BaseRatQuad, CubiLinear, FourPointRatQuad, RatQuadRepr, ThreePointAngleRepr, ZebraixAngle,
+};
 use zvx_curves::managed::ManagedCubic;
 use zvx_curves::managed::ManagedRatQuad;
 use zvx_docagram::axes::AxesSpec;
@@ -46,6 +48,14 @@ fn scale_coord_vec(v: &[[f64; 2]], s: f64) -> Vec<[f64; 2]> {
       result[i] = [v[i][0] * s, v[i][1] * s];
    }
    result
+}
+
+const fn p_from_x_y_4(x: &[f64; 4], y: &[f64; 4]) -> [[f64; 2]; 4] {
+   [[x[0], y[0]], [x[1], y[1]], [x[2], y[2]], [x[3], y[3]]]
+}
+
+const fn p_from_x_y_3(x: &[f64; 3], y: &[f64; 3]) -> [[f64; 2]; 3] {
+   [[x[0], y[0]], [x[1], y[1]], [x[2], y[2]]]
 }
 
 #[derive(Default)]
@@ -1491,8 +1501,10 @@ fn spartan_sizing_r_test() {
       let h = 0.005;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1523,8 +1535,10 @@ fn spartan_sizing_r_test() {
       let h = 0.5;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1557,8 +1571,10 @@ fn spartan_sizing_r_test() {
       let shift_y = 0.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1588,8 +1604,10 @@ fn spartan_sizing_r_test() {
       let h = 4.0 / 3.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1619,8 +1637,10 @@ fn spartan_sizing_r_test() {
       let h = 3.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1652,8 +1672,10 @@ fn spartan_sizing_r_test() {
       let h = 0.005;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1684,8 +1706,10 @@ fn spartan_sizing_r_test() {
       let h = 1.0 / 3.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1717,8 +1741,10 @@ fn spartan_sizing_r_test() {
       let shift_y = 0.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1748,8 +1774,10 @@ fn spartan_sizing_r_test() {
       let h = 1.0;
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
-            y: [-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            p: p_from_x_y_4(
+               &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
+               &[-1.0 + shift_y, -1.0 + h + shift_y, 1.0 + h + shift_y, 1.0 + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1807,8 +1835,10 @@ fn spartan_sizing_s_test() {
       let shift_y = 0.0;
       let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [s + shift_x, s + shift_x, h + shift_x, 0.0 + shift_x],
-            y: [0.0 + shift_y, h + shift_y, s + shift_y, s + shift_y],
+            p: p_from_x_y_4(
+               &[s + shift_x, s + shift_x, h + shift_x, 0.0 + shift_x],
+               &[0.0 + shift_y, h + shift_y, s + shift_y, s + shift_y],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1833,18 +1863,20 @@ fn spartan_sizing_s_test() {
       let shift_y = 0.0;
       let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [
-               0.8 * s + shift_x,
-               0.8 * s + 0.6 * h + shift_x,
-               0.6 * s + 0.8 * h + shift_x,
-               0.6 * s + shift_x,
-            ],
-            y: [
-               -0.6 * s + shift_y,
-               -0.6 * s + 0.8 * h + shift_y,
-               0.8 * s - 0.6 * h + shift_y,
-               0.8 * s + shift_y,
-            ],
+            p: p_from_x_y_4(
+               &[
+                  0.8 * s + shift_x,
+                  0.8 * s + 0.6 * h + shift_x,
+                  0.6 * s + 0.8 * h + shift_x,
+                  0.6 * s + shift_x,
+               ],
+               &[
+                  -0.6 * s + shift_y,
+                  -0.6 * s + 0.8 * h + shift_y,
+                  0.8 * s - 0.6 * h + shift_y,
+                  0.8 * s + shift_y,
+               ],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1869,8 +1901,10 @@ fn spartan_sizing_s_test() {
          let shift_y = 0.0;
          let managed_curve = ManagedRatQuad::create_from_four_points(
             &FourPointRatQuad {
-               x: [0.0 + shift_x, 0.0 + h + shift_x, 0.0 + h + shift_x, 0.0 + shift_x],
-               y: [-s + shift_y, -s + shift_y, s + shift_y, s + shift_y],
+               p: p_from_x_y_4(
+                  &[0.0 + shift_x, 0.0 + h + shift_x, 0.0 + h + shift_x, 0.0 + shift_x],
+                  &[-s + shift_y, -s + shift_y, s + shift_y, s + shift_y],
+               ),
                // x: [0.0, 1.0, 1.0, 0.0],
                // y: [-1.0, -1.0, 1.0, 1.0],
                r: t_range,
@@ -1935,8 +1969,10 @@ fn spartan_sizing_t_test() {
             // Quarter-circle temporary test.
             // x: [-3.0, -2.5, -2.5, -3.0],
             // y: [-2.0, -1.5, 1.5, 2.0],
-            x: [x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
-            y: [y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+            p: p_from_x_y_4(
+               &[x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
+               &[y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -1982,8 +2018,10 @@ fn spartan_sizing_t_test() {
    {
       let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
-            y: [y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+            p: p_from_x_y_4(
+               &[x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
+               &[y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -2029,8 +2067,10 @@ fn spartan_sizing_t_test() {
    {
       let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
-            x: [x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
-            y: [y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+            p: p_from_x_y_4(
+               &[x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
+               &[y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+            ),
             r: t_range,
             ..Default::default()
          },
@@ -2173,9 +2213,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
@@ -2208,9 +2247,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
@@ -2243,9 +2281,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
@@ -2278,9 +2315,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
@@ -2313,9 +2349,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.05),
             r: t_range,
             ..Default::default()
@@ -2347,9 +2382,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
@@ -2381,9 +2415,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.75),
             r: t_range,
             ..Default::default()
@@ -2415,9 +2448,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(1.25),
             r: t_range,
             ..Default::default()
@@ -2449,9 +2481,8 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(1.5),
             r: t_range,
             ..Default::default()
@@ -2528,9 +2559,8 @@ fn spartan_sizing_v_test() {
       );
 
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Radians(t.atan()),
             r: t_range,
             ..Default::default()
@@ -2567,9 +2597,8 @@ fn spartan_sizing_v_test() {
       );
 
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(RatQuadRepr {
-            b: x,
-            c: y,
+         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+            p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Radians((1.0 / t).atan()),
             r: t_range,
             ..Default::default()
@@ -2608,7 +2637,7 @@ fn spartan_sizing_v_test() {
       );
 
       let mut managed_curve = ManagedRatQuad::create_from_four_points(
-         &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+         &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
          cairo_spartan.spartan.prep.axes_range,
       );
       managed_curve.raise_to_symmetric_range().unwrap();
@@ -3181,7 +3210,7 @@ fn segment_sequence_a_test() {
                shift,
             );
             let mut managed_curve = ManagedRatQuad::create_from_four_points(
-               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             managed_curve.raise_to_symmetric_range().unwrap();
@@ -3197,7 +3226,7 @@ fn segment_sequence_a_test() {
                shift,
             );
             let mut managed_curve = ManagedRatQuad::create_from_four_points(
-               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             managed_curve.raise_to_symmetric_range().unwrap();
@@ -3224,7 +3253,7 @@ fn segment_sequence_a_test() {
                shift,
             );
             let mut managed_curve = ManagedRatQuad::create_from_four_points(
-               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             managed_curve.raise_to_symmetric_range().unwrap();
@@ -3240,7 +3269,7 @@ fn segment_sequence_a_test() {
                shift,
             );
             let mut managed_curve = ManagedRatQuad::create_from_four_points(
-               &FourPointRatQuad { x, y, r: t_range, ..Default::default() },
+               &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             managed_curve.raise_to_symmetric_range().unwrap();
