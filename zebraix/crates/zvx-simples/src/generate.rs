@@ -68,14 +68,14 @@ pub fn create_rat_quad_path(
          RatQuadOoeSubclassed::Nothing => unimplemented!("Never should reach"),
          RatQuadOoeSubclassed::Elliptical(ooe_rat_quad) => {
             let r = ooe_rat_quad.r[1];
-            let s = 1.0 / ooe_rat_quad.a[2].sqrt();
+            let s = 1.0 / ooe_rat_quad.a_2.sqrt();
             let mx = ooe_rat_quad.b[0];
             let my = ooe_rat_quad.c[0];
             let (sx, sy) = (0.5 * s * ooe_rat_quad.b[1], 0.5 * s * ooe_rat_quad.c[1]);
             let (cx, cy) = (ooe_rat_quad.b[2], ooe_rat_quad.c[2]);
 
             // The arc range is [-angle_range, angle_range].
-            let angle_range = 2.0 * (r * (ooe_rat_quad.a[2] / ooe_rat_quad.a[0]).sqrt()).atan();
+            let angle_range = 2.0 * (r * (ooe_rat_quad.a_2 / ooe_rat_quad.a_0).sqrt()).atan();
 
             OneOfSegment::Arc(ArcPath {
                angle_range: [-angle_range, angle_range],
@@ -222,7 +222,7 @@ pub fn draw_sample_rat_quad(
    spartan: &mut SpartanDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let rat_quad: &RatQuadRepr =
+   let rat_quad: RatQuadRepr =
       managed_rat_quad.get_poly_rat_quad_repr().expect("Never should be missing");
 
    if let Some(color_choice) = curve_config.control_color {
@@ -354,7 +354,7 @@ pub fn draw_sample_rat_quad(
          let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
          push_rat_quad_drawable(
             spartan,
-            rat_quad,
+            &rat_quad,
             regularized_rat_quad,
             PathChoices { color: color_choice, line_choice: curve_config.main_line_choice },
             curve_config.main_line_layer,
@@ -491,7 +491,7 @@ pub fn draw_sample_segment_sequence(
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
             let rat_quad: &RatQuadRepr =
-               managed_rat_quad.get_poly_rat_quad_repr().expect("Should be there");
+               &managed_rat_quad.get_poly_rat_quad_repr().expect("Should be there");
             let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
             segments_paths.push(create_rat_quad_path(
                spartan.num_segments_hyperbolic,

@@ -137,7 +137,7 @@ impl ManagedRatQuad {
    }
 
    #[allow(clippy::missing_errors_doc)]
-   pub const fn get_poly_rat_quad_repr(&self) -> Result<&RatQuadRepr, &'static str> {
+   pub const fn get_poly_rat_quad_repr(&self) -> Result<RatQuadRepr, &'static str> {
       self.poly.get_poly()
    }
 
