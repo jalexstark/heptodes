@@ -138,8 +138,8 @@ impl ManagedRatQuad {
 
    #[allow(clippy::missing_errors_doc)]
    // Velocity at beginning multiplied by sigma, and velocity at end divided by sigma.
-   pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
-      self.poly.apply_bilinear(sigma)
+   pub fn apply_bilinear(&mut self, sigma_n: f64, sigma_d: f64) -> Result<(), &'static str> {
+      self.poly.apply_bilinear(sigma_n, sigma_d)
    }
 
    #[allow(clippy::missing_errors_doc)]

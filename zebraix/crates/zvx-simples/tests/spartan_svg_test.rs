@@ -1087,7 +1087,7 @@ fn spartan_sizing_o_test() {
       cairo_spartan.spartan.prep.axes_range,
    );
 
-   managed_curve.apply_bilinear(sigma).unwrap();
+   managed_curve.apply_bilinear(sigma, 1.0).unwrap();
 
    draw_sample_rat_quad(
       &managed_curve,
@@ -1146,7 +1146,7 @@ fn spartan_sizing_o1_test() {
    // Doesn't make much sense. Remove.
    // TODO: Consider removing or reworking this test, likely redundant.
    // managed_curve.raise_to_symmetric_range().unwrap();
-   managed_curve.apply_bilinear(sigma).unwrap();
+   managed_curve.apply_bilinear(sigma * 0.3, 0.3).unwrap();
 
    draw_sample_rat_quad(
       &managed_curve,
