@@ -15,7 +15,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use zvx_curves::base::BaseRatQuad;
-use zvx_curves::base::RatQuadOoeSubtype;
+use zvx_curves::base::RatQuadOoeSubclassed;
 use zvx_curves::base::RatQuadRepr;
 use zvx_curves::base::SpecifiedRatQuad;
 use zvx_curves::managed::ManagedCubic;
@@ -56,15 +56,17 @@ pub enum SampleOption {
 pub fn create_rat_quad_path(
    num_segments_hyperbolic: i32,
    rat_quad: &RatQuadRepr,
-   // rat_quad_base: &BaseRatQuad,
-   ooe_rat_quad_base: &BaseRatQuad,
-   // path_choices: PathChoices,
+   reg_symm_rat_quad: &BaseRatQuad,
 ) -> OneOfSegment {
-   assert!(matches!(ooe_rat_quad_base, BaseRatQuad::OffsetOddEven { .. }));
-   if let BaseRatQuad::OffsetOddEven(ooe_rat_quad_extracted) = ooe_rat_quad_base {
+   // TODO: Just take reg symm rat quad.
+   assert!(matches!(reg_symm_rat_quad, BaseRatQuad::RegularizedSymmetric { .. }));
+   if let BaseRatQuad::RegularizedSymmetric(_reg_symmetric) = reg_symm_rat_quad {
+      let ooe_rat_quad_extracted: RatQuadOoeSubclassed =
+         BaseRatQuad::classify_offset_odd_even(reg_symm_rat_quad, 0.01).unwrap();
+
       match ooe_rat_quad_extracted {
-         RatQuadOoeSubtype::Nothing => unimplemented!("Never should reach"),
-         RatQuadOoeSubtype::Elliptical(ooe_rat_quad) => {
+         RatQuadOoeSubclassed::Nothing => unimplemented!("Never should reach"),
+         RatQuadOoeSubclassed::Elliptical(ooe_rat_quad) => {
             let r = ooe_rat_quad.r[1];
             let s = 1.0 / ooe_rat_quad.a[2].sqrt();
             let mx = ooe_rat_quad.b[0];
@@ -82,7 +84,7 @@ pub fn create_rat_quad_path(
             })
          }
 
-         RatQuadOoeSubtype::Parabolic(_ooe_rat_quad) => {
+         RatQuadOoeSubclassed::Parabolic(_ooe_rat_quad) => {
             let (x, y) = rat_quad.rq_characterize_endpoints();
             let f = 1.0 / 3.0;
             let four_c: CubicPath = [
@@ -96,7 +98,7 @@ pub fn create_rat_quad_path(
          }
 
          // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
-         RatQuadOoeSubtype::Hyperbolic(_ooe_rat_quad) => {
+         RatQuadOoeSubclassed::Hyperbolic(_ooe_rat_quad) => {
             // assert!(matches!(rat_quad_base, BaseRatQuad::RationalPoly { .. }));
             // if let BaseRatQuad::RationalPoly(rat_quad) = rat_quad_base {
             let t_int: Vec<i32> = (0..num_segments_hyperbolic).collect();
@@ -135,14 +137,14 @@ pub fn create_rat_quad_path(
 pub fn push_rat_quad_drawable(
    spartan: &mut SpartanDiagram,
    rat_quad: &RatQuadRepr,
-   ooe_rat_quad_base: &BaseRatQuad,
+   reg_symm_base: &BaseRatQuad,
    path_choices: PathChoices,
    layer: i32,
 ) {
-   assert!(matches!(ooe_rat_quad_base, BaseRatQuad::OffsetOddEven { .. }));
-   if let BaseRatQuad::OffsetOddEven(_ooe_rat_quad) = ooe_rat_quad_base {
+   assert!(matches!(reg_symm_base, BaseRatQuad::RegularizedSymmetric { .. }));
+   if let BaseRatQuad::RegularizedSymmetric(_ooe_rat_quad) = reg_symm_base {
       let one_of_path =
-         create_rat_quad_path(spartan.num_segments_hyperbolic, rat_quad, ooe_rat_quad_base);
+         create_rat_quad_path(spartan.num_segments_hyperbolic, rat_quad, reg_symm_base);
 
       match one_of_path {
          OneOfSegment::Arc(path) => {
@@ -349,11 +351,11 @@ pub fn draw_sample_rat_quad(
             }),
          });
       } else {
-         let ooe_rat_quad: &BaseRatQuad = managed_rat_quad.get_ooe_rat_quad();
+         let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
          push_rat_quad_drawable(
             spartan,
             rat_quad,
-            ooe_rat_quad,
+            regularized_rat_quad,
             PathChoices { color: color_choice, line_choice: curve_config.main_line_choice },
             curve_config.main_line_layer,
          );
@@ -490,11 +492,11 @@ pub fn draw_sample_segment_sequence(
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
             let rat_quad: &RatQuadRepr =
                managed_rat_quad.get_poly_rat_quad_repr().expect("Should be there");
-            let ooe_rat_quad: &BaseRatQuad = managed_rat_quad.get_ooe_rat_quad();
+            let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
             segments_paths.push(create_rat_quad_path(
                spartan.num_segments_hyperbolic,
                rat_quad,
-               ooe_rat_quad,
+               regularized_rat_quad,
             ));
          }
          OneOfManagedSegment::Polyline(locations) => {

@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::base::BaseRatQuad;
-use crate::base::CubiLinear;
-use crate::base::CubicForm;
-use crate::base::FourPointRatQuad;
-use crate::base::RatQuadRepr;
-use crate::base::SpecifiedRatQuad;
+use crate::base::{
+   BaseRatQuad, CubiLinear, CubicForm, FourPointRatQuad, RatQuadOoeSubclassed, RatQuadRepr,
+   SpecifiedRatQuad,
+};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 
@@ -127,8 +125,10 @@ impl ManagedRatQuad {
    }
 
    #[must_use]
-   pub const fn get_ooe_rat_quad(&self) -> &BaseRatQuad {
-      &self.ooe
+   pub const fn get_regularized_rat_quad(&self) -> &BaseRatQuad {
+      // TODO: Yuck!
+      assert!(matches!(&self.poly, BaseRatQuad::RegularizedSymmetric { .. }));
+      &self.poly
    }
 
    #[must_use]
@@ -174,8 +174,8 @@ impl ManagedRatQuad {
    }
 
    #[allow(clippy::missing_errors_doc)]
-   pub fn raise_to_offset_odd_even(&mut self) -> Result<(), &'static str> {
-      self.ooe.raise_to_offset_odd_even(&self.poly, 0.01)
+   pub fn classify_offset_odd_even(&self) -> Result<RatQuadOoeSubclassed, &'static str> {
+      BaseRatQuad::classify_offset_odd_even(&self.poly, 0.01)
    }
 }
 
