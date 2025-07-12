@@ -79,6 +79,33 @@ pub struct RatQuadRepr {
 
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
 pub struct RegularizedRatQuadRepr {
+   pub r_bound: f64, // Range is [-r_bound, r_bound].
+   pub a_0: f64,     // Denominator, as a[2] * t^2 + a[1] * t... .
+   pub a_2: f64,
+   pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
+   pub c: [f64; 3], // Numerator or O-O-E coefficients for y component.
+   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
+   pub sigma: f64,
+}
+
+// Path is:
+//
+// offset + minus_partial / (lambda - mu * t) + plus_partial / (lambda + mu * t).
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct HyperbolicRatQuadRepr {
+   pub r_bound: f64, // Range is [-r_bound, r_bound].
+   pub lambda: f64,
+   pub mu: f64,
+   pub offset: [f64; 2],
+   pub minus_partial: [f64; 2],
+   pub plus_partial: [f64; 2],
+   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
+   pub sigma: f64,
+}
+
+// TODO: Migrate to Cubilinear form.
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct ParabolicRatQuadRepr {
    pub r: [f64; 2], // Range.
    pub a_0: f64,    // Denominator, as a[2] * t^2 + a[1] * t... .
    pub a_2: f64,
@@ -98,21 +125,30 @@ pub struct ThreePointAngleRepr {
    pub sigma: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
-pub enum CubicForm {
-   #[default]
-   FourPoint,
-   MidDiff,
-}
-
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
-pub struct CubiLinear {
-   pub form: CubicForm,
+#[derive(Debug, Deserialize, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct FourPointCubiLinearRepr {
    pub r: [f64; 2], // Range.
    pub x: [f64; 4],
    pub y: [f64; 4],
    #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
    pub sigma: f64,
+}
+
+#[derive(Debug, Deserialize, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+pub struct MidDiffCubiLinearRepr {
+   pub r: [f64; 2], // Range.
+   pub x: [f64; 4],
+   pub y: [f64; 4],
+   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
+   pub sigma: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq)]
+pub enum CubiLinear {
+   #[default]
+   Nothing,
+   FourPoint(FourPointCubiLinearRepr),
+   MidDiff(MidDiffCubiLinearRepr),
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Copy, Clone, PartialEq)]
@@ -122,8 +158,8 @@ pub enum RatQuadOoeSubclassed {
    // Elliptical to custom OOE.
    Elliptical(RegularizedRatQuadRepr),
    // Perhaps change to cubilinear form
-   Parabolic(RegularizedRatQuadRepr),
-   Hyperbolic(RegularizedRatQuadRepr),
+   Parabolic(ParabolicRatQuadRepr),
+   Hyperbolic(HyperbolicRatQuadRepr),
 }
 
 #[derive(Debug, Serialize, Default, PartialEq, Copy, Clone)]
@@ -149,7 +185,7 @@ impl RatQuadRepr {
    #[must_use]
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::many_single_char_names)]
-   pub fn rq_apply_bilinear_unranged(&self, w: f64, x: f64, y: f64, z: f64) -> Self {
+   fn rq_apply_bilinear_unranged(&self, w: f64, x: f64, y: f64, z: f64) -> Self {
       // let norm = 1.0 / ((w * w + x * x) * (y * y + z * z)).sqrt().sqrt();
       // w *= norm;
       // x *= norm;
@@ -181,14 +217,14 @@ impl RatQuadRepr {
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::many_single_char_names)]
    pub fn rq_apply_bilinear(&self, sigma_n: f64, sigma_d: f64) -> Self {
-      let p = self.r[0];
+      let p = -self.r[0];
       let q = self.r[1];
 
       self.rq_apply_bilinear_unranged(
-         sigma_n * q - sigma_d * p,
-         -(sigma_n - sigma_d) * p * q,
+         sigma_n * q + sigma_d * p,
+         (sigma_n - sigma_d) * p * q,
          sigma_n - sigma_d,
-         sigma_d * q - sigma_n * p,
+         sigma_d * q + sigma_n * p,
       )
    }
 
@@ -251,7 +287,75 @@ impl RatQuadRepr {
    }
 }
 
+impl HyperbolicRatQuadRepr {
+   const fn convert_to_regularized(&self) -> RegularizedRatQuadRepr {
+      let lambda = self.lambda;
+      let mu = self.mu;
+      let b = [
+         lambda * (self.offset[0] * lambda + self.minus_partial[0] + self.plus_partial[0]),
+         mu * (self.minus_partial[0] - self.plus_partial[0]),
+         -self.offset[0] * mu * mu,
+      ];
+      let c = [
+         lambda * (self.offset[1] * lambda + self.minus_partial[1] + self.plus_partial[1]),
+         mu * (self.minus_partial[1] - self.plus_partial[1]),
+         -self.offset[1] * mu * mu,
+      ];
+      let a_0 = lambda * lambda;
+      let a_2 = -mu * mu;
+
+      RegularizedRatQuadRepr { r_bound: self.r_bound, a_0, a_2, b, c, sigma: self.sigma }
+   }
+}
+
 impl RegularizedRatQuadRepr {
+   const fn convert_to_parabolic(&self) -> ParabolicRatQuadRepr {
+      ParabolicRatQuadRepr {
+         r: [-self.r_bound, self.r_bound],
+         a_0: self.a_0,
+         a_2: self.a_2,
+         b: self.b,
+         c: self.c,
+         sigma: self.sigma,
+      }
+   }
+
+   // At present there is no proper testing of s. Manual inspection verifies that negating all
+   // a, b and c in the input leaves the output invariant.
+   #[allow(clippy::suboptimal_flops)]
+   fn convert_to_hyperbolic(&self) -> HyperbolicRatQuadRepr {
+      let s = self.a_0.signum();
+
+      let lambda = (s * self.a_0).sqrt();
+      assert!(-s * self.a_2 > 0.0);
+      let mu = (-s * self.a_2).sqrt();
+      let r_lambda = 1.0 / lambda;
+      let r_mu = 1.0 / mu;
+      let r_a_2 = 1.0 / self.a_2;
+
+      let offset = [self.b[2] * r_a_2, self.c[2] * r_a_2];
+
+      let f = 0.5 * s;
+      let plus_partial = [
+         f * (self.b[0] * r_lambda + (-self.b[1] + lambda * r_mu * self.b[2]) * r_mu),
+         f * (self.c[0] * r_lambda + (-self.c[1] + lambda * r_mu * self.c[2]) * r_mu),
+      ];
+      let minus_partial = [
+         f * (self.b[0] * r_lambda + (self.b[1] + lambda * r_mu * self.b[2]) * r_mu),
+         f * (self.c[0] * r_lambda + (self.c[1] + lambda * r_mu * self.c[2]) * r_mu),
+      ];
+
+      HyperbolicRatQuadRepr {
+         r_bound: self.r_bound,
+         lambda,
+         mu,
+         offset,
+         plus_partial,
+         minus_partial,
+         sigma: self.sigma,
+      }
+   }
+
    #[must_use]
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_errors_doc)]
@@ -260,9 +364,9 @@ impl RegularizedRatQuadRepr {
       let orig_rat_poly = *self;
       let mut rat_poly = *self;
 
-      let r = rat_poly.r[1];
+      let r = rat_poly.r_bound;
       if (rat_poly.a_2.abs() * r * r) < (rat_poly.a_0.abs() * tolerance) {
-         RatQuadOoeSubclassed::Parabolic(orig_rat_poly)
+         RatQuadOoeSubclassed::Parabolic(orig_rat_poly.convert_to_parabolic())
       } else if rat_poly.a_2.signum() == rat_poly.a_0.signum() {
          // TODO: Better handle cases where s or f might be infinite.
          let s = 1.0 / rat_poly.a_0;
@@ -297,13 +401,55 @@ impl RegularizedRatQuadRepr {
             // product, and so the condition effectively compares their magnitude (for small
             // tolerances).
 
-            RatQuadOoeSubclassed::Parabolic(orig_rat_poly)
+            RatQuadOoeSubclassed::Parabolic(orig_rat_poly.convert_to_parabolic())
          } else {
             // Only outcome that actually uses OOE form.
             RatQuadOoeSubclassed::Elliptical(rat_poly)
          }
       } else {
-         RatQuadOoeSubclassed::Hyperbolic(orig_rat_poly)
+         // {
+         let hyperbolic_form = orig_rat_poly.convert_to_hyperbolic();
+         let poly = orig_rat_poly;
+         let reconstructed = hyperbolic_form.convert_to_regularized();
+         //      Self {
+         //    r: orig_rat_poly.r,
+         //    a_0: orig_rat_poly.a_0,
+         //    a_2: orig_rat_poly.a_2,
+         //    // a: [orig_rat_poly.a[0], 0.0, orig_rat_poly.a[2]],
+         //    b: orig_rat_poly.b,
+         //    c: orig_rat_poly.c,
+         //    sigma: orig_rat_poly.sigma,
+         // };
+         println!("a: [{}, {}, {}]", poly.a_0, 0.0, poly.a_2);
+         println!("b: [{}, {}, {}]", poly.b[0], poly.b[1], poly.b[2]);
+         println!("c: [{}, {}, {}]", poly.c[0], poly.c[1], poly.c[2]);
+
+         println!("a: [{}, {}, {}]", reconstructed.a_0, 0.0, reconstructed.a_2);
+         println!("b: [{}, {}, {}]", reconstructed.b[0], reconstructed.b[1], reconstructed.b[2]);
+         println!("c: [{}, {}, {}]", reconstructed.c[0], reconstructed.c[1], reconstructed.c[2]);
+
+         // let reconstructed_b = [
+         //    offset[0] * beta * beta + minus_fraction[0] * beta + plus_fraction[0] * beta,
+         //    minus_fraction[0] * gamma - plus_fraction[0] * gamma,
+         //    -offset[0] * gamma * gamma,
+         // ];
+         // let reconstructed_c = [
+         //    offset[1] * beta * beta + minus_fraction[1] * beta + plus_fraction[1] * beta,
+         //    minus_fraction[1] * gamma - plus_fraction[1] * gamma,
+         //    -offset[1] * gamma * gamma,
+         // ];
+         // println!("recon a: [{}, {}, {}]", beta * beta, 0.0, -gamma * gamma);
+         // println!(
+         //    "recon b: [{}, {}, {}]",
+         //    reconstructed_b[0], reconstructed_b[1], reconstructed_b[2]
+         // );
+         // println!(
+         //    "recon c: [{}, {}, {}]",
+         //    reconstructed_c[0], reconstructed_c[1], reconstructed_c[2]
+         // );
+         // }
+
+         RatQuadOoeSubclassed::Hyperbolic(hyperbolic_form)
       }
    }
 }
@@ -315,7 +461,7 @@ impl BaseRatQuad {
       match self {
          Self::RationalPoly(repr) => Ok(*repr),
          Self::RegularizedSymmetric(symm) => Ok(RatQuadRepr {
-            r: symm.r,
+            r: [-symm.r_bound, symm.r_bound],
             a: [symm.a_0, 0.0, symm.a_2],
             b: symm.b,
             c: symm.c,
@@ -390,7 +536,7 @@ impl BaseRatQuad {
          if let Self::RationalPoly(check_poly) = self {
             assert!(check_poly.a[1].abs() < 0.001);
             *self = Self::RegularizedSymmetric(RegularizedRatQuadRepr {
-               r: check_poly.r,
+               r_bound: check_poly.r[1],
                a_0: check_poly.a[0],
                a_2: check_poly.a[2],
                b: check_poly.b,
@@ -471,7 +617,7 @@ impl BaseRatQuad {
 }
 
 #[allow(clippy::missing_errors_doc)]
-impl CubiLinear {
+impl FourPointCubiLinearRepr {
    #[inline]
    #[allow(clippy::many_single_char_names)]
    #[allow(clippy::suboptimal_flops)]
@@ -484,12 +630,9 @@ impl CubiLinear {
             + a * a * a * coeffs[3])
    }
 
+   #[must_use]
    #[allow(clippy::many_single_char_names)]
-   #[allow(clippy::suboptimal_flops)]
-   pub fn eval(&self, t: &[f64]) -> Result<Vec<[f64; 2]>, &'static str> {
-      if self.form != CubicForm::FourPoint {
-         return Err("Can only evaluate cubilinear curves in four-point form.");
-      }
+   pub fn eval(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
       for item in t {
          let a = self.sigma * (*item - self.r[0]);
@@ -500,7 +643,7 @@ impl CubiLinear {
          let y = Self::eval_part(b, a, &self.y, recip_denom);
          ret_val.push([x, y]);
       }
-      Ok(ret_val)
+      ret_val
    }
 
    #[allow(clippy::similar_names)]
@@ -582,5 +725,20 @@ impl CubiLinear {
 
    pub fn adjust_range(&mut self, new_range: [f64; 2]) {
       self.r = new_range;
+   }
+}
+
+#[allow(clippy::missing_errors_doc)]
+impl CubiLinear {
+   #[allow(clippy::many_single_char_names)]
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::missing_panics_doc)]
+   pub fn eval(&self, t: &[f64]) -> Result<Vec<[f64; 2]>, &'static str> {
+      assert!(matches!(self, Self::FourPoint { .. }));
+      if let Self::FourPoint(four_point) = self {
+         Ok(four_point.eval(t))
+      } else {
+         Err("Can only evaluate cubilinear curves in four-point form.")
+      }
    }
 }
