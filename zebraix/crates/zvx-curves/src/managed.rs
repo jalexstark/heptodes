@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use crate::base::{
-   BaseRatQuad, CubiLinear, CubicForm, FourPointRatQuad, RatQuadOoeSubclassed, RatQuadRepr,
-   SpecifiedRatQuad,
+   BaseRatQuad, CubiLinear, FourPointCubiLinearRepr, FourPointRatQuad, RatQuadOoeSubclassed,
+   RatQuadRepr, SpecifiedRatQuad,
 };
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
@@ -168,37 +168,44 @@ pub struct ManagedCubic {
 impl ManagedCubic {
    #[must_use]
    pub const fn create_from_control_points(
-      control_points: &CubiLinear,
+      control_points: &FourPointCubiLinearRepr,
       canvas_range: [f64; 4],
    ) -> Self {
-      let mut ret_val = Self { four_point: *control_points, canvas_range };
-      ret_val.four_point.form = CubicForm::FourPoint;
-      ret_val
+      Self { four_point: CubiLinear::FourPoint(*control_points), canvas_range }
    }
 
-   #[must_use]
-   pub const fn get_form(&self) -> CubicForm {
-      self.four_point.form
-   }
-
-   #[must_use]
-   pub const fn get_four_point(&self) -> &CubiLinear {
-      &self.four_point
+   #[allow(clippy::missing_errors_doc)]
+   pub const fn get_four_point(&self) -> Result<FourPointCubiLinearRepr, &'static str> {
+      assert!(matches!(self.four_point, CubiLinear::FourPoint { .. }));
+      if let CubiLinear::FourPoint(four_point) = self.four_point {
+         Ok(four_point)
+      } else {
+         Err("Managed cubic must be four-point")
+      }
    }
 
    pub fn displace(&mut self, d: [f64; 2]) {
-      self.four_point.displace(d);
+      assert!(matches!(self.four_point, CubiLinear::FourPoint { .. }));
+      if let CubiLinear::FourPoint(four_point) = &mut self.four_point {
+         four_point.displace(d);
+      }
    }
 
    pub fn bilinear_transform(&mut self, sigma: f64) {
-      self.four_point.bilinear_transform(sigma);
+      if let CubiLinear::FourPoint(four_point) = &mut self.four_point {
+         four_point.bilinear_transform(sigma);
+      }
    }
 
    pub fn adjust_range(&mut self, new_range: [f64; 2]) {
-      self.four_point.adjust_range(new_range);
+      if let CubiLinear::FourPoint(four_point) = &mut self.four_point {
+         four_point.adjust_range(new_range);
+      }
    }
 
    pub fn select_range(&mut self, new_range: [f64; 2]) {
-      self.four_point.select_range(new_range);
+      if let CubiLinear::FourPoint(four_point) = &mut self.four_point {
+         four_point.select_range(new_range);
+      }
    }
 }

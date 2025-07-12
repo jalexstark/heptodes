@@ -14,10 +14,9 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use zvx_curves::base::BaseRatQuad;
-use zvx_curves::base::RatQuadOoeSubclassed;
-use zvx_curves::base::RatQuadRepr;
-use zvx_curves::base::SpecifiedRatQuad;
+use zvx_curves::base::{
+   BaseRatQuad, CubiLinear, RatQuadOoeSubclassed, RatQuadRepr, SpecifiedRatQuad,
+};
 use zvx_curves::managed::ManagedCubic;
 use zvx_curves::managed::ManagedRatQuad;
 use zvx_docagram::diagram::SpartanDiagram;
@@ -55,6 +54,7 @@ pub enum SampleOption {
 #[must_use]
 pub fn create_rat_quad_path(
    num_segments_hyperbolic: i32,
+   // TODO: Remove this path-generation version.
    rat_quad: &RatQuadRepr,
    reg_symm_rat_quad: &BaseRatQuad,
 ) -> OneOfSegment {
@@ -66,7 +66,7 @@ pub fn create_rat_quad_path(
       match ooe_rat_quad_extracted {
          RatQuadOoeSubclassed::Nothing => unimplemented!("Never should reach"),
          RatQuadOoeSubclassed::Elliptical(ooe_rat_quad) => {
-            let r = ooe_rat_quad.r[1];
+            let r = ooe_rat_quad.r_bound;
             let s = 1.0 / ooe_rat_quad.a_2.sqrt();
             let mx = ooe_rat_quad.b[0];
             let my = ooe_rat_quad.c[0];
@@ -98,8 +98,6 @@ pub fn create_rat_quad_path(
 
          // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
          RatQuadOoeSubclassed::Hyperbolic(_ooe_rat_quad) => {
-            // assert!(matches!(rat_quad_base, BaseRatQuad::RationalPoly { .. }));
-            // if let BaseRatQuad::RationalPoly(rat_quad) = rat_quad_base {
             let t_int: Vec<i32> = (0..num_segments_hyperbolic).collect();
             let mut t = Vec::<f64>::with_capacity(t_int.len());
             let scale = (rat_quad.r[1] - rat_quad.r[0]) / f64::from(num_segments_hyperbolic);
@@ -108,6 +106,7 @@ pub fn create_rat_quad_path(
                t.push(f64::from(*item).mul_add(scale, offset));
             }
 
+            // TODO: Better preserve original intent, and do not retain rat_quad
             let pattern_vec = rat_quad.rq_eval_quad(&t);
 
             // This appears unused. Also, we should split the logic a bit if we actually want to
@@ -121,9 +120,6 @@ pub fn create_rat_quad_path(
             // }
 
             OneOfSegment::Polyline(pattern_vec)
-            // } else {
-            //    OneOfSegment::Polyline(vec![])
-            // }
          }
       }
    } else {
@@ -369,91 +365,94 @@ pub fn draw_sample_cubilinear(
    spartan: &mut SpartanDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let four_point = &managed_cubic.four_point;
+   // let four_point = &managed_cubic.four_point;
+   assert!(matches!(managed_cubic.four_point, CubiLinear::FourPoint { .. }));
+   if let CubiLinear::FourPoint(four_point) = managed_cubic.four_point {
+      if let Some(color_choice) = curve_config.control_color {
+         let end_points_vec =
+            vec![[four_point.x[0], four_point.y[0]], [four_point.x[3], four_point.y[3]]];
+         let control_points_vec =
+            vec![[four_point.x[1], four_point.y[1]], [four_point.x[2], four_point.y[2]]];
 
-   if let Some(color_choice) = curve_config.control_color {
-      let end_points_vec =
-         vec![[four_point.x[0], four_point.y[0]], [four_point.x[3], four_point.y[3]]];
-      let control_points_vec =
-         vec![[four_point.x[1], four_point.y[1]], [four_point.x[2], four_point.y[2]]];
+         spartan.drawables.push(QualifiedDrawable {
+            layer: curve_config.control_layer,
+            drawable: OneOfDrawable::Points(PointsDrawable {
+               point_choice: curve_config.control_point_choices[0],
+               color_choice,
+               centers: end_points_vec.clone(),
+            }),
+         });
+         spartan.drawables.push(QualifiedDrawable {
+            layer: curve_config.control_layer,
+            drawable: OneOfDrawable::Points(PointsDrawable {
+               point_choice: curve_config.control_point_choices[1],
+               color_choice,
+               centers: control_points_vec.clone(),
+            }),
+         });
 
-      spartan.drawables.push(QualifiedDrawable {
-         layer: curve_config.control_layer,
-         drawable: OneOfDrawable::Points(PointsDrawable {
-            point_choice: curve_config.control_point_choices[0],
-            color_choice,
-            centers: end_points_vec.clone(),
-         }),
-      });
-      spartan.drawables.push(QualifiedDrawable {
-         layer: curve_config.control_layer,
-         drawable: OneOfDrawable::Points(PointsDrawable {
-            point_choice: curve_config.control_point_choices[1],
-            color_choice,
-            centers: control_points_vec.clone(),
-         }),
-      });
-
-      assert_eq!(end_points_vec.len(), 2);
-      assert_eq!(control_points_vec.len(), 2);
-      spartan.drawables.push(QualifiedDrawable {
-         layer: curve_config.control_layer,
-         drawable: OneOfDrawable::Lines(LinesDrawable {
-            path_choices: PathChoices {
-               color: color_choice,
-               line_choice: curve_config.control_line_choice,
-            },
-            coords: vec![
-               (end_points_vec[0], control_points_vec[0]),
-               (end_points_vec[1], control_points_vec[1]),
-            ],
-            ..Default::default()
-         }),
-      });
-   }
-
-   if let Some(color_choice) = curve_config.points_color {
-      // Do not include end points if control points are doing that already.
-      let t_int: Vec<i32> = if curve_config.control_color.is_some() {
-         (1..curve_config.points_num_segments).collect()
-      } else {
-         (0..=curve_config.points_num_segments).collect()
-      };
-      let mut t = Vec::<f64>::with_capacity(t_int.len());
-      let scale = (four_point.r[1] - four_point.r[0]) / f64::from(curve_config.points_num_segments);
-      let offset = four_point.r[0];
-      for item in &t_int {
-         t.push(f64::from(*item).mul_add(scale, offset));
+         assert_eq!(end_points_vec.len(), 2);
+         assert_eq!(control_points_vec.len(), 2);
+         spartan.drawables.push(QualifiedDrawable {
+            layer: curve_config.control_layer,
+            drawable: OneOfDrawable::Lines(LinesDrawable {
+               path_choices: PathChoices {
+                  color: color_choice,
+                  line_choice: curve_config.control_line_choice,
+               },
+               coords: vec![
+                  (end_points_vec[0], control_points_vec[0]),
+                  (end_points_vec[1], control_points_vec[1]),
+               ],
+               ..Default::default()
+            }),
+         });
       }
 
-      let pattern_vec = four_point.eval(&t).unwrap();
+      if let Some(color_choice) = curve_config.points_color {
+         // Do not include end points if control points are doing that already.
+         let t_int: Vec<i32> = if curve_config.control_color.is_some() {
+            (1..curve_config.points_num_segments).collect()
+         } else {
+            (0..=curve_config.points_num_segments).collect()
+         };
+         let mut t = Vec::<f64>::with_capacity(t_int.len());
+         let scale =
+            (four_point.r[1] - four_point.r[0]) / f64::from(curve_config.points_num_segments);
+         let offset = four_point.r[0];
+         for item in &t_int {
+            t.push(f64::from(*item).mul_add(scale, offset));
+         }
 
-      spartan.drawables.push(QualifiedDrawable {
-         layer: curve_config.points_layer,
-         drawable: OneOfDrawable::Points(PointsDrawable {
-            point_choice: curve_config.points_choice,
-            color_choice,
-            centers: pattern_vec,
-         }),
-      });
-   }
+         let pattern_vec = four_point.eval(&t);
 
-   if let Some(color_choice) = curve_config.main_color {
-      spartan.drawables.push(QualifiedDrawable {
-         layer: curve_config.main_line_layer,
-         drawable: OneOfDrawable::Cubic(CubicDrawable {
-            path_choices: PathChoices {
-               color: color_choice,
-               line_choice: curve_config.main_line_choice,
-            },
-            path: [
-               [four_point.x[0], four_point.y[0]],
-               [four_point.x[1], four_point.y[1]],
-               [four_point.x[2], four_point.y[2]],
-               [four_point.x[3], four_point.y[3]],
-            ],
-         }),
-      });
+         spartan.drawables.push(QualifiedDrawable {
+            layer: curve_config.points_layer,
+            drawable: OneOfDrawable::Points(PointsDrawable {
+               point_choice: curve_config.points_choice,
+               color_choice,
+               centers: pattern_vec,
+            }),
+         });
+      }
+
+      if let Some(color_choice) = curve_config.main_color {
+         spartan.drawables.push(QualifiedDrawable {
+            layer: curve_config.main_line_layer,
+            drawable: OneOfDrawable::Cubic(CubicDrawable {
+               path_choices: PathChoices {
+                  color: color_choice,
+                  line_choice: curve_config.main_line_choice,
+               },
+               path: [
+                  [four_point.x[0], four_point.y[0]],
+                  [four_point.x[1], four_point.y[1]],
+                  [four_point.x[2], four_point.y[2]],
+                  [four_point.x[3], four_point.y[3]],
+               ],
+            }),
+         });
+      }
    }
 }
 
@@ -478,14 +477,16 @@ pub fn draw_sample_segment_sequence(
    for segment in segments {
       match &segment {
          OneOfManagedSegment::ManagedCubic(managed_cubic) => {
-            let four_point = &managed_cubic.four_point;
-
-            segments_paths.push(OneOfSegment::Cubic([
-               [four_point.x[0], four_point.y[0]],
-               [four_point.x[1], four_point.y[1]],
-               [four_point.x[2], four_point.y[2]],
-               [four_point.x[3], four_point.y[3]],
-            ]));
+            // let four_point = &managed_cubic.four_point;
+            assert!(matches!(managed_cubic.four_point, CubiLinear::FourPoint { .. }));
+            if let CubiLinear::FourPoint(four_point) = managed_cubic.four_point {
+               segments_paths.push(OneOfSegment::Cubic([
+                  [four_point.x[0], four_point.y[0]],
+                  [four_point.x[1], four_point.y[1]],
+                  [four_point.x[2], four_point.y[2]],
+                  [four_point.x[3], four_point.y[3]],
+               ]));
+            }
          }
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
