@@ -18,6 +18,10 @@ use zvx_base::default_unit_f64;
 use zvx_base::is_default;
 use zvx_base::is_default_unit_f64;
 
+const fn scale_3(x: &[f64; 3], s: f64) -> [f64; 3] {
+   [s * x[0], s * x[1], s * x[2]]
+}
+
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq)]
 pub enum ZebraixAngle {
    Quadrant(f64),
@@ -142,21 +146,15 @@ pub enum SpecifiedRatQuad {
 }
 
 impl RatQuadRepr {
-   #[allow(clippy::suboptimal_flops)]
    #[must_use]
+   #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::many_single_char_names)]
-   pub fn rq_apply_bilinear_unranged(
-      &self,
-      mut w: f64,
-      mut x: f64,
-      mut y: f64,
-      mut z: f64,
-   ) -> Self {
-      let norm = 1.0 / ((w * w + x * x) * (y * y + z * z)).sqrt().sqrt();
-      w *= norm;
-      x *= norm;
-      y *= norm;
-      z *= norm;
+   pub fn rq_apply_bilinear_unranged(&self, w: f64, x: f64, y: f64, z: f64) -> Self {
+      // let norm = 1.0 / ((w * w + x * x) * (y * y + z * z)).sqrt().sqrt();
+      // w *= norm;
+      // x *= norm;
+      // y *= norm;
+      // z *= norm;
 
       let a = [
          self.a[0] * z * z + self.a[1] * x * z + self.a[2] * x * x,
@@ -174,21 +172,23 @@ impl RatQuadRepr {
          self.c[0] * y * y + self.c[1] * w * y + self.c[2] * w * w,
       ];
 
-      Self { a, b, c, r: self.r, sigma: self.sigma }
+      let f = 1.0 / (a[0] * a[0] + a[1] * a[1] + a[2] * a[2]).abs().sqrt();
+
+      Self { a: scale_3(&a, f), b: scale_3(&b, f), c: scale_3(&c, f), r: self.r, sigma: self.sigma }
    }
 
-   #[allow(clippy::suboptimal_flops)]
    #[must_use]
+   #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::many_single_char_names)]
-   pub fn rq_apply_bilinear(&self, sigma: f64) -> Self {
+   pub fn rq_apply_bilinear(&self, sigma_n: f64, sigma_d: f64) -> Self {
       let p = self.r[0];
       let q = self.r[1];
 
       self.rq_apply_bilinear_unranged(
-         sigma * q - p,
-         -(sigma - 1.0) * p * q,
-         sigma - 1.0,
-         q - sigma * p,
+         sigma_n * q - sigma_d * p,
+         -(sigma_n - sigma_d) * p * q,
+         sigma_n - sigma_d,
+         sigma_d * q - sigma_n * p,
       )
    }
 
@@ -346,14 +346,14 @@ impl BaseRatQuad {
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::missing_panics_doc)]
-   pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
+   pub fn apply_bilinear(&mut self, sigma_n: f64, sigma_d: f64) -> Result<(), &'static str> {
       match self {
          Self::Nothing => unimplemented!("Nothing form is invalid from construction."),
          Self::RegularizedSymmetric(_) => {
             Err("Applying bilinear to regularized will downgrade it.")
          }
          Self::RationalPoly(rat_poly) => {
-            *self = Self::RationalPoly(rat_poly.rq_apply_bilinear(sigma));
+            *self = Self::RationalPoly(rat_poly.rq_apply_bilinear(sigma_n, sigma_d));
             Ok(())
          }
          Self::FourPoint(_) => {
@@ -381,10 +381,11 @@ impl BaseRatQuad {
          let combo_s = a_s + rat_poly.a[1] * r_both;
          let combo_d = a_s - rat_poly.a[1] * r_both;
 
-         let sigma = combo_d.abs().sqrt() / combo_s.abs().sqrt();
+         let sigma_n = combo_d.abs().sqrt();
+         let sigma_d = combo_s.abs().sqrt();
 
          *self = Self::RationalPoly(rat_poly);
-         self.apply_bilinear(sigma)?;
+         self.apply_bilinear(sigma_n, sigma_d)?;
 
          if let Self::RationalPoly(check_poly) = self {
             assert!(check_poly.a[1].abs() < 0.001);
