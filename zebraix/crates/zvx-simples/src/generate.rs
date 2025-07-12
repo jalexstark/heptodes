@@ -58,11 +58,10 @@ pub fn create_rat_quad_path(
    rat_quad: &RatQuadRepr,
    reg_symm_rat_quad: &BaseRatQuad,
 ) -> OneOfSegment {
-   // TODO: Just take reg symm rat quad.
    assert!(matches!(reg_symm_rat_quad, BaseRatQuad::RegularizedSymmetric { .. }));
-   if let BaseRatQuad::RegularizedSymmetric(_reg_symmetric) = reg_symm_rat_quad {
+   if let BaseRatQuad::RegularizedSymmetric(reg_symmetric) = reg_symm_rat_quad {
       let ooe_rat_quad_extracted: RatQuadOoeSubclassed =
-         BaseRatQuad::classify_offset_odd_even(reg_symm_rat_quad, 0.01).unwrap();
+         reg_symmetric.classify_offset_odd_even(0.01);
 
       match ooe_rat_quad_extracted {
          RatQuadOoeSubclassed::Nothing => unimplemented!("Never should reach"),
