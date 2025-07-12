@@ -99,12 +99,11 @@ pub enum BaseRatQuad {
    #[default]
    Nothing,
    RationalPoly(RatQuadRepr),
-   SymmetricRange(RatQuadRepr), // RationalPoly[nomial] with symmetric range.
+   // SymmetricRange(RatQuadRepr), // RationalPoly[nomial] with symmetric range.
    RegularizedSymmetric(RatQuadRepr), // SymmetricRange with zero middle denominator coefficient.
-   // OffsetOddEven(RatQuadOoeSubtype), // O-O-E weightings of RegularizedSymmetric.
-   FourPoint(FourPointRatQuad),          // Like cubic.
+   FourPoint(FourPointRatQuad),       // Like cubic.
    ThreePointAngle(ThreePointAngleRepr), // Form p, angle, sigma.
-   RationalWeighted(RatQuadRepr),        // Polynomial-like, by  difference from end points.
+   RationalWeighted(RatQuadRepr),     // Polynomial-like, by  difference from end points.
 }
 
 #[derive(Serialize, Debug, Default, Copy, Clone, PartialEq)]
@@ -206,7 +205,7 @@ impl BaseRatQuad {
    pub const fn get_poly(&self) -> Result<&RatQuadRepr, &'static str> {
       match self {
          Self::RegularizedSymmetric(repr) => Ok(repr),
-         Self::SymmetricRange(repr) => Ok(repr),
+         // Self::SymmetricRange(repr) => Ok(repr),
          Self::RationalPoly(repr) => Ok(repr),
          Self::Nothing
          | Self::FourPoint(_)
@@ -257,10 +256,10 @@ impl BaseRatQuad {
          Self::RegularizedSymmetric(_) => {
             Err("Applying bilinear to regularized will downgrade it.")
          }
-         Self::SymmetricRange(rat_poly) => {
-            *self = Self::SymmetricRange(rat_poly.rq_apply_bilinear_unranged(w, x, y, z));
-            Ok(())
-         }
+         // Self::SymmetricRange(rat_poly) => {
+         //    *self = Self::SymmetricRange(rat_poly.rq_apply_bilinear_unranged(w, x, y, z));
+         //    Ok(())
+         // }
          Self::RationalPoly(rat_poly) => {
             *self = Self::RationalPoly(rat_poly.rq_apply_bilinear_unranged(w, x, y, z));
             Ok(())
@@ -291,18 +290,18 @@ impl BaseRatQuad {
          Self::RegularizedSymmetric(_) => {
             Err("Applying bilinear to regularized will downgrade it.")
          }
-         Self::SymmetricRange(rat_poly) => {
-            let r = rat_poly.r[1];
-            self
-               .apply_bilinear_unranged(
-                  (sigma + 1.0) * r,
-                  (sigma - 1.0) * r * r,
-                  sigma - 1.0,
-                  (sigma + 1.0) * r,
-               )
-               .expect("No more restrictive than caller");
-            Ok(())
-         }
+         // Self::SymmetricRange(rat_poly) => {
+         //    let r = rat_poly.r[1];
+         //    self
+         //       .apply_bilinear_unranged(
+         //          (sigma + 1.0) * r,
+         //          (sigma - 1.0) * r * r,
+         //          sigma - 1.0,
+         //          (sigma + 1.0) * r,
+         //       )
+         //       .expect("No more restrictive than caller");
+         //    Ok(())
+         // }
          Self::RationalPoly(rat_poly) => {
             let p = rat_poly.r[0];
             let q = rat_poly.r[1];
@@ -318,17 +317,17 @@ impl BaseRatQuad {
                )
                .expect("No more restrictive than caller");
 
-            if let Self::RationalPoly(rat_poly_revised) = self {
-               println!("r[0]: {}, r[1]: {}", rat_poly_revised.r[0], rat_poly_revised.r[1]);
-               println!(
-                  "a[0]: {}, a[1]: {} a[2]: {}",
-                  rat_poly_revised.a[0], rat_poly_revised.a[1], rat_poly_revised.a[2]
-               );
-               println!(
-                  "c[0]: {}, c[1]: {} c[2]: {}",
-                  rat_poly_revised.c[0], rat_poly_revised.c[1], rat_poly_revised.c[2]
-               );
-            }
+            // if let Self::RationalPoly(rat_poly_revised) = self {
+            //    println!("r[0]: {}, r[1]: {}", rat_poly_revised.r[0], rat_poly_revised.r[1]);
+            //    println!(
+            //       "a[0]: {}, a[1]: {} a[2]: {}",
+            //       rat_poly_revised.a[0], rat_poly_revised.a[1], rat_poly_revised.a[2]
+            //    );
+            //    println!(
+            //       "c[0]: {}, c[1]: {} c[2]: {}",
+            //       rat_poly_revised.c[0], rat_poly_revised.c[1], rat_poly_revised.c[2]
+            //    );
+            // }
 
             Ok(())
          }
@@ -347,41 +346,44 @@ impl BaseRatQuad {
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::many_single_char_names)]
-   pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
-      if let Self::RationalPoly(rat_poly) = self {
-         // Replace t with t - d.
-         let d = 0.5 * (rat_poly.r[0] + rat_poly.r[1]);
-         let r_half = 0.5 * (rat_poly.r[1] - rat_poly.r[0]);
+   pub fn figure_symmetric_range(rat_poly: &RatQuadRepr) -> Result<RatQuadRepr, &'static str> {
+      // TODO: Remove result, always succeeds.
 
-         let a = [
-            d * (d * rat_poly.a[2] + rat_poly.a[1]) + rat_poly.a[0],
-            2.0 * d * rat_poly.a[2] + rat_poly.a[1],
-            rat_poly.a[2],
-         ];
-         let b = [
-            d * (d * rat_poly.b[2] + rat_poly.b[1]) + rat_poly.b[0],
-            2.0 * d * rat_poly.b[2] + rat_poly.b[1],
-            rat_poly.b[2],
-         ];
-         let c = [
-            d * (d * rat_poly.c[2] + rat_poly.c[1]) + rat_poly.c[0],
-            2.0 * d * rat_poly.c[2] + rat_poly.c[1],
-            rat_poly.c[2],
-         ];
+      // if let Self::RationalPoly(rat_poly) = self {
+      // Replace t with t - d.
+      let d = 0.5 * (rat_poly.r[0] + rat_poly.r[1]);
+      let r_half = 0.5 * (rat_poly.r[1] - rat_poly.r[0]);
 
-         let r = [-r_half, r_half];
-         *self = Self::SymmetricRange(RatQuadRepr { r, a, b, c, sigma: rat_poly.sigma });
-         Ok(())
-      } else {
-         Err("Unable to convert offset-even-odd form to symmetric-range form.")
-      }
+      let a = [
+         d * (d * rat_poly.a[2] + rat_poly.a[1]) + rat_poly.a[0],
+         2.0 * d * rat_poly.a[2] + rat_poly.a[1],
+         rat_poly.a[2],
+      ];
+      let b = [
+         d * (d * rat_poly.b[2] + rat_poly.b[1]) + rat_poly.b[0],
+         2.0 * d * rat_poly.b[2] + rat_poly.b[1],
+         rat_poly.b[2],
+      ];
+      let c = [
+         d * (d * rat_poly.c[2] + rat_poly.c[1]) + rat_poly.c[0],
+         2.0 * d * rat_poly.c[2] + rat_poly.c[1],
+         rat_poly.c[2],
+      ];
+
+      let r = [-r_half, r_half];
+      Ok(RatQuadRepr { r, a, b, c, sigma: rat_poly.sigma })
+      // } else {
+      //    Err("Unable to convert offset-even-odd form to symmetric-range form.")
+      // }
    }
 
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_panics_doc)]
    #[allow(clippy::missing_errors_doc)]
    pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
-      if let Self::SymmetricRange(rat_poly) = self {
+      if let Self::RationalPoly(rat_poly_extracted) = self {
+         let rat_poly = Self::figure_symmetric_range(rat_poly_extracted).unwrap();
+
          let r_both = rat_poly.r[1];
          let a_s = rat_poly.a[2] * r_both * r_both + rat_poly.a[0];
          // let a_d = rat_poly.a[2] * r * r - rat_poly.a[0];
@@ -390,9 +392,10 @@ impl BaseRatQuad {
 
          let sigma = combo_d.abs().sqrt() / combo_s.abs().sqrt();
 
+         *self = Self::RationalPoly(rat_poly);
          self.apply_bilinear(sigma)?;
 
-         if let Self::SymmetricRange(check_poly) = self {
+         if let Self::RationalPoly(check_poly) = self {
             assert!(check_poly.a[1].abs() < 0.001);
             *self = Self::RegularizedSymmetric(*check_poly);
          } else {
@@ -401,7 +404,7 @@ impl BaseRatQuad {
 
          Ok(())
       } else {
-         Err("Can only raise from symmetric-range to regularized-symmetric form.")
+         Err("Can only raise from rat-poly to regularized-symmetric form.")
       }
    }
 
@@ -423,6 +426,7 @@ impl BaseRatQuad {
 
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_errors_doc)]
+   #[allow(clippy::missing_panics_doc)]
    pub fn classify_offset_odd_even(
       // &mut self,
       poly: &Self,
