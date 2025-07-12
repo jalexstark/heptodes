@@ -163,10 +163,10 @@ impl ManagedRatQuad {
       // res
    }
 
-   #[allow(clippy::missing_errors_doc)]
-   pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
-      self.poly.raise_to_symmetric_range()
-   }
+   // #[allow(clippy::missing_errors_doc)]
+   // pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
+   //    self.poly.raise_to_symmetric_range()
+   // }
 
    #[allow(clippy::missing_errors_doc)]
    pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
