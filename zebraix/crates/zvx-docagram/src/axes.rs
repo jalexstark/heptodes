@@ -245,7 +245,6 @@ impl AxesSpec {
       );
 
       if !lines_ordinary.coords.is_empty() {
-         // assert!(false);
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
             // color_choice: diagram.base_color_choice,

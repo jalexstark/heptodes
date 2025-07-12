@@ -131,11 +131,6 @@ impl ManagedRatQuad {
       &self.poly
    }
 
-   #[must_use]
-   pub const fn get_poly_rat_quad(&self) -> &BaseRatQuad {
-      &self.poly
-   }
-
    #[allow(clippy::missing_errors_doc)]
    pub const fn get_poly_rat_quad_repr(&self) -> Result<RatQuadRepr, &'static str> {
       self.poly.get_poly()
@@ -145,28 +140,7 @@ impl ManagedRatQuad {
    // Velocity at beginning multiplied by sigma, and velocity at end divided by sigma.
    pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
       self.poly.apply_bilinear(sigma)
-
-      // let res = self.poly.apply_bilinear(sigma);
-
-      // if let BaseRatQuad::RationalPoly(rat_poly_revised) = self.poly {
-      //    println!("r[0]: {}, r[1]: {}", rat_poly_revised.r[0], rat_poly_revised.r[1]);
-      //    println!(
-      //       "a[0]: {}, a[1]: {} a[2]: {}",
-      //       rat_poly_revised.a[0], rat_poly_revised.a[1], rat_poly_revised.a[2]
-      //    );
-      //    println!(
-      //       "c[0]: {}, c[1]: {} c[2]: {}",
-      //       rat_poly_revised.c[0], rat_poly_revised.c[1], rat_poly_revised.c[2]
-      //    );
-      // }
-
-      // res
    }
-
-   // #[allow(clippy::missing_errors_doc)]
-   // pub fn raise_to_symmetric_range(&mut self) -> Result<(), &'static str> {
-   //    self.poly.raise_to_symmetric_range()
-   // }
 
    #[allow(clippy::missing_errors_doc)]
    pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
@@ -175,7 +149,11 @@ impl ManagedRatQuad {
 
    #[allow(clippy::missing_errors_doc)]
    pub fn classify_offset_odd_even(&self) -> Result<RatQuadOoeSubclassed, &'static str> {
-      BaseRatQuad::classify_offset_odd_even(&self.poly, 0.01)
+      if let BaseRatQuad::RegularizedSymmetric(reg_symmetric) = &self.poly {
+         Ok(reg_symmetric.classify_offset_odd_even(0.01))
+      } else {
+         Err("Classification into odd-even must be from regularized form.")
+      }
    }
 }
 
