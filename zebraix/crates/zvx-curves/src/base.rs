@@ -84,10 +84,12 @@ pub struct ThreePointAngleRepr {
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Copy, Clone, PartialEq)]
-pub enum RatQuadOoeSubtype {
+pub enum RatQuadOoeSubclassed {
    #[default]
    Nothing,
+   // Elliptical to custom OOE.
    Elliptical(RatQuadRepr),
+   // Perhaps change to cubilinear form
    Parabolic(RatQuadRepr),
    Hyperbolic(RatQuadRepr),
 }
@@ -99,8 +101,7 @@ pub enum BaseRatQuad {
    RationalPoly(RatQuadRepr),
    SymmetricRange(RatQuadRepr), // RationalPoly[nomial] with symmetric range.
    RegularizedSymmetric(RatQuadRepr), // SymmetricRange with zero middle denominator coefficient.
-   OffsetOddEven(RatQuadOoeSubtype), // O-O-E weightings of RegularizedSymmetric.
-
+   // OffsetOddEven(RatQuadOoeSubtype), // O-O-E weightings of RegularizedSymmetric.
    FourPoint(FourPointRatQuad),          // Like cubic.
    ThreePointAngle(ThreePointAngleRepr), // Form p, angle, sigma.
    RationalWeighted(RatQuadRepr),        // Polynomial-like, by  difference from end points.
@@ -208,7 +209,6 @@ impl BaseRatQuad {
          Self::SymmetricRange(repr) => Ok(repr),
          Self::RationalPoly(repr) => Ok(repr),
          Self::Nothing
-         | Self::OffsetOddEven(_)
          | Self::FourPoint(_)
          | Self::ThreePointAngle(_)
          | Self::RationalWeighted(_) => Err("QR not  proper rational poly."),
@@ -253,7 +253,7 @@ impl BaseRatQuad {
 
       match self {
          Self::Nothing => unimplemented!("Nothing form is invalid from construction."),
-         Self::OffsetOddEven(_) => Err("Unable apply bilinear to offset-even-odd form."),
+         // Self::OffsetOddEven(_) => Err("Unable apply bilinear to offset-even-odd form."),
          Self::RegularizedSymmetric(_) => {
             Err("Applying bilinear to regularized will downgrade it.")
          }
@@ -285,9 +285,9 @@ impl BaseRatQuad {
    pub fn apply_bilinear(&mut self, sigma: f64) -> Result<(), &'static str> {
       match self {
          Self::Nothing => unimplemented!("Nothing form is invalid from construction."),
-         Self::OffsetOddEven(_) => {
-            Err("Unable to convert offset-even-odd form to symmetric-range form.")
-         }
+         // Self::OffsetOddEven(_) => {
+         //    Err("Unable to convert offset-even-odd form to symmetric-range form.")
+         // }
          Self::RegularizedSymmetric(_) => {
             Err("Applying bilinear to regularized will downgrade it.")
          }
@@ -423,19 +423,20 @@ impl BaseRatQuad {
 
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_errors_doc)]
-   pub fn raise_to_offset_odd_even(
-      &mut self,
+   pub fn classify_offset_odd_even(
+      // &mut self,
       poly: &Self,
       tolerance: f64,
-   ) -> Result<(), &'static str> {
-      // assert!(matches!(self, Self::RegularizedSymmetric { .. }));
+   ) -> Result<RatQuadOoeSubclassed, &'static str> {
+      // TODO: Take reg. symmetric directly.
+      assert!(matches!(poly, Self::RegularizedSymmetric { .. }));
       if let Self::RegularizedSymmetric(rat_poly_extracted) = poly {
          let orig_rat_poly = *rat_poly_extracted;
          let mut rat_poly = *rat_poly_extracted;
 
          let r = rat_poly.r[1];
          if (rat_poly.a[2].abs() * r * r) < (rat_poly.a[0].abs() * tolerance) {
-            *self = Self::OffsetOddEven(RatQuadOoeSubtype::Parabolic(orig_rat_poly));
+            Ok(RatQuadOoeSubclassed::Parabolic(orig_rat_poly))
          } else if rat_poly.a[2].signum() == rat_poly.a[0].signum() {
             let s = 1.0 / rat_poly.a[0];
             let f = 1.0 / rat_poly.a[2];
@@ -469,15 +470,14 @@ impl BaseRatQuad {
                // product, and so the condition effectively compares their magnitude (for small
                // tolerances).
 
-               *self = Self::OffsetOddEven(RatQuadOoeSubtype::Parabolic(orig_rat_poly));
+               Ok(RatQuadOoeSubclassed::Parabolic(orig_rat_poly))
             } else {
-               *self = Self::OffsetOddEven(RatQuadOoeSubtype::Elliptical(rat_poly));
+               // Only outcome that actually uses OOE form.
+               Ok(RatQuadOoeSubclassed::Elliptical(rat_poly))
             }
          } else {
-            *self = Self::OffsetOddEven(RatQuadOoeSubtype::Hyperbolic(rat_poly));
+            Ok(RatQuadOoeSubclassed::Hyperbolic(orig_rat_poly))
          }
-
-         Ok(())
       } else {
          Err("Can only raise from regularized-symmetric form to offset-odd-even form.")
       }

@@ -1142,6 +1142,7 @@ fn spartan_sizing_o1_test() {
       cairo_spartan.spartan.prep.axes_range,
    );
 
+   // Doesn't make much sense. Remove.
    managed_curve.raise_to_symmetric_range().unwrap();
    managed_curve.apply_bilinear(sigma).unwrap();
 
@@ -1264,7 +1265,7 @@ fn spartan_sizing_p_test() {
 
    managed_curve.raise_to_symmetric_range().unwrap();
    managed_curve.raise_to_regularized_symmetric().unwrap();
-   managed_curve.raise_to_offset_odd_even().unwrap();
+   // managed_curve.raise_to_offset_odd_even().unwrap();
 
    draw_sample_rat_quad(
       &managed_curve,
@@ -1513,7 +1514,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1547,7 +1548,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1583,7 +1584,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1616,7 +1617,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1649,7 +1650,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1684,7 +1685,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1718,7 +1719,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1753,7 +1754,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1786,7 +1787,7 @@ fn spartan_sizing_r_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2225,7 +2226,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2259,7 +2260,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2293,7 +2294,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2327,7 +2328,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2361,7 +2362,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2394,7 +2395,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2427,7 +2428,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2460,7 +2461,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2493,7 +2494,7 @@ fn spartan_sizing_u_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2571,7 +2572,7 @@ fn spartan_sizing_v_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2609,7 +2610,7 @@ fn spartan_sizing_v_test() {
 
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -2642,7 +2643,7 @@ fn spartan_sizing_v_test() {
       );
       managed_curve.raise_to_symmetric_range().unwrap();
       managed_curve.raise_to_regularized_symmetric().unwrap();
-      managed_curve.raise_to_offset_odd_even().unwrap();
+      // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -3215,7 +3216,7 @@ fn segment_sequence_a_test() {
             );
             managed_curve.raise_to_symmetric_range().unwrap();
             managed_curve.raise_to_regularized_symmetric().unwrap();
-            managed_curve.raise_to_offset_odd_even().unwrap();
+            // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));
          }
@@ -3231,7 +3232,7 @@ fn segment_sequence_a_test() {
             );
             managed_curve.raise_to_symmetric_range().unwrap();
             managed_curve.raise_to_regularized_symmetric().unwrap();
-            managed_curve.raise_to_offset_odd_even().unwrap();
+            // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));
          }
@@ -3258,7 +3259,7 @@ fn segment_sequence_a_test() {
             );
             managed_curve.raise_to_symmetric_range().unwrap();
             managed_curve.raise_to_regularized_symmetric().unwrap();
-            managed_curve.raise_to_offset_odd_even().unwrap();
+            // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));
          }
@@ -3274,7 +3275,7 @@ fn segment_sequence_a_test() {
             );
             managed_curve.raise_to_symmetric_range().unwrap();
             managed_curve.raise_to_regularized_symmetric().unwrap();
-            managed_curve.raise_to_offset_odd_even().unwrap();
+            // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));
          }
