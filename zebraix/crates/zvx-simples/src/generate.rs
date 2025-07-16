@@ -22,8 +22,8 @@ use zvx_curves::managed::ManagedRatQuad;
 use zvx_docagram::diagram::SpartanDiagram;
 use zvx_drawable::choices::{ColorChoice, LineChoice, PathCompletion, PointChoice};
 use zvx_drawable::kinds::{
-   ArcDrawable, ArcPath, CubicDrawable, CubicPath, LinesDrawable, OneOfDrawable, OneOfSegment,
-   PathChoices, PointsDrawable, PolylineDrawable, QualifiedDrawable, SegmentSequence,
+   ArcDrawable, ArcPath, CubicDrawable, LinesDrawable, OneOfDrawable, OneOfSegment, PathChoices,
+   PointsDrawable, PolylineDrawable, QualifiedDrawable, SegmentSequence,
 };
 
 const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
@@ -55,7 +55,7 @@ pub enum SampleOption {
 pub fn create_rat_quad_path(
    num_segments_hyperbolic: i32,
    // TODO: Remove this path-generation version.
-   rat_quad: &RatQuadRepr,
+   _deprecate_rat_quad: &RatQuadRepr,
    reg_symm_rat_quad: &BaseRatQuad,
 ) -> OneOfSegment {
    assert!(matches!(reg_symm_rat_quad, BaseRatQuad::RegularizedSymmetric { .. }));
@@ -83,31 +83,21 @@ pub fn create_rat_quad_path(
             })
          }
 
-         RatQuadOoeSubclassed::Parabolic(_ooe_rat_quad) => {
-            let (x, y) = rat_quad.rq_characterize_endpoints();
-            let f = 1.0 / 3.0;
-            let four_c: CubicPath = [
-               [x[0], y[0]],
-               [x[0] + f * x[1], y[0] + f * y[1]],
-               [x[3] - f * x[2], y[3] - f * y[2]],
-               [x[3], y[3]],
-            ];
-
-            OneOfSegment::Cubic(four_c)
-         }
+         RatQuadOoeSubclassed::Parabolic(four_point) => OneOfSegment::Cubic(four_point.p),
 
          // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
-         RatQuadOoeSubclassed::Hyperbolic(_ooe_rat_quad) => {
+         RatQuadOoeSubclassed::Hyperbolic(hyper_rat_quad) => {
             let t_int: Vec<i32> = (0..num_segments_hyperbolic).collect();
             let mut t = Vec::<f64>::with_capacity(t_int.len());
-            let scale = (rat_quad.r[1] - rat_quad.r[0]) / f64::from(num_segments_hyperbolic);
-            let offset = rat_quad.r[0];
+            let scale = 2.0 * hyper_rat_quad.r_bound / f64::from(num_segments_hyperbolic);
+            let offset = -hyper_rat_quad.r_bound;
             for item in &t_int {
                t.push(f64::from(*item).mul_add(scale, offset));
             }
 
             // TODO: Better preserve original intent, and do not retain rat_quad
-            let pattern_vec = rat_quad.rq_eval_quad(&t);
+            let pattern_vec = hyper_rat_quad.eval(&t);
+            // let pattern_vec = deprecate_rat_quad.rq_eval_quad(&t);
 
             // This appears unused. Also, we should split the logic a bit if we actually want to
             // draw hyperbolics. In reality, drawing a hyperbolic should really be a matter for
@@ -369,10 +359,8 @@ pub fn draw_sample_cubilinear(
    assert!(matches!(managed_cubic.four_point, CubiLinear::FourPoint { .. }));
    if let CubiLinear::FourPoint(four_point) = managed_cubic.four_point {
       if let Some(color_choice) = curve_config.control_color {
-         let end_points_vec =
-            vec![[four_point.x[0], four_point.y[0]], [four_point.x[3], four_point.y[3]]];
-         let control_points_vec =
-            vec![[four_point.x[1], four_point.y[1]], [four_point.x[2], four_point.y[2]]];
+         let end_points_vec = vec![four_point.p[0], four_point.p[3]];
+         let control_points_vec = vec![four_point.p[1], four_point.p[2]];
 
          spartan.drawables.push(QualifiedDrawable {
             layer: curve_config.control_layer,
@@ -444,12 +432,7 @@ pub fn draw_sample_cubilinear(
                   color: color_choice,
                   line_choice: curve_config.main_line_choice,
                },
-               path: [
-                  [four_point.x[0], four_point.y[0]],
-                  [four_point.x[1], four_point.y[1]],
-                  [four_point.x[2], four_point.y[2]],
-                  [four_point.x[3], four_point.y[3]],
-               ],
+               path: four_point.p,
             }),
          });
       }
@@ -480,12 +463,7 @@ pub fn draw_sample_segment_sequence(
             // let four_point = &managed_cubic.four_point;
             assert!(matches!(managed_cubic.four_point, CubiLinear::FourPoint { .. }));
             if let CubiLinear::FourPoint(four_point) = managed_cubic.four_point {
-               segments_paths.push(OneOfSegment::Cubic([
-                  [four_point.x[0], four_point.y[0]],
-                  [four_point.x[1], four_point.y[1]],
-                  [four_point.x[2], four_point.y[2]],
-                  [four_point.x[3], four_point.y[3]],
-               ]));
+               segments_paths.push(OneOfSegment::Cubic(four_point.p));
             }
          }
 

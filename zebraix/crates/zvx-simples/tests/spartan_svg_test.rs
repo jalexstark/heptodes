@@ -1398,8 +1398,7 @@ fn spartan_sizing_q_test() {
    let managed_curve_a = ManagedCubic::create_from_control_points(
       &FourPointCubiLinearRepr {
          r: t_range,
-         x: [0.0, -0.5, 0.5, -1.0],
-         y: [-1.5, -2.0, 1.5, 2.0],
+         p: p_from_x_y_4(&[0.0, -0.5, 0.5, -1.0], &[-1.5, -2.0, 1.5, 2.0]),
          sigma: 1.0,
       },
       cairo_spartan.spartan.prep.axes_range,
@@ -2001,8 +2000,10 @@ fn spartan_sizing_t_test() {
       let managed_curve = ManagedCubic::create_from_control_points(
          &FourPointCubiLinearRepr {
             r: t_range,
-            x: [x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
-            y: [y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+            p: p_from_x_y_4(
+               &[x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
+               &[y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+            ),
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2049,8 +2050,10 @@ fn spartan_sizing_t_test() {
       let managed_curve = ManagedCubic::create_from_control_points(
          &FourPointCubiLinearRepr {
             r: t_range,
-            x: [x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
-            y: [y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+            p: p_from_x_y_4(
+               &[x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
+               &[y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+            ),
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2097,8 +2100,10 @@ fn spartan_sizing_t_test() {
       let managed_curve = ManagedCubic::create_from_control_points(
          &FourPointCubiLinearRepr {
             r: t_range,
-            x: [x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
-            y: [y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+            p: p_from_x_y_4(
+               &[x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
+               &[y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+            ),
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2689,8 +2694,7 @@ fn spartan_sizing_w_test() {
       let managed_curve = ManagedCubic::create_from_control_points(
          &FourPointCubiLinearRepr {
             r: t_range,
-            x: [0.0, 1.0, -1.0, 0.0],
-            y: [2.0, 0.0, 0.0, -2.0],
+            p: p_from_x_y_4(&[0.0, 1.0, -1.0, 0.0], &[2.0, 0.0, 0.0, -2.0]),
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2748,7 +2752,7 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2829,7 +2833,7 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2855,7 +2859,7 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2879,7 +2883,7 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2950,7 +2954,7 @@ fn spartan_sizing_y_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -3035,7 +3039,7 @@ fn spartan_sizing_y_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -3108,7 +3112,7 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
 
@@ -3132,7 +3136,7 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
@@ -3156,7 +3160,7 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
 
@@ -3184,7 +3188,7 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, x, y, sigma: 1.0 },
+            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
             cairo_spartan.spartan.prep.axes_range,
          );
 
