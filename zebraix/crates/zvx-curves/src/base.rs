@@ -103,18 +103,6 @@ pub struct HyperbolicRatQuadRepr {
    pub sigma: f64,
 }
 
-// // TODO: Migrate to Cubilinear form.
-// #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
-// pub struct ParabolicRatQuadRepr {
-//    pub r: [f64; 2], // Range.
-//    pub a_0: f64,    // Denominator, as a[2] * t^2 + a[1] * t... .
-//    pub a_2: f64,
-//    pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
-//    pub c: [f64; 3], // Numerator or O-O-E coefficients for y component.
-//    #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
-//    pub sigma: f64,
-// }
-
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
 pub struct ThreePointAngleRepr {
    pub r: [f64; 2], // Range.
@@ -133,6 +121,7 @@ pub struct FourPointCubiLinearRepr {
    pub sigma: f64,
 }
 
+// As yet little used.
 #[derive(Debug, Deserialize, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
 pub struct MidDiffCubiLinearRepr {
    pub r: [f64; 2], // Range.
@@ -154,9 +143,8 @@ pub enum CubiLinear {
 pub enum RatQuadOoeSubclassed {
    #[default]
    Nothing,
-   // Elliptical to custom OOE.
+   // TODO: Elliptical to custom OOE.
    Elliptical(RegularizedRatQuadRepr),
-   // Perhaps change to cubilinear form
    Parabolic(FourPointCubiLinearRepr),
    Hyperbolic(HyperbolicRatQuadRepr),
 }
@@ -388,6 +376,38 @@ impl RegularizedRatQuadRepr {
          sigma: self.sigma,
       }
    }
+
+   // #[must_use]
+   // pub fn eval(&self, t: &[f64]) -> Result<Vec<[f64; 2]>, &'static str> {
+   //    let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+
+   //    //  XXXXXXXXXXXXXXXXX
+
+   //    match self {
+   //       Self::RationalPoly(repr) => Ok(*repr),
+   //       Self::RegularizedSymmetric(symm) => Ok(RatQuadRepr {
+   //          r: [-symm.r_bound, symm.r_bound],
+   //          a: [symm.a_0, 0.0, symm.a_2],
+   //          b: symm.b,
+   //          c: symm.c,
+   //          sigma: symm.sigma,
+   //       }),
+   //       Self::Nothing
+   //       | Self::FourPoint(_)
+   //       | Self::ThreePointAngle(_)
+   //       | Self::RationalWeighted(_) => Err("QR not  proper rational poly."),
+   //    }
+
+   //    for item in t {
+   //       let denom_reciprocal = 1.0 / self.a[2].mul_add(*item, self.a[1]).mul_add(*item, self.a[0]);
+   //       ret_val.push([
+   //          self.b[2].mul_add(*item, self.b[1]).mul_add(*item, self.b[0]) * denom_reciprocal,
+   //          self.c[2].mul_add(*item, self.c[1]).mul_add(*item, self.c[0]) * denom_reciprocal,
+   //       ]);
+   //    }
+
+   //    ret_val
+   // }
 
    #[must_use]
    #[allow(clippy::suboptimal_flops)]

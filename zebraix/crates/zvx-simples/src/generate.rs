@@ -54,8 +54,6 @@ pub enum SampleOption {
 #[must_use]
 pub fn create_rat_quad_path(
    num_segments_hyperbolic: i32,
-   // TODO: Remove this path-generation version.
-   _deprecate_rat_quad: &RatQuadRepr,
    reg_symm_rat_quad: &BaseRatQuad,
 ) -> OneOfSegment {
    assert!(matches!(reg_symm_rat_quad, BaseRatQuad::RegularizedSymmetric { .. }));
@@ -121,15 +119,13 @@ pub fn create_rat_quad_path(
 #[allow(clippy::missing_panics_doc)]
 pub fn push_rat_quad_drawable(
    spartan: &mut SpartanDiagram,
-   rat_quad: &RatQuadRepr,
    reg_symm_base: &BaseRatQuad,
    path_choices: PathChoices,
    layer: i32,
 ) {
    assert!(matches!(reg_symm_base, BaseRatQuad::RegularizedSymmetric { .. }));
    if let BaseRatQuad::RegularizedSymmetric(_ooe_rat_quad) = reg_symm_base {
-      let one_of_path =
-         create_rat_quad_path(spartan.num_segments_hyperbolic, rat_quad, reg_symm_base);
+      let one_of_path = create_rat_quad_path(spartan.num_segments_hyperbolic, reg_symm_base);
 
       match one_of_path {
          OneOfSegment::Arc(path) => {
@@ -207,7 +203,7 @@ pub fn draw_sample_rat_quad(
    spartan: &mut SpartanDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let rat_quad: RatQuadRepr =
+   let deprecated_rat_quad: RatQuadRepr =
       managed_rat_quad.get_poly_rat_quad_repr().expect("Never should be missing");
 
    if let Some(color_choice) = curve_config.control_color {
@@ -283,13 +279,14 @@ pub fn draw_sample_rat_quad(
          (0..=curve_config.points_num_segments).collect()
       };
       let mut t = Vec::<f64>::with_capacity(t_int.len());
-      let scale = (rat_quad.r[1] - rat_quad.r[0]) / f64::from(curve_config.points_num_segments);
-      let offset = rat_quad.r[0];
+      let scale = (deprecated_rat_quad.r[1] - deprecated_rat_quad.r[0])
+         / f64::from(curve_config.points_num_segments);
+      let offset = deprecated_rat_quad.r[0];
       for item in &t_int {
          t.push(f64::from(*item).mul_add(scale, offset));
       }
 
-      let mut pattern_vec = rat_quad.rq_eval_quad(&t);
+      let mut pattern_vec = deprecated_rat_quad.rq_eval_quad(&t);
 
       if curve_config.sample_options == SampleOption::XVsT {
          for i in 0..t_int.len() {
@@ -311,13 +308,18 @@ pub fn draw_sample_rat_quad(
       if curve_config.approx_num_segments != 0 {
          let t_int: Vec<i32> = (0..=curve_config.approx_num_segments).collect();
          let mut t = Vec::<f64>::with_capacity(t_int.len());
-         let scale = (rat_quad.r[1] - rat_quad.r[0]) / f64::from(curve_config.approx_num_segments);
-         let offset = rat_quad.r[0];
+         let scale = (deprecated_rat_quad.r[1] - deprecated_rat_quad.r[0])
+            / f64::from(curve_config.approx_num_segments);
+         let offset = deprecated_rat_quad.r[0];
          for item in &t_int {
             t.push(f64::from(*item).mul_add(scale, offset));
          }
 
-         let mut pattern_vec = rat_quad.rq_eval_quad(&t);
+         let mut pattern_vec = deprecated_rat_quad.rq_eval_quad(&t);
+         // let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
+         // regularized_rat_quad = regularized_rat_quad.eval(&t);
+
+         // // XXXXXXXXXXXXXXXXXXXXXXXX
 
          if curve_config.sample_options == SampleOption::XVsT {
             for i in 0..t_int.len() {
@@ -339,7 +341,6 @@ pub fn draw_sample_rat_quad(
          let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
          push_rat_quad_drawable(
             spartan,
-            &rat_quad,
             regularized_rat_quad,
             PathChoices { color: color_choice, line_choice: curve_config.main_line_choice },
             curve_config.main_line_layer,
@@ -468,14 +469,9 @@ pub fn draw_sample_segment_sequence(
          }
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
-            let rat_quad: &RatQuadRepr =
-               &managed_rat_quad.get_poly_rat_quad_repr().expect("Should be there");
             let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
-            segments_paths.push(create_rat_quad_path(
-               spartan.num_segments_hyperbolic,
-               rat_quad,
-               regularized_rat_quad,
-            ));
+            segments_paths
+               .push(create_rat_quad_path(spartan.num_segments_hyperbolic, regularized_rat_quad));
          }
          OneOfManagedSegment::Polyline(locations) => {
             segments_paths.push(OneOfSegment::Polyline(locations.clone()));

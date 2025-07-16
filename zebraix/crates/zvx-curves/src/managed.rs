@@ -22,9 +22,9 @@ use serde_default::DefaultFromSerde;
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
 pub struct ManagedRatQuad {
-   pub ooe: BaseRatQuad,
    pub poly: BaseRatQuad,
-   pub specified: SpecifiedRatQuad, // FourPoint or ThreePointAngle.
+   // How originally specified, FourPoint or ThreePointAngle, for plotting and diagnostics only.
+   pub specified: SpecifiedRatQuad,
    pub canvas_range: [f64; 4],
 }
 
@@ -49,7 +49,7 @@ impl ManagedRatQuad {
    #[must_use]
    pub fn create_from_polynomial(poly: &BaseRatQuad, canvas_range: [f64; 4]) -> Self {
       assert!(matches!(poly, BaseRatQuad::RationalPoly { .. }));
-      Self { poly: *poly, ooe: BaseRatQuad::default(), canvas_range, ..Default::default() }
+      Self { poly: *poly, canvas_range, ..Default::default() }
    }
 
    #[must_use]
@@ -80,12 +80,7 @@ impl ManagedRatQuad {
          ..Default::default()
       });
       rat_quad.weighted_to_polynomial().unwrap();
-      Self {
-         poly: rat_quad,
-         ooe: BaseRatQuad::default(),
-         specified: SpecifiedRatQuad::FourPoint(*four_points),
-         canvas_range,
-      }
+      Self { poly: rat_quad, specified: SpecifiedRatQuad::FourPoint(*four_points), canvas_range }
    }
 
    #[allow(clippy::missing_errors_doc)]
@@ -115,7 +110,6 @@ impl ManagedRatQuad {
          rat_quad.weighted_to_polynomial().unwrap();
          Ok(Self {
             poly: rat_quad,
-            ooe: BaseRatQuad::default(),
             specified: SpecifiedRatQuad::ThreePointAngle(*three_point_rat_quad),
             canvas_range,
          })
