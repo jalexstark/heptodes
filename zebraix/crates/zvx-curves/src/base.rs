@@ -103,17 +103,17 @@ pub struct HyperbolicRatQuadRepr {
    pub sigma: f64,
 }
 
-// TODO: Migrate to Cubilinear form.
-#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
-pub struct ParabolicRatQuadRepr {
-   pub r: [f64; 2], // Range.
-   pub a_0: f64,    // Denominator, as a[2] * t^2 + a[1] * t... .
-   pub a_2: f64,
-   pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
-   pub c: [f64; 3], // Numerator or O-O-E coefficients for y component.
-   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
-   pub sigma: f64,
-}
+// // TODO: Migrate to Cubilinear form.
+// #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
+// pub struct ParabolicRatQuadRepr {
+//    pub r: [f64; 2], // Range.
+//    pub a_0: f64,    // Denominator, as a[2] * t^2 + a[1] * t... .
+//    pub a_2: f64,
+//    pub b: [f64; 3], // Numerator or O-O-E coefficients for x component.
+//    pub c: [f64; 3], // Numerator or O-O-E coefficients for y component.
+//    #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
+//    pub sigma: f64,
+// }
 
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
 pub struct ThreePointAngleRepr {
@@ -128,8 +128,7 @@ pub struct ThreePointAngleRepr {
 #[derive(Debug, Deserialize, Serialize, DefaultFromSerde, PartialEq, Copy, Clone)]
 pub struct FourPointCubiLinearRepr {
    pub r: [f64; 2], // Range.
-   pub x: [f64; 4],
-   pub y: [f64; 4],
+   pub p: [[f64; 2]; 4],
    #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
    pub sigma: f64,
 }
@@ -158,7 +157,7 @@ pub enum RatQuadOoeSubclassed {
    // Elliptical to custom OOE.
    Elliptical(RegularizedRatQuadRepr),
    // Perhaps change to cubilinear form
-   Parabolic(ParabolicRatQuadRepr),
+   Parabolic(FourPointCubiLinearRepr),
    Hyperbolic(HyperbolicRatQuadRepr),
 }
 
@@ -306,18 +305,52 @@ impl HyperbolicRatQuadRepr {
 
       RegularizedRatQuadRepr { r_bound: self.r_bound, a_0, a_2, b, c, sigma: self.sigma }
    }
+
+   #[must_use]
+   #[allow(clippy::suboptimal_flops)]
+   pub fn eval(&self, t: &[f64]) -> Vec<[f64; 2]> {
+      let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+
+      let lambda = self.lambda;
+      let mu = self.mu;
+
+      for item in t {
+         let x = self.offset[0]
+            + self.minus_partial[0] / (lambda - mu * *item)
+            + self.plus_partial[0] / (lambda + mu * *item);
+         let y = self.offset[1]
+            + self.minus_partial[1] / (lambda - mu * *item)
+            + self.plus_partial[1] / (lambda + mu * *item);
+         ret_val.push([x, y]);
+      }
+
+      ret_val
+   }
 }
 
 impl RegularizedRatQuadRepr {
-   const fn convert_to_parabolic(&self) -> ParabolicRatQuadRepr {
-      ParabolicRatQuadRepr {
+   const fn convert_to_general(&self) -> RatQuadRepr {
+      RatQuadRepr {
          r: [-self.r_bound, self.r_bound],
-         a_0: self.a_0,
-         a_2: self.a_2,
+         a: [self.a_0, 0.0, self.a_2],
          b: self.b,
          c: self.c,
          sigma: self.sigma,
       }
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   fn convert_to_parabolic(&self) -> FourPointCubiLinearRepr {
+      let (x, y) = self.convert_to_general().rq_characterize_endpoints();
+      let f = 1.0 / 3.0;
+      let four_c = [
+         [x[0], y[0]],
+         [x[0] + f * x[1], y[0] + f * y[1]],
+         [x[3] - f * x[2], y[3] - f * y[2]],
+         [x[3], y[3]],
+      ];
+
+      FourPointCubiLinearRepr { r: [-self.r_bound, self.r_bound], p: four_c, sigma: self.sigma }
    }
 
    // At present there is no proper testing of s. Manual inspection verifies that negating all
@@ -639,8 +672,10 @@ impl FourPointCubiLinearRepr {
          let b = self.r[1] - *item;
          let f0 = 1.0 / (b + a);
          let recip_denom = f0 * f0 * f0;
-         let x = Self::eval_part(b, a, &self.x, recip_denom);
-         let y = Self::eval_part(b, a, &self.y, recip_denom);
+         let in_x = [self.p[0][0], self.p[1][0], self.p[2][0], self.p[3][0]];
+         let in_y = [self.p[0][1], self.p[1][1], self.p[2][1], self.p[3][1]];
+         let x = Self::eval_part(b, a, &in_x, recip_denom);
+         let y = Self::eval_part(b, a, &in_y, recip_denom);
          ret_val.push([x, y]);
       }
       ret_val
@@ -660,10 +695,12 @@ impl FourPointCubiLinearRepr {
       let recip_denom_k = f0_k * f0_k * f0_k;
       let f0_l = 1.0 / (b_l + a_l);
       let recip_denom_l = f0_l * f0_l * f0_l;
-      new_x[0] = Self::eval_part(b_k, a_k, &self.x, recip_denom_k);
-      new_y[0] = Self::eval_part(b_k, a_k, &self.y, recip_denom_k);
-      new_x[3] = Self::eval_part(b_l, a_l, &self.x, recip_denom_l);
-      new_y[3] = Self::eval_part(b_l, a_l, &self.y, recip_denom_l);
+      let in_x = [self.p[0][0], self.p[1][0], self.p[2][0], self.p[3][0]];
+      let in_y = [self.p[0][1], self.p[1][1], self.p[2][1], self.p[3][1]];
+      new_x[0] = Self::eval_part(b_k, a_k, &in_x, recip_denom_k);
+      new_y[0] = Self::eval_part(b_k, a_k, &in_y, recip_denom_k);
+      new_x[3] = Self::eval_part(b_l, a_l, &in_x, recip_denom_l);
+      new_y[3] = Self::eval_part(b_l, a_l, &in_y, recip_denom_l);
       let kl_numerator_k = self.sigma * self.r[1] * (new_range[0] - self.r[0])
          + self.r[0] * (self.r[1] - new_range[0]);
       let kl_numerator_l = self.sigma * self.r[1] * (new_range[1] - self.r[0])
@@ -676,47 +713,47 @@ impl FourPointCubiLinearRepr {
       let dx_1 = fudge_k
          * f0_k
          * f0_k
-         * (b_k * b_k * (self.x[1] - self.x[0])
-            + 2.0 * b_k * a_k * (self.x[2] - self.x[1])
-            + a_k * a_k * (self.x[3] - self.x[2]));
+         * (b_k * b_k * (in_x[1] - in_x[0])
+            + 2.0 * b_k * a_k * (in_x[2] - in_x[1])
+            + a_k * a_k * (in_x[3] - in_x[2]));
       new_x[1] = new_x[0] + dx_1;
       let dy_1 = fudge_k
          * f0_k
          * f0_k
-         * (b_k * b_k * (self.y[1] - self.y[0])
-            + 2.0 * b_k * a_k * (self.y[2] - self.y[1])
-            + a_k * a_k * (self.y[3] - self.y[2]));
+         * (b_k * b_k * (in_y[1] - in_y[0])
+            + 2.0 * b_k * a_k * (in_y[2] - in_y[1])
+            + a_k * a_k * (in_y[3] - in_y[2]));
       new_y[1] = new_y[0] + dy_1;
       let dx_1 = fudge_l
          * f0_l
          * f0_l
-         * (b_l * b_l * (self.x[1] - self.x[0])
-            + 2.0 * b_l * a_l * (self.x[2] - self.x[1])
-            + a_l * a_l * (self.x[3] - self.x[2]));
+         * (b_l * b_l * (in_x[1] - in_x[0])
+            + 2.0 * b_l * a_l * (in_x[2] - in_x[1])
+            + a_l * a_l * (in_x[3] - in_x[2]));
       new_x[2] = new_x[3] - dx_1;
       let dy_1 = fudge_l
          * f0_l
          * f0_l
-         * (b_l * b_l * (self.y[1] - self.y[0])
-            + 2.0 * b_l * a_l * (self.y[2] - self.y[1])
-            + a_l * a_l * (self.y[3] - self.y[2]));
+         * (b_l * b_l * (in_y[1] - in_y[0])
+            + 2.0 * b_l * a_l * (in_y[2] - in_y[1])
+            + a_l * a_l * (in_y[3] - in_y[2]));
       new_y[2] = new_y[3] - dy_1;
 
       self.sigma = (a_l + b_l) / (a_k + b_k);
-      self.x = new_x;
-      self.y = new_y;
+      self.p =
+         [[new_x[0], new_y[0]], [new_x[1], new_y[1]], [new_x[2], new_y[2]], [new_x[3], new_y[3]]];
       self.r = new_range;
    }
 
    pub fn displace(&mut self, d: [f64; 2]) {
-      self.x[0] += d[0];
-      self.x[1] += d[0];
-      self.x[2] += d[0];
-      self.x[3] += d[0];
-      self.y[0] += d[1];
-      self.y[1] += d[1];
-      self.y[2] += d[1];
-      self.y[3] += d[1];
+      self.p[0][0] += d[0];
+      self.p[1][0] += d[0];
+      self.p[2][0] += d[0];
+      self.p[3][0] += d[0];
+      self.p[0][1] += d[1];
+      self.p[1][1] += d[1];
+      self.p[2][1] += d[1];
+      self.p[3][1] += d[1];
    }
 
    pub fn bilinear_transform(&mut self, sigma: f64) {
