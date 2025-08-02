@@ -15,6 +15,7 @@ categories = ["graphics", "development-tools::testing"]
 pangocairo = "0.20"
 zvx-docagram =  { path = "../zvx-docagram", version = "0.1" }
 zvx-drawable =  { path = "../zvx-drawable", version = "0.1" }
+zvx-base =  { path = "../zvx-base", version = "0.1" }
 
 [dev-dependencies]
 serde_json = "1.0"
