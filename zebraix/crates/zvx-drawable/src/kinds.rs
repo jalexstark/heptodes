@@ -19,8 +19,9 @@ use crate::choices::{
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
+use zvx_base::{ArcPath, CubicPath, PolylinePath};
 
-#[derive(Serialize, Debug, Copy, Clone, DefaultFromSerde, PartialEq, Eq)]
+#[derive(Serialize, Debug, Clone, DefaultFromSerde, PartialEq, Eq)]
 pub struct SegmentChoices {
    #[serde(skip_serializing_if = "is_default")]
    pub continuation: ContinuationChoice,
@@ -28,7 +29,7 @@ pub struct SegmentChoices {
    pub closure: LineClosureChoice,
 }
 
-#[derive(Serialize, Debug, Copy, Clone, DefaultFromSerde, PartialEq, Eq)]
+#[derive(Serialize, Debug, Clone, DefaultFromSerde, PartialEq, Eq)]
 pub struct PathChoices {
    #[serde(skip_serializing_if = "is_default")]
    pub line_choice: LineChoice,
@@ -36,66 +37,34 @@ pub struct PathChoices {
    pub color: ColorChoice,
 }
 
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-pub struct ArcPath {
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Debug, Serialize, Default, PartialEq)]
+pub struct Strokeable<T: Default + PartialEq> {
    #[serde(skip_serializing_if = "is_default")]
-   pub angle_range: [f64; 2],
-   #[serde(skip_serializing_if = "is_default")]
-   pub center: [f64; 2],
-   // Elliptical transform matrix.  Zero angle is in direction of x axis.
-   #[serde(skip_serializing_if = "is_default")]
-   pub transform: [f64; 4],
-}
-
-pub type CubicPath = [[f64; 2]; 4];
-// #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-// pub struct CubicPath {
-//    #[serde(skip_serializing_if = "is_default")]
-//    pub c: [[f64; 2]; 4],
-// }
-
-pub type PolylinePath = Vec<[f64; 2]>;
-// #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-// pub struct PolylinePath {
-//    #[serde(skip_serializing_if = "is_default")]
-//    pub locations: Vec<[f64; 2]>,
-// }
-
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-pub struct ArcDrawable {
+   pub path: T,
    #[serde(skip_serializing_if = "is_default")]
    pub path_choices: PathChoices,
-   #[serde(skip_serializing_if = "is_default")]
-   pub path: ArcPath,
-}
-
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-pub struct CubicDrawable {
-   #[serde(skip_serializing_if = "is_default")]
-   pub path_choices: PathChoices,
-   #[serde(skip_serializing_if = "is_default")]
-   pub path: CubicPath,
-}
-
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-pub struct PolylineDrawable {
-   #[serde(skip_serializing_if = "is_default")]
-   pub path_choices: PathChoices,
-   #[serde(skip_serializing_if = "is_default")]
-   pub path: PolylinePath,
 }
 
 // Single-segment lines are more naturally one-stage polylines rather than single-element lines
 // sets.
+//
+// Outer-product of an optional set of offsets and a set of lines.
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-pub struct LinesDrawable {
-   #[serde(skip_serializing_if = "is_default")]
-   pub path_choices: PathChoices,
+pub struct LinesSetSet {
    #[serde(skip_serializing_if = "is_default")]
    pub coords: Vec<([f64; 2], [f64; 2])>,
    // If offsets is empty, draw single line with no offset.
    #[serde(skip_serializing_if = "is_default")]
    pub offsets: Option<Vec<[f64; 2]>>,
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
+pub struct CirclesSet {
+   #[serde(skip_serializing_if = "is_default")]
+   pub radius: f64,
+   #[serde(skip_serializing_if = "is_default")]
+   pub centers: Vec<[f64; 2]>,
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
@@ -131,16 +100,6 @@ pub struct TextDrawable {
    pub texts: Vec<TextSingle>,
 }
 
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
-pub struct CirclesDrawable {
-   #[serde(skip_serializing_if = "is_default")]
-   pub path_choices: PathChoices,
-   #[serde(skip_serializing_if = "is_default")]
-   pub radius: f64,
-   #[serde(skip_serializing_if = "is_default")]
-   pub centers: Vec<[f64; 2]>,
-}
-
 #[derive(Serialize, Debug, Default, PartialEq)]
 pub enum OneOfSegment {
    #[default]
@@ -166,12 +125,12 @@ pub struct SegmentSequence {
 pub enum OneOfDrawable {
    #[default]
    Nothing,
-   Arc(ArcDrawable),
-   Cubic(CubicDrawable),
-   Polyline(PolylineDrawable),
-   Lines(LinesDrawable),
+   Arc(Strokeable<ArcPath>),
+   Cubic(Strokeable<CubicPath>),
+   Polyline(Strokeable<PolylinePath>),
+   Lines(Strokeable<LinesSetSet>),
    Points(PointsDrawable),
-   Circles(CirclesDrawable),
+   Circles(Strokeable<CirclesSet>),
    Text(TextDrawable),
    SegmentSequence(SegmentSequence),
 }

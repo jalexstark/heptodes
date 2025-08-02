@@ -15,10 +15,11 @@
 use serde_json::to_writer_pretty;
 use std::collections::VecDeque;
 use std::io::Write;
+use zvx_base::{CubicPath, PolylinePath};
 use zvx_cairo::render::CairoSpartanCombo;
+use zvx_curves::base::CurveEval;
 use zvx_curves::base::{
-   BaseRatQuad, FourPointCubiLinearRepr, FourPointRatQuad, RatQuadRepr, ThreePointAngleRepr,
-   ZebraixAngle,
+   Curve, FourPointRatQuad, RatQuadPolyPath, ThreePointAngleRepr, ZebraixAngle,
 };
 use zvx_curves::managed::ManagedCubic;
 use zvx_curves::managed::ManagedRatQuad;
@@ -31,8 +32,8 @@ use zvx_drawable::choices::{
    TextAnchorVertical, TextOffsetChoice, TextSizeChoice,
 };
 use zvx_drawable::kinds::{
-   CirclesDrawable, LinesDrawable, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable,
-   PolylineDrawable, QualifiedDrawable, SegmentSequence, TextDrawable, TextSingle,
+   CirclesSet, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable,
+   QualifiedDrawable, SegmentSequence, Strokeable, TextDrawable, TextSingle,
 };
 use zvx_golden::filtered::JsonGoldenTest;
 use zvx_golden::filtered::SvgGoldenTest;
@@ -98,12 +99,14 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
       let pattern_layer = 0;
       let qualified_drawable = QualifiedDrawable {
          layer: pattern_layer,
-         drawable: OneOfDrawable::Lines(LinesDrawable {
-            coords: vec![(
-               [sizing.debug_box[0], sizing.debug_box[1]],
-               [sizing.debug_box[0], sizing.debug_box[3]],
-            )],
-            offsets: Some(vec![[0.0, 0.0], [sizing.debug_box[2] - sizing.debug_box[0], 0.0]]),
+         drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
+            path: LinesSetSet {
+               coords: vec![(
+                  [sizing.debug_box[0], sizing.debug_box[1]],
+                  [sizing.debug_box[0], sizing.debug_box[3]],
+               )],
+               offsets: Some(vec![[0.0, 0.0], [sizing.debug_box[2] - sizing.debug_box[0], 0.0]]),
+            },
             ..Default::default()
          }),
       };
@@ -113,19 +116,21 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
       let pattern_layer = 0;
       let qualified_drawable = QualifiedDrawable {
          layer: pattern_layer,
-         drawable: OneOfDrawable::Lines(LinesDrawable {
+         drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
             path_choices: PathChoices { line_choice: LineChoice::Light, ..Default::default() },
-            coords: vec![
-               (
-                  [sizing.debug_box[0], sizing.debug_box[3]],
-                  [sizing.debug_box[2], sizing.debug_box[1]],
-               ),
-               (
-                  [sizing.debug_box[2], sizing.debug_box[3]],
-                  [sizing.debug_box[0], sizing.debug_box[1]],
-               ),
-            ],
-            offsets: Some(vec![[0.0, 0.0]]),
+            path: LinesSetSet {
+               coords: vec![
+                  (
+                     [sizing.debug_box[0], sizing.debug_box[3]],
+                     [sizing.debug_box[2], sizing.debug_box[1]],
+                  ),
+                  (
+                     [sizing.debug_box[2], sizing.debug_box[3]],
+                     [sizing.debug_box[0], sizing.debug_box[1]],
+                  ),
+               ],
+               offsets: Some(vec![[0.0, 0.0]]),
+            },
          }),
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
@@ -349,13 +354,15 @@ fn spartan_sizing_i_test() {
       let pattern_layer = 0;
       let qualified_drawable = QualifiedDrawable {
          layer: pattern_layer,
-         drawable: OneOfDrawable::Lines(LinesDrawable {
-            coords: vec![
-               ([0.0, 0.0], [5.0, 5.0]),
-               ([0.0, 0.0], [0.0, 5.0]),
-               ([0.0, 0.0], [-2.5, 5.0]),
-            ],
-            offsets: None,
+         drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
+            path: LinesSetSet {
+               coords: vec![
+                  ([0.0, 0.0], [5.0, 5.0]),
+                  ([0.0, 0.0], [0.0, 5.0]),
+                  ([0.0, 0.0], [-2.5, 5.0]),
+               ],
+               offsets: None,
+            },
             ..Default::default()
          }),
       };
@@ -365,15 +372,16 @@ fn spartan_sizing_i_test() {
       let pattern_layer = 0;
       let qualified_drawable = QualifiedDrawable {
          layer: pattern_layer,
-         drawable: OneOfDrawable::Lines(LinesDrawable {
+         drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
             path_choices: PathChoices { line_choice: LineChoice::Light, ..Default::default() },
-
-            coords: vec![
-               ([0.0, 0.0], [5.0, -5.0]),
-               ([0.0, 0.0], [0.0, -5.0]),
-               ([0.0, 0.0], [-2.5, -5.0]),
-            ],
-            ..Default::default()
+            path: LinesSetSet {
+               coords: vec![
+                  ([0.0, 0.0], [5.0, -5.0]),
+                  ([0.0, 0.0], [0.0, -5.0]),
+                  ([0.0, 0.0], [-2.5, -5.0]),
+               ],
+               ..Default::default()
+            },
          }),
       };
       cairo_spartan.spartan.drawables.push(qualified_drawable);
@@ -828,19 +836,17 @@ fn spartan_sizing_k_test() {
 
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: front_layer,
-      drawable: OneOfDrawable::Circles(CirclesDrawable {
+      drawable: OneOfDrawable::Circles(Strokeable::<CirclesSet> {
          path_choices: PathChoices { color: ColorChoice::BrightRed, ..Default::default() },
-         radius: 1.2,
-         centers: vec![[-1.5, 3.0], [1.5, 3.0]],
+         path: CirclesSet { radius: 1.2, centers: vec![[-1.5, 3.0], [1.5, 3.0]] },
       }),
    });
 
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: behind_layer,
-      drawable: OneOfDrawable::Circles(CirclesDrawable {
+      drawable: OneOfDrawable::Circles(Strokeable::<CirclesSet> {
          path_choices: PathChoices { color: ColorChoice::Blue, ..Default::default() },
-         radius: 1.2,
-         centers: vec![[-3.0, 3.0], [0.0, 3.0], [3.0, 3.0]],
+         path: CirclesSet { radius: 1.2, centers: vec![[-3.0, 3.0], [0.0, 3.0], [3.0, 3.0]] },
       }),
    });
 
@@ -871,7 +877,7 @@ fn spartan_sizing_l_test() {
 
    cairo_spartan.spartan.drawables.push(QualifiedDrawable {
       layer: drawable_layer,
-      drawable: OneOfDrawable::Polyline(PolylineDrawable {
+      drawable: OneOfDrawable::Polyline(Strokeable::<PolylinePath> {
          path_choices: PathChoices { color: ColorChoice::Red, ..Default::default() },
          path: vec![
             [-3.0, 2.0],
@@ -927,12 +933,15 @@ fn spartan_sizing_m_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let rat_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
-      a: [-21.0, 1.0, -2.0],
-      b: [-3.1414, 4.7811, 6.5534],
-      r: t_range,
+   let rat_quad = Curve::<RatQuadPolyPath> {
+      path: RatQuadPolyPath {
+         a: [-21.0, 1.0, -2.0],
+         b: [-3.1414, 4.7811, 6.5534],
+         r: t_range,
+         ..Default::default()
+      },
       ..Default::default()
-   });
+   };
 
    let managed_curve =
       ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
@@ -975,13 +984,15 @@ fn spartan_sizing_n_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let rat_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
-      a: [-21.0, 1.0, -2.0],
-      b: [-3.1414, 4.7811, 6.5534],
-      c: [0.0, 20.0, 0.0],
-      r: t_range,
+   let rat_quad = Curve::<RatQuadPolyPath> {
+      path: RatQuadPolyPath {
+         a: [-21.0, 1.0, -2.0],
+         b: [-3.1414, 4.7811, 6.5534],
+         c: [0.0, 20.0, 0.0],
+         r: t_range,
+      },
       ..Default::default()
-   });
+   };
 
    let managed_curve =
       ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
@@ -1026,13 +1037,15 @@ fn spartan_sizing_n1_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad::RationalPoly(RatQuadRepr {
-         a: [-21.0, 1.0, -2.0],
-         b: [-3.1414, 4.7811, 6.5534],
-         c: [0.0, 20.0, 0.0],
-         r: t_range,
+      &Curve::<RatQuadPolyPath> {
+         path: RatQuadPolyPath {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+         },
          ..Default::default()
-      }),
+      },
       cairo_spartan.spartan.prep.axes_range,
    );
    // TODO: Consider removing or reworking this test, likely redundant.
@@ -1078,13 +1091,15 @@ fn spartan_sizing_o_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad::RationalPoly(RatQuadRepr {
-         a: [-21.0, 1.0, -2.0],
-         b: [-3.1414, 4.7811, 6.5534],
-         c: [0.0, 20.0, 0.0],
-         r: t_range,
+      &Curve::<RatQuadPolyPath> {
+         path: RatQuadPolyPath {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+         },
          ..Default::default()
-      }),
+      },
       cairo_spartan.spartan.prep.axes_range,
    );
 
@@ -1134,13 +1149,15 @@ fn spartan_sizing_o1_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad::RationalPoly(RatQuadRepr {
-         a: [-21.0, 1.0, -2.0],
-         b: [-3.1414, 4.7811, 6.5534],
-         c: [0.0, 20.0, 0.0],
-         r: t_range,
+      &Curve::<RatQuadPolyPath> {
+         path: RatQuadPolyPath {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+         },
          ..Default::default()
-      }),
+      },
       cairo_spartan.spartan.prep.axes_range,
    );
 
@@ -1192,13 +1209,15 @@ fn spartan_sizing_o2_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad::RationalPoly(RatQuadRepr {
-         a: [-21.0, 1.0, -2.0],
-         b: [-3.1414, 4.7811, 6.5534],
-         c: [0.0, 20.0, 0.0],
-         r: t_range,
+      &Curve::<RatQuadPolyPath> {
+         path: RatQuadPolyPath {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+         },
          ..Default::default()
-      }),
+      },
       cairo_spartan.spartan.prep.axes_range,
    );
 
@@ -1245,13 +1264,15 @@ fn spartan_sizing_p_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-      &BaseRatQuad::RationalPoly(RatQuadRepr {
-         a: [-21.0, 1.0, -2.0],
-         b: [-3.1414, 4.7811, 6.5534],
-         c: [0.0, 20.0, 0.0],
-         r: t_range,
+      &Curve::<RatQuadPolyPath> {
+         path: RatQuadPolyPath {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+         },
          ..Default::default()
-      }),
+      },
       cairo_spartan.spartan.prep.axes_range,
    );
 
@@ -1289,10 +1310,13 @@ fn spartan_sizing_p_test() {
 #[test]
 fn rat_quad_test() {
    let r: f64 = 1.5;
-   let orig_quad = RatQuadRepr {
-      a: [-21.0, 1.0, -2.0],
-      b: [-3.1414, 4.7811, 6.5534],
-      r: [r, r],
+   let orig_quad = Curve::<RatQuadPolyPath> {
+      path: RatQuadPolyPath {
+         a: [-21.0, 1.0, -2.0],
+         b: [-3.1414, 4.7811, 6.5534],
+         r: [r, r],
+         ..Default::default()
+      },
       ..Default::default()
    };
 
@@ -1302,9 +1326,9 @@ fn rat_quad_test() {
       t.push(item as f64 / 3.0 - 2.0);
    }
 
-   let a_1 = orig_quad.a[1];
-   let a_s = r * r * orig_quad.a[2] + orig_quad.a[0];
-   let a_d = r * r * orig_quad.a[2] - orig_quad.a[0];
+   let a_1 = orig_quad.path.a[1];
+   let a_s = r * r * orig_quad.path.a[2] + orig_quad.path.a[0];
+   let a_d = r * r * orig_quad.path.a[2] - orig_quad.path.a[0];
    let sigma = ((a_s - a_1 * r) / (a_s + a_1 * r)).abs().sqrt();
 
    let mut unwarped_t = Vec::<f64>::with_capacity(t.len());
@@ -1315,29 +1339,34 @@ fn rat_quad_test() {
       );
    }
 
-   let b_1 = orig_quad.b[1];
-   let b_s = r * r * orig_quad.b[2] + orig_quad.b[0];
-   let b_d = r * r * orig_quad.b[2] - orig_quad.b[0];
+   let b_1 = orig_quad.path.b[1];
+   let b_s = r * r * orig_quad.path.b[2] + orig_quad.path.b[0];
+   let b_d = r * r * orig_quad.path.b[2] - orig_quad.path.b[0];
 
-   let inter_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
-      a: [
-         r * r
-            * ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r - 2.0 * sigma * a_d),
-         2.0 * r * ((sigma * sigma - 1.0) * a_s + (sigma * sigma + 1.0) * a_1 * r),
-         ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r + 2.0 * sigma * a_d),
-      ],
-      b: [
-         r * r
-            * ((sigma * sigma + 1.0) * b_s + (sigma * sigma - 1.0) * b_1 * r - 2.0 * sigma * b_d),
-         2.0 * r * ((sigma * sigma - 1.0) * b_s + (sigma * sigma + 1.0) * b_1 * r),
-         ((sigma * sigma + 1.0) * b_s + (sigma * sigma - 1.0) * b_1 * r + 2.0 * sigma * b_d),
-      ],
-      r: [r, r],
+   let inter_quad = Curve::<RatQuadPolyPath> {
+      path: RatQuadPolyPath {
+         a: [
+            r * r
+               * ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r
+                  - 2.0 * sigma * a_d),
+            2.0 * r * ((sigma * sigma - 1.0) * a_s + (sigma * sigma + 1.0) * a_1 * r),
+            ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r + 2.0 * sigma * a_d),
+         ],
+         b: [
+            r * r
+               * ((sigma * sigma + 1.0) * b_s + (sigma * sigma - 1.0) * b_1 * r
+                  - 2.0 * sigma * b_d),
+            2.0 * r * ((sigma * sigma - 1.0) * b_s + (sigma * sigma + 1.0) * b_1 * r),
+            ((sigma * sigma + 1.0) * b_s + (sigma * sigma - 1.0) * b_1 * r + 2.0 * sigma * b_d),
+         ],
+         r: [r, r],
+         ..Default::default()
+      },
       ..Default::default()
-   });
+   };
 
-   let t_gold = orig_quad.rq_eval_quad(&unwarped_t);
-   let t_inter = inter_quad.eval_quad(&t);
+   let t_gold = orig_quad.eval_no_bilinear(&unwarped_t);
+   let t_inter = inter_quad.eval_no_bilinear(&t);
 
    for i in 0..t_gold.len() {
       assert!((t_gold[i][0] - t_inter[i][0]).abs() < 0.0001);
@@ -1349,19 +1378,22 @@ fn rat_quad_test() {
    let lambda = (a_s * a_s - a_1 * a_1 * r * r).sqrt() * (a_s + a_1 * r).signum();
    assert!((lambda - sigma * (a_s + a_1 * r)).abs() < 0.0001);
 
-   let final_quad = BaseRatQuad::RationalPoly(RatQuadRepr {
-      a: [r * r * lambda * (lambda - a_d), 0.0, lambda * (lambda + a_d)],
-      b: [
-         r * r * (a_s * b_s - a_1 * b_1 * r * r - lambda * b_d),
-         2.0 * r * r * (a_s * b_1 - a_1 * b_s),
-         (a_s * b_s - a_1 * b_1 * r * r + lambda * b_d),
-      ],
-      r: [r, r],
+   let final_quad = Curve::<RatQuadPolyPath> {
+      path: RatQuadPolyPath {
+         a: [r * r * lambda * (lambda - a_d), 0.0, lambda * (lambda + a_d)],
+         b: [
+            r * r * (a_s * b_s - a_1 * b_1 * r * r - lambda * b_d),
+            2.0 * r * r * (a_s * b_1 - a_1 * b_s),
+            (a_s * b_s - a_1 * b_1 * r * r + lambda * b_d),
+         ],
+         r: [r, r],
+         ..Default::default()
+      },
       ..Default::default()
-   });
+   };
 
-   let t_gold = orig_quad.rq_eval_quad(&unwarped_t);
-   let t_final = final_quad.eval_quad(&t);
+   let t_gold = orig_quad.eval_no_bilinear(&unwarped_t);
+   let t_final = final_quad.eval_no_bilinear(&t);
 
    for i in 0..t_gold.len() {
       assert!((t_gold[i][0] - t_final[i][0]).abs() < 0.0001);
@@ -1396,9 +1428,11 @@ fn spartan_sizing_q_test() {
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
    let managed_curve_a = ManagedCubic::create_from_control_points(
-      &FourPointCubiLinearRepr {
-         r: t_range,
-         p: p_from_x_y_4(&[0.0, -0.5, 0.5, -1.0], &[-1.5, -2.0, 1.5, 2.0]),
+      &Curve::<CubicPath> {
+         path: CubicPath {
+            r: t_range,
+            p: p_from_x_y_4(&[0.0, -0.5, 0.5, -1.0], &[-1.5, -2.0, 1.5, 2.0]),
+         },
          sigma: 1.0,
       },
       cairo_spartan.spartan.prep.axes_range,
@@ -1998,12 +2032,14 @@ fn spartan_sizing_t_test() {
    }
    {
       let managed_curve = ManagedCubic::create_from_control_points(
-         &FourPointCubiLinearRepr {
-            r: t_range,
-            p: p_from_x_y_4(
-               &[x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
-               &[y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
-            ),
+         &Curve::<CubicPath> {
+            path: CubicPath {
+               r: t_range,
+               p: p_from_x_y_4(
+                  &[x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
+                  &[y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+               ),
+            },
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2048,12 +2084,14 @@ fn spartan_sizing_t_test() {
    }
    {
       let managed_curve = ManagedCubic::create_from_control_points(
-         &FourPointCubiLinearRepr {
-            r: t_range,
-            p: p_from_x_y_4(
-               &[x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
-               &[y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
-            ),
+         &Curve::<CubicPath> {
+            path: CubicPath {
+               r: t_range,
+               p: p_from_x_y_4(
+                  &[x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
+                  &[y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+               ),
+            },
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2098,12 +2136,14 @@ fn spartan_sizing_t_test() {
    }
    {
       let managed_curve = ManagedCubic::create_from_control_points(
-         &FourPointCubiLinearRepr {
-            r: t_range,
-            p: p_from_x_y_4(
-               &[x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
-               &[y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
-            ),
+         &Curve::<CubicPath> {
+            path: CubicPath {
+               r: t_range,
+               p: p_from_x_y_4(
+                  &[x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
+                  &[y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+               ),
+            },
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2220,12 +2260,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2254,12 +2294,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2288,12 +2328,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2322,12 +2362,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2356,12 +2396,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.05),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2389,12 +2429,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2422,12 +2462,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.75),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2455,12 +2495,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(1.25),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2488,12 +2528,12 @@ fn spartan_sizing_u_test() {
          [shift_x, shift_y],
       );
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(1.5),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2566,12 +2606,12 @@ fn spartan_sizing_v_test() {
       );
 
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Radians(t.atan()),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2604,12 +2644,12 @@ fn spartan_sizing_v_test() {
       );
 
       let mut managed_curve = ManagedRatQuad::create_from_three_points(
-         &BaseRatQuad::ThreePointAngle(ThreePointAngleRepr {
+         &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Radians((1.0 / t).atan()),
             r: t_range,
             ..Default::default()
-         }),
+         },
          cairo_spartan.spartan.prep.axes_range,
       )
       .expect("Failure");
@@ -2692,9 +2732,11 @@ fn spartan_sizing_w_test() {
 
    {
       let managed_curve = ManagedCubic::create_from_control_points(
-         &FourPointCubiLinearRepr {
-            r: t_range,
-            p: p_from_x_y_4(&[0.0, 1.0, -1.0, 0.0], &[2.0, 0.0, 0.0, -2.0]),
+         &Curve::<CubicPath> {
+            path: CubicPath {
+               r: t_range,
+               p: p_from_x_y_4(&[0.0, 1.0, -1.0, 0.0], &[2.0, 0.0, 0.0, -2.0]),
+            },
             sigma: 1.0,
          },
          cairo_spartan.spartan.prep.axes_range,
@@ -2752,7 +2794,10 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2771,16 +2816,18 @@ fn spartan_sizing_x_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
                },
-               coords: vec![(
-                  [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
-                  [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
-               )],
-               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               path: LinesSetSet {
+                  coords: vec![(
+                     [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
+                     [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
+                  )],
+                  offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               },
             }),
             ..Default::default()
          };
@@ -2788,13 +2835,15 @@ fn spartan_sizing_x_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices { line_choice: LineChoice::Light, ..Default::default() },
-               coords: vec![
-                  ([-c_x + a_x, a_y], [c_x + b_x, b_y]),
-                  ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
-               ],
-               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               path: LinesSetSet {
+                  coords: vec![
+                     ([-c_x + a_x, a_y], [c_x + b_x, b_y]),
+                     ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
+                  ],
+                  offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               },
             }),
             ..Default::default()
          };
@@ -2802,16 +2851,18 @@ fn spartan_sizing_x_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Blue,
                },
-               coords: vec![([-c_x, 0.0], [c_x, 0.0])],
-               offsets: Some(vec![
-                  [0.0 + shift[0], 0.0 + shift[1]],
-                  [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
-               ]),
+               path: LinesSetSet {
+                  coords: vec![([-c_x, 0.0], [c_x, 0.0])],
+                  offsets: Some(vec![
+                     [0.0 + shift[0], 0.0 + shift[1]],
+                     [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
+                  ]),
+               },
             }),
             ..Default::default()
          };
@@ -2833,7 +2884,10 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2859,7 +2913,10 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2883,7 +2940,10 @@ fn spartan_sizing_x_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2899,13 +2959,15 @@ fn spartan_sizing_x_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
                },
-               coords: vec![([-c_x, 0.0], [c_x, 0.0])],
-               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               path: LinesSetSet {
+                  coords: vec![([-c_x, 0.0], [c_x, 0.0])],
+                  offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               },
             }),
             ..Default::default()
          };
@@ -2954,7 +3016,10 @@ fn spartan_sizing_y_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -2973,16 +3038,18 @@ fn spartan_sizing_y_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
                },
-               coords: vec![(
-                  [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
-                  [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
-               )],
-               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               path: LinesSetSet {
+                  coords: vec![(
+                     [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
+                     [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
+                  )],
+                  offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               },
             }),
             ..Default::default()
          };
@@ -2990,13 +3057,15 @@ fn spartan_sizing_y_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices { line_choice: LineChoice::Light, ..Default::default() },
-               coords: vec![
-                  ([-c_x + a_x, a_y], [c_x + b_x, b_y]),
-                  ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
-               ],
-               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               path: LinesSetSet {
+                  coords: vec![
+                     ([-c_x + a_x, a_y], [c_x + b_x, b_y]),
+                     ([-c_x - a_x, -a_y], [c_x - b_x, -b_y]),
+                  ],
+                  offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               },
             }),
             ..Default::default()
          };
@@ -3004,16 +3073,18 @@ fn spartan_sizing_y_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Blue,
                },
-               coords: vec![([-c_x, 0.0], [c_x, 0.0])],
-               offsets: Some(vec![
-                  [0.0 + shift[0], 0.0 + shift[1]],
-                  [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
-               ]),
+               path: LinesSetSet {
+                  coords: vec![([-c_x, 0.0], [c_x, 0.0])],
+                  offsets: Some(vec![
+                     [0.0 + shift[0], 0.0 + shift[1]],
+                     [-0.25 * (a_x + b_x) + shift[0], -0.25 * (a_y + b_y) + shift[1]],
+                  ]),
+               },
             }),
             ..Default::default()
          };
@@ -3039,7 +3110,10 @@ fn spartan_sizing_y_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -3058,16 +3132,18 @@ fn spartan_sizing_y_test() {
       }
       {
          let qualified_drawable = QualifiedDrawable {
-            drawable: OneOfDrawable::Lines(LinesDrawable {
+            drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
                path_choices: PathChoices {
                   line_choice: LineChoice::Ordinary,
                   color: ColorChoice::Red,
                },
-               coords: vec![(
-                  [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
-                  [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
-               )],
-               offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               path: LinesSetSet {
+                  coords: vec![(
+                     [0.5 * (a_x + b_x), 0.5 * (a_y + b_y)],
+                     [-0.5 * (a_x + b_x), -0.5 * (a_y + b_y)],
+                  )],
+                  offsets: Some(vec![[0.0 + shift[0], 0.0 + shift[1]]]),
+               },
             }),
             ..Default::default()
          };
@@ -3112,7 +3188,10 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
 
@@ -3136,7 +3215,10 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
@@ -3160,7 +3242,10 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
 
@@ -3188,7 +3273,10 @@ fn segment_sequence_a_test() {
          );
 
          let managed_curve = ManagedCubic::create_from_control_points(
-            &FourPointCubiLinearRepr { r: t_range, p: p_from_x_y_4(&x, &y), sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
+               sigma: 1.0,
+            },
             cairo_spartan.spartan.prep.axes_range,
          );
 

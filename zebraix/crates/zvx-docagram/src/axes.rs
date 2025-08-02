@@ -21,8 +21,8 @@ use zvx_drawable::choices::{
    TextOffsetChoice, TextSizeChoice,
 };
 use zvx_drawable::kinds::{
-   LinesDrawable, OneOfDrawable, OneOfSegment, PathChoices, QualifiedDrawable, SegmentSequence,
-   TextDrawable, TextSingle,
+   LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, QualifiedDrawable, SegmentSequence,
+   Strokeable, TextDrawable, TextSingle,
 };
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -67,7 +67,7 @@ impl AxesSpec {
    #[must_use]
    fn add_grid_lines(
       &self,
-      vertical_light: &mut LinesDrawable,
+      vertical_light: &mut Strokeable<LinesSetSet>,
       one_range: [f64; 2],
       horiz_interval: f64,
       x_tolerance: f64,
@@ -110,7 +110,7 @@ impl AxesSpec {
          assert!(final_left_location > mid_range);
          assert!(final_right_location < mid_range);
 
-         let mut offsets = vertical_light.offsets.clone().unwrap_or_default();
+         let mut offsets = vertical_light.path.offsets.clone().unwrap_or_default();
 
          #[allow(clippy::while_float)]
          while left_scan > one_range[0] - x_tolerance {
@@ -131,7 +131,7 @@ impl AxesSpec {
             final_right_location = right_scan;
             right_scan += horiz_interval;
          }
-         vertical_light.offsets = Some(offsets);
+         vertical_light.path.offsets = Some(offsets);
 
          if final_left_location > mid_range {
             left_numbering_location = None;
@@ -170,26 +170,32 @@ impl AxesSpec {
       let has_horiz_zero = (-range[1] > y_tolerance) && (range[3] > y_tolerance);
 
       let axes_layer = 0;
-      let mut lines_ordinary = LinesDrawable {
-         offsets: Some(vec![[0.0, 0.0]]),
-         path_choices: PathChoices { color: diagram.base_color_choice, ..Default::default() },
-         ..Default::default()
+      let mut lines_ordinary = Strokeable::<LinesSetSet> {
+         path: LinesSetSet { offsets: Some(vec![[0.0, 0.0]]), ..Default::default() },
+         path_choices: PathChoices {
+            color: diagram.base_color_choice.clone(),
+            ..Default::default()
+         },
       };
-      let mut horizontal_light = LinesDrawable {
-         coords: vec![([range[0], 0.0], [range[2], 0.0])],
+      let mut horizontal_light = Strokeable::<LinesSetSet> {
+         path: LinesSetSet {
+            coords: vec![([range[0], 0.0], [range[2], 0.0])],
+            offsets: Some(Vec::<[f64; 2]>::new()),
+         },
          path_choices: PathChoices {
             line_choice: LineChoice::Light,
-            color: diagram.light_color_choice,
+            color: diagram.light_color_choice.clone(),
          },
-         offsets: Some(Vec::<[f64; 2]>::new()),
       };
-      let mut vertical_light = LinesDrawable {
-         coords: vec![([0.0, range[1]], [0.0, range[3]])],
+      let mut vertical_light = Strokeable::<LinesSetSet> {
+         path: LinesSetSet {
+            coords: vec![([0.0, range[1]], [0.0, range[3]])],
+            ..Default::default()
+         },
          path_choices: PathChoices {
             line_choice: LineChoice::Light,
-            color: diagram.light_color_choice,
+            color: diagram.light_color_choice.clone(),
          },
-         ..Default::default()
       };
 
       match self.axes_style {
@@ -215,10 +221,10 @@ impl AxesSpec {
       match self.axes_style {
          AxesStyle::BoxCross | AxesStyle::Cross => {
             if has_vert_zero {
-               lines_ordinary.coords.push(([0.0, range[1]], [0.0, range[3]]));
+               lines_ordinary.path.coords.push(([0.0, range[1]], [0.0, range[3]]));
             }
             if has_horiz_zero {
-               lines_ordinary.coords.push(([range[0], 0.0], [range[2], 0.0]));
+               lines_ordinary.path.coords.push(([range[0], 0.0], [range[2], 0.0]));
             }
          }
          AxesStyle::Boxed | AxesStyle::None => {}
@@ -244,27 +250,27 @@ impl AxesSpec {
          [0.0, 1.0],
       );
 
-      if !lines_ordinary.coords.is_empty() {
+      if !lines_ordinary.path.coords.is_empty() {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
-            // color_choice: diagram.base_color_choice,
+            // color_choice: diagram.base_color_choice.clone(),
             drawable: OneOfDrawable::Lines(lines_ordinary),
          };
          diagram.drawables.push(qualified_drawable);
       }
 
-      if horizontal_light.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
+      if horizontal_light.path.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
-            // color_choice: diagram.light_color_choice,
+            // color_choice: diagram.light_color_choice.clone(),
             drawable: OneOfDrawable::Lines(horizontal_light),
          };
          diagram.drawables.push(qualified_drawable);
       }
-      if vertical_light.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
+      if vertical_light.path.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
-            // color_choice: diagram.light_color_choice,
+            // color_choice: diagram.light_color_choice.clone(),
             drawable: OneOfDrawable::Lines(vertical_light),
          };
          diagram.drawables.push(qualified_drawable);
@@ -287,7 +293,7 @@ impl AxesSpec {
          };
          let mut horizontal_numbering = TextDrawable {
             size_choice: TextSizeChoice::Small,
-            color_choice: diagram.text_color_choice,
+            color_choice: diagram.text_color_choice.clone(),
             offset_choice: TextOffsetChoice::Diagram,
             anchor_choice: TextAnchorChoice::ThreeByThree(
                anchor_horizontal,
@@ -297,7 +303,7 @@ impl AxesSpec {
          };
          let mut vertical_numbering = TextDrawable {
             size_choice: TextSizeChoice::Small,
-            color_choice: diagram.text_color_choice,
+            color_choice: diagram.text_color_choice.clone(),
             offset_choice: TextOffsetChoice::Diagram,
             anchor_choice: TextAnchorChoice::ThreeByThree(
                TextAnchorHorizontal::Right,
@@ -355,7 +361,7 @@ impl AxesSpec {
          if !horizontal_numbering.texts.is_empty() {
             let qualified_drawable = QualifiedDrawable {
                layer: axes_layer,
-               // color_choice: diagram.text_color_choice,
+               // color_choice: diagram.text_color_choice.clone(),
                drawable: OneOfDrawable::Text(horizontal_numbering),
             };
             diagram.drawables.push(qualified_drawable);
@@ -364,7 +370,7 @@ impl AxesSpec {
          if !vertical_numbering.texts.is_empty() {
             let qualified_drawable = QualifiedDrawable {
                layer: axes_layer,
-               // color_choice: diagram.text_color_choice,
+               // color_choice: diagram.text_color_choice.clone(),
                drawable: OneOfDrawable::Text(vertical_numbering),
             };
             diagram.drawables.push(qualified_drawable);

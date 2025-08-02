@@ -24,6 +24,7 @@ use pangocairo::functions::show_layout as pangocairo_show_layout;
 use std::error::Error;
 use std::f64::consts::PI;
 use std::io::Write;
+use zvx_base::{ArcPath, CubicPath, PolylinePath};
 use zvx_docagram::diagram::SpartanDiagram;
 use zvx_drawable::choices::{
    CanvasLayout, ColorChoice, ContinuationChoice, DiagramChoices, LineChoice, LineClosureChoice,
@@ -31,9 +32,8 @@ use zvx_drawable::choices::{
    TextOffsetChoice, TextSizeChoice,
 };
 use zvx_drawable::kinds::{
-   ArcPath, CirclesDrawable, CubicPath, LinesDrawable, OneOfDrawable, OneOfSegment, PathChoices,
-   PointsDrawable, PolylinePath, QualifiedDrawable, SegmentChoices, SegmentSequence, TextDrawable,
-   TextSingle,
+   CirclesSet, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable,
+   QualifiedDrawable, SegmentChoices, SegmentSequence, Strokeable, TextDrawable, TextSingle,
 };
 
 #[derive(Debug, Default)]
@@ -204,7 +204,7 @@ impl CairoSpartanRender {
       &self,
       context: &CairoContext,
       _diagram_choices: &DiagramChoices,
-      color: ColorChoice,
+      color: &ColorChoice,
    ) {
       let (r, g, b) = color.to_rgb();
       context.set_source_rgb(r, g, b);
@@ -223,29 +223,29 @@ impl CairoSpartanRender {
    fn draw_lines_set(
       &mut self,
       context: &CairoContext,
-      drawable: &LinesDrawable,
+      drawable: &Strokeable<LinesSetSet>,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(context, drawable.path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, drawable.path_choices.color);
+      self.set_color(context, diagram_choices, &drawable.path_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
-      for i in 0..drawable.coords.len() {
-         if let Some(offset_vector) = &drawable.offsets {
+      for i in 0..drawable.path.coords.len() {
+         if let Some(offset_vector) = &drawable.path.offsets {
             for offset in offset_vector {
                context.move_to(
-                  drawable.coords[i].0[0] + offset[0],
-                  drawable.coords[i].0[1] + offset[1],
+                  drawable.path.coords[i].0[0] + offset[0],
+                  drawable.path.coords[i].0[1] + offset[1],
                );
                context.line_to(
-                  drawable.coords[i].1[0] + offset[0],
-                  drawable.coords[i].1[1] + offset[1],
+                  drawable.path.coords[i].1[0] + offset[0],
+                  drawable.path.coords[i].1[1] + offset[1],
                );
             }
          } else {
-            context.move_to(drawable.coords[i].0[0], drawable.coords[i].0[1]);
-            context.line_to(drawable.coords[i].1[0], drawable.coords[i].1[1]);
+            context.move_to(drawable.path.coords[i].0[0], drawable.path.coords[i].0[1]);
+            context.line_to(drawable.path.coords[i].1[0], drawable.path.coords[i].1[1]);
          }
       }
       self.restore_transform(context);
@@ -260,7 +260,7 @@ impl CairoSpartanRender {
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(context, LineChoice::Ordinary, diagram_choices);
-      self.set_color(context, diagram_choices, drawable.color_choice);
+      self.set_color(context, diagram_choices, &drawable.color_choice);
 
       match drawable.point_choice {
          PointChoice::Circle => {
@@ -320,13 +320,13 @@ impl CairoSpartanRender {
       &mut self,
       context: &CairoContext,
       path: &ArcPath,
-      path_choices: PathChoices,
-      segment_choices: SegmentChoices,
+      path_choices: &PathChoices,
+      segment_choices: &SegmentChoices,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(context, path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, path_choices.color);
+      self.set_color(context, diagram_choices, &path_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
 
@@ -365,20 +365,27 @@ impl CairoSpartanRender {
       &mut self,
       context: &CairoContext,
       path: &CubicPath,
-      path_choices: PathChoices,
-      segment_choices: SegmentChoices,
+      path_choices: &PathChoices,
+      segment_choices: &SegmentChoices,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(context, path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, path_choices.color);
+      self.set_color(context, diagram_choices, &path_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
 
       if segment_choices.continuation == ContinuationChoice::Starts {
-         context.move_to(path[0][0], path[0][1]);
+         context.move_to(path.p[0][0], path.p[0][1]);
       }
-      context.curve_to(path[1][0], path[1][1], path[2][0], path[2][1], path[3][0], path[3][1]);
+      context.curve_to(
+         path.p[1][0],
+         path.p[1][1],
+         path.p[2][0],
+         path.p[2][1],
+         path.p[3][0],
+         path.p[3][1],
+      );
       match segment_choices.closure {
          LineClosureChoice::Closes => {
             context.close_path();
@@ -508,7 +515,7 @@ impl CairoSpartanRender {
          f64,
       ) = Self::layout_text(cairo_context, text_context, single_text, drawable, diagram_choices);
 
-      self.set_color(cairo_context, diagram_choices, drawable.color_choice);
+      self.set_color(cairo_context, diagram_choices, &drawable.color_choice);
 
       self.save_set_path_transform(canvas_layout, cairo_context);
       let (tx, ty) = cairo_context.user_to_device(single_text.location[0], single_text.location[1]);
@@ -551,13 +558,13 @@ impl CairoSpartanRender {
       &mut self,
       context: &CairoContext,
       locations: &PolylinePath,
-      path_choices: PathChoices,
-      segment_choices: SegmentChoices,
+      path_choices: &PathChoices,
+      segment_choices: &SegmentChoices,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(context, path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, path_choices.color);
+      self.set_color(context, diagram_choices, &path_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
       assert!(!locations.is_empty());
@@ -586,17 +593,17 @@ impl CairoSpartanRender {
    fn draw_circles_set(
       &mut self,
       context: &CairoContext,
-      drawable: &CirclesDrawable,
+      drawable: &Strokeable<CirclesSet>,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(context, drawable.path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, drawable.path_choices.color);
+      self.set_color(context, diagram_choices, &drawable.path_choices.color);
 
       self.save_set_path_transform(canvas_layout, context);
-      for center in &drawable.centers {
+      for center in &drawable.path.centers {
          let (cx, cy) = (center[0], center[1]);
-         let r = drawable.radius;
+         let r = drawable.path.radius;
 
          context.move_to(cx + r, cy);
          context.arc(cx, cy, r, 0.0 * PI, 2.0 * PI);
@@ -613,25 +620,27 @@ impl CairoSpartanRender {
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      let mut segment_choices: SegmentChoices =
-         SegmentChoices { closure: LineClosureChoice::Unfinished, ..Default::default() };
-
+      let mut line_closure_choice = LineClosureChoice::Unfinished;
+      let mut line_continuation_choice = ContinuationChoice::Starts;
       for i in 0..segment_sequence.segments.len() {
          let segment = &segment_sequence.segments[i];
          if i == (segment_sequence.segments.len() - 1) {
             if segment_sequence.completion == PathCompletion::Closed {
-               segment_choices.closure = LineClosureChoice::Closes;
+               line_closure_choice = LineClosureChoice::Closes;
             } else {
-               segment_choices.closure = LineClosureChoice::OpenEnd;
+               line_closure_choice = LineClosureChoice::OpenEnd;
             }
          }
+         let segment_choices: SegmentChoices =
+            SegmentChoices { closure: line_closure_choice, continuation: line_continuation_choice };
+
          match &segment {
             OneOfSegment::Arc(path) => {
                self.draw_arc(
                   context,
                   path,
-                  segment_sequence.path_choices,
-                  segment_choices,
+                  &segment_sequence.path_choices,
+                  &segment_choices,
                   canvas_layout,
                   diagram_choices,
                );
@@ -640,8 +649,8 @@ impl CairoSpartanRender {
                self.draw_cubic(
                   context,
                   path,
-                  segment_sequence.path_choices,
-                  segment_choices,
+                  &segment_sequence.path_choices,
+                  &segment_choices,
                   canvas_layout,
                   diagram_choices,
                );
@@ -650,8 +659,8 @@ impl CairoSpartanRender {
                self.draw_polyline(
                   context,
                   path,
-                  segment_sequence.path_choices,
-                  segment_choices,
+                  &segment_sequence.path_choices,
+                  &segment_choices,
                   canvas_layout,
                   diagram_choices,
                );
@@ -659,7 +668,7 @@ impl CairoSpartanRender {
             OneOfSegment::Nothing => {}
          }
 
-         segment_choices.continuation = ContinuationChoice::Continues;
+         line_continuation_choice = ContinuationChoice::Continues;
       }
    }
 
@@ -685,8 +694,8 @@ impl CairoSpartanRender {
                self.draw_arc(
                   context,
                   &drawable.path,
-                  drawable.path_choices,
-                  segment_choices,
+                  &drawable.path_choices,
+                  &segment_choices,
                   canvas_layout,
                   diagram_choices,
                );
@@ -695,8 +704,8 @@ impl CairoSpartanRender {
                self.draw_cubic(
                   context,
                   &drawable.path,
-                  drawable.path_choices,
-                  segment_choices,
+                  &drawable.path_choices,
+                  &segment_choices,
                   canvas_layout,
                   diagram_choices,
                );
@@ -714,8 +723,8 @@ impl CairoSpartanRender {
                self.draw_polyline(
                   context,
                   &drawable.path,
-                  drawable.path_choices,
-                  segment_choices,
+                  &drawable.path_choices,
+                  &segment_choices,
                   canvas_layout,
                   diagram_choices,
                );

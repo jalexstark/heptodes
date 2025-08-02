@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use zvx_drawable::choices::CanvasLayout;
-use zvx_drawable::choices::ColorChoice;
-use zvx_drawable::choices::DiagramChoices;
-use zvx_drawable::kinds::QualifiedDrawable;
-use zvx_base::is_default;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
+use zvx_base::is_default;
+use zvx_drawable::choices::{CanvasLayout, ColorChoice, DiagramChoices};
+use zvx_drawable::kinds::QualifiedDrawable;
 
 #[derive(Debug, Default)]
 enum SpartanTypestate {
@@ -387,11 +385,11 @@ impl SpartanDiagram {
       self.prep.diagram_choices.annotation_area_scale = self.annotation_area_scale;
 
       if self.light_color_choice == ColorChoice::default() {
-         self.light_color_choice = self.base_color_choice;
+         self.light_color_choice = self.base_color_choice.clone();
       }
 
       if self.text_color_choice == ColorChoice::default() {
-         self.text_color_choice = self.base_color_choice;
+         self.text_color_choice = self.base_color_choice.clone();
       }
 
       self.typestate = SpartanTypestate::Ready;

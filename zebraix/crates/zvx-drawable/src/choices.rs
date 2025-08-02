@@ -96,7 +96,7 @@ pub enum TextOffsetChoice {
    Diagram,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq)]
 pub enum TextAnchorChoice {
    #[default]
    Centered, // Really undesirable, but cleanly handled as default sub-field.
@@ -105,7 +105,9 @@ pub enum TextAnchorChoice {
 
 // This is really too high-level. Colour palettes will move higher up, and the lower level will
 // be a choice between RGB and CMYK, with conversion.
-#[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
+//
+// Although trivial now, we do not derive Copy because it may grow in future.
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq)]
 pub enum ColorChoice {
    #[default]
    DefaultBlack,
