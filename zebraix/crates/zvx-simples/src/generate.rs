@@ -384,7 +384,7 @@ pub fn draw_sample_cubilinear(
          t.push(f64::from(*item).mul_add(scale, offset));
       }
 
-      let pattern_vec = four_point.eval(&t);
+      let pattern_vec = four_point.eval_with_bilinear(&t);
 
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.points_layer,
