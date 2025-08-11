@@ -1103,7 +1103,7 @@ fn spartan_sizing_o_test() {
       cairo_spartan.spartan.prep.axes_range,
    );
 
-   managed_curve.apply_bilinear(sigma, 1.0).unwrap();
+   managed_curve.apply_bilinear((sigma, 1.0)).unwrap();
 
    draw_sample_rat_quad(
       &managed_curve,
@@ -1164,7 +1164,7 @@ fn spartan_sizing_o1_test() {
    // Doesn't make much sense. Remove.
    // TODO: Consider removing or reworking this test, likely redundant.
    // managed_curve.raise_to_symmetric_range().unwrap();
-   managed_curve.apply_bilinear(sigma * 0.3, 0.3).unwrap();
+   managed_curve.apply_bilinear((sigma * 0.3, 0.3)).unwrap();
 
    draw_sample_rat_quad(
       &managed_curve,
@@ -1224,6 +1224,7 @@ fn spartan_sizing_o2_test() {
    // TODO: Consider removing or reworking this test, likely redundant.
    // managed_curve.raise_to_symmetric_range().unwrap();
    managed_curve.raise_to_regularized_symmetric().unwrap();
+   managed_curve.patch_up_poly_symmetric();
 
    draw_sample_rat_quad(
       &managed_curve,
@@ -1450,7 +1451,7 @@ fn spartan_sizing_q_test() {
 
    let mut managed_curve_b = managed_curve_a.clone();
    managed_curve_b.displace([2.0, 0.0]);
-   managed_curve_b.bilinear_transform(sigma);
+   managed_curve_b.bilinear_transform((sigma, 1.0));
    draw_sample_cubilinear(
       &managed_curve_b,
       &mut cairo_spartan.spartan,
@@ -1479,8 +1480,8 @@ fn spartan_sizing_q_test() {
 
    let mut managed_curve_c = managed_curve_a.clone();
    managed_curve_c.displace([4.0, 0.0]);
-   managed_curve_c.bilinear_transform(sigma);
-   managed_curve_c.adjust_range([t_range[0] - 1.5, t_range[1] + 4.5]);
+   managed_curve_c.bilinear_transform((sigma, 1.0));
+   managed_curve_c.raw_change_range([t_range[0] - 1.5, t_range[1] + 4.5]);
    draw_sample_cubilinear(
       &managed_curve_c,
       &mut cairo_spartan.spartan,

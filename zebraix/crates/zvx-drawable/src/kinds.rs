@@ -129,8 +129,8 @@ pub enum OneOfDrawable {
    Cubic(Strokeable<CubicPath>),
    Polyline(Strokeable<PolylinePath>),
    Lines(Strokeable<LinesSetSet>),
-   Points(PointsDrawable),
    Circles(Strokeable<CirclesSet>),
+   Points(PointsDrawable),
    Text(TextDrawable),
    SegmentSequence(SegmentSequence),
 }

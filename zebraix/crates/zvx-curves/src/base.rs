@@ -128,13 +128,13 @@ pub struct MidDiffCubiLinearRepr {
 //    MidDiff(MidDiffCubiLinearRepr),
 // }
 
-#[derive(Debug, Serialize, Default, PartialEq, Clone)]
-pub enum BaseRatQuad {
-   #[default]
-   Nothing,
-   RationalPoly(Curve<RatQuadPolyPath>),
-   RegularizedSymmetric(Curve<RegularizedRatQuadPath>), // SymmetricRange with zero middle denominator coefficient.
-}
+// #[derive(Debug, Serialize, Default, PartialEq, Clone)]
+// enum BaseRatQuad {
+//    #[default]
+//    Nothing,
+//    RationalPoly(Curve<RatQuadPolyPath>),
+//    RegularizedSymmetricXxx(Curve<RegularizedRatQuadPath>), // SymmetricRange with zero middle denominator coefficient.
+// }
 
 #[derive(Serialize, Debug, Default, Clone, PartialEq)]
 pub enum SpecifiedRatQuad {
@@ -211,7 +211,9 @@ impl Curve<RatQuadPolyPath> {
    #[must_use]
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::many_single_char_names)]
-   pub fn rq_apply_bilinear(&self, sigma_n: f64, sigma_d: f64) -> Self {
+   pub fn rq_apply_bilinear(&self, sigma_ratio: (f64, f64)) -> Self {
+      let sigma_n = sigma_ratio.0;
+      let sigma_d = sigma_ratio.1;
       let p = -self.path.r[0];
       let q = self.path.r[1];
 
@@ -273,6 +275,53 @@ impl Curve<RatQuadPolyPath> {
 
       let r = [-r_half, r_half];
       Self { path: RatQuadPolyPath { r, a, b, c }, sigma: self.sigma }
+   }
+
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::missing_errors_doc)]
+   #[allow(clippy::many_single_char_names)]
+   // Weighted is stored in same struct as `Curve<RatQuadPolyPath>`, but is really a different
+   // representation of a rational quadratic.
+   pub fn create_from_weighted(weighted: &Self) -> Result<Self, &'static str> {
+      // Get from rat_poly.sigma once confirmed working.
+      let sigma = 1.0;
+      let v = weighted.path.r[0];
+      let w = weighted.path.r[1];
+      let a;
+      let b;
+      let c;
+      {
+         let h0 = weighted.path.a[0];
+         let h1 = sigma * weighted.path.a[1];
+         let h2 = sigma * sigma * weighted.path.a[2];
+         a = [
+            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+            h0 - 2.0 * h1 + h2,
+         ];
+      }
+      {
+         let h0 = weighted.path.b[0];
+         let h1 = sigma * weighted.path.b[1];
+         let h2 = sigma * sigma * weighted.path.b[2];
+         b = [
+            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+            h0 - 2.0 * h1 + h2,
+         ];
+      }
+      {
+         let h0 = weighted.path.c[0];
+         let h1 = sigma * weighted.path.c[1];
+         let h2 = sigma * sigma * weighted.path.c[2];
+         c = [
+            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
+            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
+            h0 - 2.0 * h1 + h2,
+         ];
+      }
+
+      Ok(Self { path: RatQuadPolyPath { r: weighted.path.r, a, b, c }, sigma: weighted.sigma })
    }
 }
 
@@ -437,6 +486,38 @@ impl Curve<RegularizedRatQuadPath> {
 
    //    ret_val
    // }
+
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::missing_panics_doc)]
+   #[allow(clippy::missing_errors_doc)]
+   pub fn create_by_raising_to_regularized_symmetric(
+      rat_poly_extracted: &Curve<RatQuadPolyPath>,
+   ) -> Result<Self, &'static str> {
+      let rat_poly = rat_poly_extracted.figure_symmetric_range_rat_quad();
+
+      let r_both = rat_poly.path.r[1];
+      let a_s = rat_poly.path.a[2] * r_both * r_both + rat_poly.path.a[0];
+      // let a_d = rat_poly.path.a[2] * r * r - rat_poly.path.a[0];
+      let combo_s = a_s + rat_poly.path.a[1] * r_both;
+      let combo_d = a_s - rat_poly.path.a[1] * r_both;
+
+      let sigma_ratio = (combo_d.abs().sqrt(), combo_s.abs().sqrt());
+
+      let scratchy_rat_poly = rat_poly.rq_apply_bilinear(sigma_ratio);
+
+      let check_poly = scratchy_rat_poly;
+      assert!(check_poly.path.a[1].abs() < 0.001);
+      Ok(Self {
+         path: RegularizedRatQuadPath {
+            range_bound: check_poly.path.r[1],
+            a_0: check_poly.path.a[0],
+            a_2: check_poly.path.a[2],
+            b: check_poly.path.b,
+            c: check_poly.path.c,
+         },
+         sigma: check_poly.sigma,
+      })
+   }
 }
 
 impl RatQuadOoeSubclassed {
@@ -547,181 +628,14 @@ impl RatQuadOoeSubclassed {
    }
 }
 
-impl BaseRatQuad {
-   #[allow(clippy::match_same_arms)]
-   #[allow(clippy::missing_errors_doc)]
-   pub fn get_poly_xxx(&self) -> Result<Curve<RatQuadPolyPath>, &'static str> {
-      match self {
-         Self::RationalPoly(repr) => Ok(repr.clone()),
-         Self::RegularizedSymmetric(symm) => Ok(Curve::<RatQuadPolyPath> {
-            path: RatQuadPolyPath {
-               r: [-symm.path.range_bound, symm.path.range_bound],
-               a: [symm.path.a_0, 0.0, symm.path.a_2],
-               b: symm.path.b,
-               c: symm.path.c,
-            },
-            sigma: symm.sigma,
-         }),
-         Self::Nothing => Err("QR not  proper rational poly."),
-      }
+impl CurveEval for Curve<CubicPath> {
+   fn eval_no_bilinear(&self, _t: &[f64]) -> Vec<[f64; 2]> {
+      unimplemented!("It takes time.");
+      // self.path.eval_no_bilinear(t)
    }
-
-   #[must_use]
-   #[allow(clippy::missing_panics_doc)]
-   pub fn eval_quad(&self, t: &[f64]) -> Vec<[f64; 2]> {
-      let ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
-
-      assert!(matches!(self, Self::RationalPoly { .. }));
-      if let Self::RationalPoly(rat_poly) = self {
-         rat_poly.eval_no_bilinear(t)
-      } else {
-         ret_val
-      }
-   }
-
-   #[inline]
-   // Applies bilinear transformation with factor sigma, preserving the range.
-   #[allow(clippy::suboptimal_flops)]
-   #[allow(clippy::missing_errors_doc)]
-   #[allow(clippy::missing_panics_doc)]
-   pub fn apply_bilinear(&mut self, sigma_n: f64, sigma_d: f64) -> Result<(), &'static str> {
-      match self {
-         Self::Nothing => unimplemented!("Nothing form is invalid from construction."),
-         Self::RegularizedSymmetric(_) => {
-            Err("Applying bilinear to regularized will downgrade it.")
-         }
-         Self::RationalPoly(rat_poly) => {
-            *self = Self::RationalPoly(rat_poly.rq_apply_bilinear(sigma_n, sigma_d));
-            Ok(())
-         }
-      }
-   }
-
-   #[allow(clippy::suboptimal_flops)]
-   #[allow(clippy::missing_panics_doc)]
-   #[allow(clippy::missing_errors_doc)]
-   pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
-      if let Self::RationalPoly(rat_poly_extracted) = self {
-         let rat_poly = rat_poly_extracted.figure_symmetric_range_rat_quad();
-
-         let r_both = rat_poly.path.r[1];
-         let a_s = rat_poly.path.a[2] * r_both * r_both + rat_poly.path.a[0];
-         // let a_d = rat_poly.path.a[2] * r * r - rat_poly.path.a[0];
-         let combo_s = a_s + rat_poly.path.a[1] * r_both;
-         let combo_d = a_s - rat_poly.path.a[1] * r_both;
-
-         let sigma_n = combo_d.abs().sqrt();
-         let sigma_d = combo_s.abs().sqrt();
-
-         *self = Self::RationalPoly(rat_poly);
-         self.apply_bilinear(sigma_n, sigma_d)?;
-
-         if let Self::RationalPoly(check_poly) = self {
-            assert!(check_poly.path.a[1].abs() < 0.001);
-            *self = Self::RegularizedSymmetric(Curve::<RegularizedRatQuadPath> {
-               path: RegularizedRatQuadPath {
-                  range_bound: check_poly.path.r[1],
-                  a_0: check_poly.path.a[0],
-                  a_2: check_poly.path.a[2],
-                  b: check_poly.path.b,
-                  c: check_poly.path.c,
-               },
-               sigma: check_poly.sigma,
-            });
-         } else {
-            panic!("Unreachable");
-         }
-
-         Ok(())
-      } else {
-         Err("Can only raise from rat-poly to regularized-symmetric form.")
-      }
-   }
-
-   // Only used at present to characterize for case of OOE subtype parabola.
-   #[inline]
-   #[must_use]
-   #[allow(clippy::missing_panics_doc)]
-   pub fn characterize_endpoints(&self) -> ([f64; 4], [f64; 4]) {
-      let x = [0.0; 4];
-      let y = [0.0; 4];
-
-      assert!(matches!(self, Self::RationalPoly { .. }));
-      if let Self::RationalPoly(rat_poly) = self {
-         rat_poly.rq_characterize_endpoints()
-      } else {
-         (x, y)
-      }
-   }
-
-   #[allow(clippy::suboptimal_flops)]
-   #[allow(clippy::missing_errors_doc)]
-   #[allow(clippy::many_single_char_names)]
-   // Weighted is stored in same struct as `Curve<RatQuadPolyPath>`, but is really a different
-   // representation of a rational quadratic.
-   pub fn create_from_weighted(weighted: &Curve<RatQuadPolyPath>) -> Result<Self, &'static str> {
-      // Get from rat_poly.sigma once confirmed working.
-      let sigma = 1.0;
-      let v = weighted.path.r[0];
-      let w = weighted.path.r[1];
-      let a;
-      let b;
-      let c;
-      {
-         let h0 = weighted.path.a[0];
-         let h1 = sigma * weighted.path.a[1];
-         let h2 = sigma * sigma * weighted.path.a[2];
-         a = [
-            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
-            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
-            h0 - 2.0 * h1 + h2,
-         ];
-      }
-      {
-         let h0 = weighted.path.b[0];
-         let h1 = sigma * weighted.path.b[1];
-         let h2 = sigma * sigma * weighted.path.b[2];
-         b = [
-            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
-            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
-            h0 - 2.0 * h1 + h2,
-         ];
-      }
-      {
-         let h0 = weighted.path.c[0];
-         let h1 = sigma * weighted.path.c[1];
-         let h2 = sigma * sigma * weighted.path.c[2];
-         c = [
-            w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
-            2.0 * (-w * h0 + (w + v) * h1 - v * h2),
-            h0 - 2.0 * h1 + h2,
-         ];
-      }
-
-      Ok(Self::RationalPoly(Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath { r: weighted.path.r, a, b, c },
-         sigma: weighted.sigma,
-      }))
-   }
-}
-
-#[allow(clippy::missing_errors_doc)]
-impl Curve<CubicPath> {
-   #[inline]
-   #[allow(clippy::many_single_char_names)]
-   #[allow(clippy::suboptimal_flops)]
-   #[must_use]
-   pub fn eval_part(b: f64, a: f64, coeffs: &[f64; 4], multiplier: f64) -> f64 {
-      multiplier
-         * (b * b * b * coeffs[0]
-            + 3.0 * b * b * a * coeffs[1]
-            + 3.0 * b * a * a * coeffs[2]
-            + a * a * a * coeffs[3])
-   }
-
    #[must_use]
    #[allow(clippy::many_single_char_names)]
-   pub fn eval(&self, t: &[f64]) -> Vec<[f64; 2]> {
+   fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
       for item in t {
          let a = self.sigma * (*item - self.path.r[0]);
@@ -735,6 +649,21 @@ impl Curve<CubicPath> {
          ret_val.push([x, y]);
       }
       ret_val
+   }
+}
+
+#[allow(clippy::missing_errors_doc)]
+impl Curve<CubicPath> {
+   #[inline]
+   #[allow(clippy::many_single_char_names)]
+   #[allow(clippy::suboptimal_flops)]
+   #[must_use]
+   fn eval_part(b: f64, a: f64, coeffs: &[f64; 4], multiplier: f64) -> f64 {
+      multiplier
+         * (b * b * b * coeffs[0]
+            + 3.0 * b * b * a * coeffs[1]
+            + 3.0 * b * a * a * coeffs[2]
+            + a * a * a * coeffs[3])
    }
 
    #[allow(clippy::similar_names)]
@@ -812,11 +741,11 @@ impl Curve<CubicPath> {
       self.path.p[3][1] += d[1];
    }
 
-   pub fn bilinear_transform(&mut self, sigma: f64) {
-      self.sigma *= sigma;
+   pub fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
+      self.sigma *= sigma_ratio.0 / sigma_ratio.1;
    }
 
-   pub fn adjust_range(&mut self, new_range: [f64; 2]) {
+   pub fn raw_change_range(&mut self, new_range: [f64; 2]) {
       self.path.r = new_range;
    }
 }
