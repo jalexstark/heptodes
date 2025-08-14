@@ -259,6 +259,7 @@ impl SpartanDiagram {
 
    #[allow(clippy::too_many_lines)]
    #[allow(clippy::missing_panics_doc)]
+   #[allow(clippy::suboptimal_flops)]
    pub fn prepare(&mut self) {
       assert!(matches!(self.typestate, SpartanTypestate::Unready));
 
@@ -348,16 +349,16 @@ impl SpartanDiagram {
 
       self.prep.canvas_layout.scale = [
          self.prep.canvas_layout.canvas_size[0]
-            / 2.0f64.mul_add(width_adjustment, total_width_range),
+            / width_adjustment.mul_add(2.0f64, total_width_range),
          self.prep.canvas_layout.canvas_size[1]
-            / 2.0f64.mul_add(height_adjustment, total_height_range),
+            / height_adjustment.mul_add(2.0f64, total_height_range),
       ];
 
       self.prep.canvas_layout.offset = [
          self.prep.canvas_layout.scale[0]
-            * (x_max - x_min).mul_add(left_padding, -x_min + width_adjustment),
+            * ((x_max - x_min) * left_padding - x_min + width_adjustment),
          self.prep.canvas_layout.scale[1]
-            * (y_max - y_min).mul_add(bottom_padding, -y_min + height_adjustment),
+            * ((y_max - y_min) * bottom_padding - y_min + height_adjustment),
       ];
 
       let mut scale_content = self.scale_content;

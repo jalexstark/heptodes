@@ -21,6 +21,43 @@ const fn scale_3(x: &[f64; 3], s: f64) -> [f64; 3] {
    [s * x[0], s * x[1], s * x[2]]
 }
 
+// const fn displace_3(p: &mut [[f64; 2]; 3], d: [f64; 2]) {
+//    p[0][0] += d[0];
+//    p[1][0] += d[0];
+//    p[2][0] += d[0];
+//    p[0][1] += d[1];
+//    p[1][1] += d[1];
+//    p[2][1] += d[1];
+//}
+
+const fn displace_4(p: &mut [[f64; 2]; 4], d: [f64; 2]) {
+   p[0][0] += d[0];
+   p[1][0] += d[0];
+   p[2][0] += d[0];
+   p[3][0] += d[0];
+   p[0][1] += d[1];
+   p[1][1] += d[1];
+   p[2][1] += d[1];
+   p[3][1] += d[1];
+}
+
+// // Update by adding 3x1 vector multiplied by 2-D point.
+// const fn mul_add_3_1_2(p: &mut [[f64; 2]; 3], v: &[f64; 3], m: [f64; 2]) {
+//    p[0][0] += v[0] * m[0];
+//    p[1][0] += v[1] * m[0];
+//    p[2][0] += v[2] * m[0];
+//    p[0][1] += v[0] * m[1];
+//    p[1][1] += v[1] * m[1];
+//    p[2][1] += v[2] * m[1];
+// }
+
+// Update by adding 3x1 vector multiplied by scalar.
+const fn mul_add_3_1_1(p: &mut [f64; 3], v: &[f64; 3], m: f64) {
+   p[0] += v[0] * m;
+   p[1] += v[1] * m;
+   p[2] += v[2] * m;
+}
+
 // Sigma is a bilinear transformation of `t` that does not change the end-points of the
 // curve. Thus conversion to a path does not generally need to involve sigma.
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone)]
@@ -34,6 +71,29 @@ pub struct Curve<T: Default + PartialEq> {
 pub trait CurveEval {
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
+
+   // Positions of start and finish, and and velocity at end points.
+   //
+   // The velocity vectors are not adjusted for the span of the range. Divide by that span to
+   // get the velocity with respect to the linear range traversal.
+   //
+   // The velocities are not adjusted for sigma. Multiply the start velocity by sigma and divide
+   // the finish velocity by sigma to adjust.
+   fn characterize_endpoints(&self) -> ([[f64; 2]; 2], [[f64; 2]; 2]);
+}
+
+pub trait CurveTransform {
+   fn displace(&mut self, d: [f64; 2]);
+
+   fn bilinear_transform(&mut self, sigma_ratio: (f64, f64));
+
+   // TODO: Probably better style to use tuple for range.
+   //
+   // Redefine current range as new range, not changing the curve.
+   fn raw_change_range(&mut self, new_range: [f64; 2]);
+
+   // Sub- or super-select range, based on current range.
+   fn select_range(&mut self, new_range: [f64; 2]);
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -151,10 +211,10 @@ impl TEval for RatQuadPolyPath {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
 
       for item in t {
-         let denom_reciprocal = 1.0 / self.a[2].mul_add(*item, self.a[1]).mul_add(*item, self.a[0]);
+         let denom_reciprocal = 1.0 / ((self.a[2] * *item + self.a[1]) * *item + self.a[0]);
          ret_val.push([
-            self.b[2].mul_add(*item, self.b[1]).mul_add(*item, self.b[0]) * denom_reciprocal,
-            self.c[2].mul_add(*item, self.c[1]).mul_add(*item, self.c[0]) * denom_reciprocal,
+            ((self.b[2] * *item + self.b[1]) * *item + self.b[0]) * denom_reciprocal,
+            ((self.c[2] * *item + self.c[1]) * *item + self.c[0]) * denom_reciprocal,
          ]);
       }
 
@@ -163,6 +223,7 @@ impl TEval for RatQuadPolyPath {
 }
 
 impl Curve<RatQuadPolyPath> {
+   // Internal bilinear transform.
    #[must_use]
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::many_single_char_names)]
@@ -208,6 +269,7 @@ impl Curve<RatQuadPolyPath> {
       }
    }
 
+   // Internal bilinear transform.
    #[must_use]
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::many_single_char_names)]
@@ -223,29 +285,6 @@ impl Curve<RatQuadPolyPath> {
          sigma_n - sigma_d,
          sigma_d * q + sigma_n * p,
       )
-   }
-
-   // Only used at present to characterize for case of OOE subtype parabola.
-   #[inline]
-   #[must_use]
-   pub fn rq_characterize_endpoints(&self) -> ([f64; 4], [f64; 4]) {
-      let mut x = [0.0; 4];
-      let mut y = [0.0; 4];
-
-      let speed_scale = self.path.r[1] - self.path.r[0];
-      for (outer, inner, t) in [(0, 1, self.path.r[0]), (3, 2, self.path.r[1])] {
-         let recip_a = 1.0 / self.path.a[2].mul_add(t, self.path.a[1]).mul_add(t, self.path.a[0]);
-         let b = self.path.b[2].mul_add(t, self.path.b[1]).mul_add(t, self.path.b[0]);
-         let c = self.path.c[2].mul_add(t, self.path.c[1]).mul_add(t, self.path.c[0]);
-         let da = self.path.a[2].mul_add(2.0 * t, self.path.a[1]) * speed_scale;
-         let db = self.path.b[2].mul_add(2.0 * t, self.path.b[1]) * speed_scale;
-         let dc = self.path.c[2].mul_add(2.0 * t, self.path.c[1]) * speed_scale;
-         x[outer] = b * recip_a;
-         y[outer] = c * recip_a;
-         x[inner] = (-b * da).mul_add(recip_a, db) * recip_a;
-         y[inner] = (-c * da).mul_add(recip_a, dc) * recip_a;
-      }
-      (x, y)
    }
 
    #[must_use]
@@ -331,8 +370,13 @@ impl CurveEval for Curve<HyperbolicPath> {
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       self.path.eval_no_bilinear(t)
    }
+
    fn eval_with_bilinear(&self, _t: &[f64]) -> Vec<[f64; 2]> {
       unimplemented!("It takes time.");
+   }
+
+   fn characterize_endpoints(&self) -> ([[f64; 2]; 2], [[f64; 2]; 2]) {
+      todo!();
    }
 }
 
@@ -343,8 +387,32 @@ impl CurveEval for Curve<RatQuadPolyPath> {
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       self.path.eval_no_bilinear(t)
    }
+
    fn eval_with_bilinear(&self, _t: &[f64]) -> Vec<[f64; 2]> {
       unimplemented!("It takes time.");
+   }
+
+   #[inline]
+   #[must_use]
+   #[allow(clippy::suboptimal_flops)]
+   fn characterize_endpoints(&self) -> ([[f64; 2]; 2], [[f64; 2]; 2]) {
+      let mut x = [0.0; 4];
+      let mut y = [0.0; 4];
+
+      let speed_scale = self.path.r[1] - self.path.r[0];
+      for (outer, inner, t) in [(0, 1, self.path.r[0]), (3, 2, self.path.r[1])] {
+         let recip_a = 1.0 / ((self.path.a[2] * t + self.path.a[1]) * t + self.path.a[0]);
+         let b = (self.path.b[2] * t + self.path.b[1]) * t + self.path.b[0];
+         let c = (self.path.c[2] * t + self.path.c[1]) * t + self.path.c[0];
+         let da = (self.path.a[2] * 2.0 * t + self.path.a[1]) * speed_scale;
+         let db = (self.path.b[2] * 2.0 * t + self.path.b[1]) * speed_scale;
+         let dc = (self.path.c[2] * 2.0 * t + self.path.c[1]) * speed_scale;
+         x[outer] = b * recip_a;
+         y[outer] = c * recip_a;
+         x[inner] = (-b * da).mul_add(recip_a, db) * recip_a;
+         y[inner] = ((-c * da) * recip_a + dc) * recip_a;
+      }
+      ([[x[0], y[0]], [x[3], y[3]]], [[x[1], y[1]], [x[2], y[2]]])
    }
 }
 
@@ -398,13 +466,13 @@ impl Curve<RegularizedRatQuadPath> {
    #[allow(clippy::suboptimal_flops)]
    #[must_use]
    pub fn convert_to_parabolic(&self) -> Curve<CubicPath> {
-      let (x, y) = Into::<Curve<RatQuadPolyPath>>::into(self).rq_characterize_endpoints();
+      let (ends, deltas) = Into::<Curve<RatQuadPolyPath>>::into(self).characterize_endpoints();
       let f = 1.0 / 3.0;
       let four_c = [
-         [x[0], y[0]],
-         [x[0] + f * x[1], y[0] + f * y[1]],
-         [x[3] - f * x[2], y[3] - f * y[2]],
-         [x[3], y[3]],
+         ends[0],
+         [ends[0][0] + f * deltas[0][0], ends[0][1] + f * deltas[0][1]],
+         [ends[1][0] - f * deltas[1][0], ends[1][1] - f * deltas[1][1]],
+         ends[1],
       ];
 
       // assert_eq!(self.range_bound, 0.0);
@@ -633,6 +701,7 @@ impl CurveEval for Curve<CubicPath> {
       unimplemented!("It takes time.");
       // self.path.eval_no_bilinear(t)
    }
+
    #[must_use]
    #[allow(clippy::many_single_char_names)]
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
@@ -650,6 +719,10 @@ impl CurveEval for Curve<CubicPath> {
       }
       ret_val
    }
+
+   fn characterize_endpoints(&self) -> ([[f64; 2]; 2], [[f64; 2]; 2]) {
+      todo!();
+   }
 }
 
 #[allow(clippy::missing_errors_doc)]
@@ -665,10 +738,24 @@ impl Curve<CubicPath> {
             + 3.0 * b * a * a * coeffs[2]
             + a * a * a * coeffs[3])
    }
+}
+
+impl CurveTransform for Curve<CubicPath> {
+   fn displace(&mut self, d: [f64; 2]) {
+      displace_4(&mut self.path.p, d);
+   }
+
+   fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
+      self.sigma *= sigma_ratio.0 / sigma_ratio.1;
+   }
+
+   fn raw_change_range(&mut self, new_range: [f64; 2]) {
+      self.path.r = new_range;
+   }
 
    #[allow(clippy::similar_names)]
    #[allow(clippy::suboptimal_flops)]
-   pub fn select_range(&mut self, new_range: [f64; 2]) {
+   fn select_range(&mut self, new_range: [f64; 2]) {
       let mut new_x = [0.0; 4];
       let mut new_y = [0.0; 4];
 
@@ -729,23 +816,24 @@ impl Curve<CubicPath> {
          [[new_x[0], new_y[0]], [new_x[1], new_y[1]], [new_x[2], new_y[2]], [new_x[3], new_y[3]]];
       self.path.r = new_range;
    }
+}
 
-   pub fn displace(&mut self, d: [f64; 2]) {
-      self.path.p[0][0] += d[0];
-      self.path.p[1][0] += d[0];
-      self.path.p[2][0] += d[0];
-      self.path.p[3][0] += d[0];
-      self.path.p[0][1] += d[1];
-      self.path.p[1][1] += d[1];
-      self.path.p[2][1] += d[1];
-      self.path.p[3][1] += d[1];
+impl CurveTransform for Curve<RatQuadPolyPath> {
+   // Not yet tested.
+   fn displace(&mut self, d: [f64; 2]) {
+      mul_add_3_1_1(&mut self.path.b, &self.path.a, d[0]);
+      mul_add_3_1_1(&mut self.path.c, &self.path.a, d[1]);
    }
 
-   pub fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
+   fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
       self.sigma *= sigma_ratio.0 / sigma_ratio.1;
    }
 
-   pub fn raw_change_range(&mut self, new_range: [f64; 2]) {
+   fn raw_change_range(&mut self, new_range: [f64; 2]) {
       self.path.r = new_range;
+   }
+
+   fn select_range(&mut self, _new_range: [f64; 2]) {
+      todo!();
    }
 }

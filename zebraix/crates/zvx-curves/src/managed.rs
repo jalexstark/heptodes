@@ -13,8 +13,8 @@
 // limitations under the License.
 
 use crate::base::{
-   Curve, FourPointRatQuad, RatQuadPolyPath, RegularizedRatQuadPath, SpecifiedRatQuad,
-   ThreePointAngleRepr,
+   Curve, CurveTransform, FourPointRatQuad, RatQuadPolyPath, RegularizedRatQuadPath,
+   SpecifiedRatQuad, ThreePointAngleRepr,
 };
 use crate::threes::RatQuadOoeSubclassed;
 use serde::Serialize;
