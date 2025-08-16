@@ -13,5 +13,15 @@
 // limitations under the License.
 
 pub mod base;
+pub mod cubic;
 pub mod managed;
+pub mod rat_quad;
 pub mod threes;
+
+pub use crate::base::{Curve, CurveEval, CurveTransform, ZebraixAngle};
+pub use crate::cubic::ManagedCubic;
+pub use crate::managed::ManagedRatQuad;
+pub use crate::rat_quad::{
+   FourPointRatQuad, RatQuadPolyPath, SpecifiedRatQuad, ThreePointAngleRepr,
+};
+pub use crate::threes::RatQuadOoeSubclassed;

@@ -17,23 +17,17 @@ use std::collections::VecDeque;
 use std::io::Write;
 use zvx_base::{CubicPath, PolylinePath};
 use zvx_cairo::render::CairoSpartanCombo;
-use zvx_curves::base::CurveEval;
-use zvx_curves::base::{
-   Curve, FourPointRatQuad, RatQuadPolyPath, ThreePointAngleRepr, ZebraixAngle,
-};
-use zvx_curves::managed::ManagedCubic;
 use zvx_curves::managed::ManagedRatQuad;
-use zvx_docagram::axes::AxesSpec;
-use zvx_docagram::axes::AxesStyle;
-use zvx_docagram::axes::AxisNumbering;
-use zvx_docagram::diagram::SizingScheme;
-use zvx_drawable::choices::{
-   ColorChoice, LineChoice, PathCompletion, PointChoice, TextAnchorChoice, TextAnchorHorizontal,
-   TextAnchorVertical, TextOffsetChoice, TextSizeChoice,
+use zvx_curves::{
+   Curve, CurveEval, FourPointRatQuad, ManagedCubic, RatQuadPolyPath, ThreePointAngleRepr,
+   ZebraixAngle,
 };
-use zvx_drawable::kinds::{
-   CirclesSet, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable,
-   QualifiedDrawable, SegmentSequence, Strokeable, TextDrawable, TextSingle,
+use zvx_docagram::{AxesSpec, AxesStyle, AxisNumbering, SizingScheme};
+use zvx_drawable::{
+   CirclesSet, ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices,
+   PathCompletion, PointChoice, PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable,
+   TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical, TextDrawable, TextOffsetChoice,
+   TextSingle, TextSizeChoice,
 };
 use zvx_golden::filtered::JsonGoldenTest;
 use zvx_golden::filtered::SvgGoldenTest;

@@ -14,3 +14,12 @@
 
 pub mod choices;
 pub mod kinds;
+
+pub use crate::choices::{
+   ColorChoice, LineChoice, PathCompletion, PointChoice, TextAnchorChoice, TextAnchorHorizontal,
+   TextAnchorVertical, TextOffsetChoice, TextSizeChoice,
+};
+pub use crate::kinds::{
+   CirclesSet, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable,
+   QualifiedDrawable, SegmentSequence, Strokeable, TextDrawable, TextSingle,
+};

@@ -15,19 +15,15 @@
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use zvx_base::{ArcPath, CubicPath, PolylinePath};
-use zvx_curves::base::Curve;
-use zvx_curves::base::CurveEval;
-use zvx_curves::base::{RatQuadPolyPath, RegularizedRatQuadPath, SpecifiedRatQuad};
-use zvx_curves::managed::ManagedCubic;
-use zvx_curves::managed::ManagedRatQuad;
+use zvx_curves::base::TEval;
 use zvx_curves::threes::OneThreePath;
-use zvx_curves::threes::RatQuadOoeSubclassed;
-use zvx_curves::threes::TEval;
+use zvx_curves::{
+   Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadPolyPath, SpecifiedRatQuad,
+};
 use zvx_docagram::diagram::SpartanDiagram;
-use zvx_drawable::choices::{ColorChoice, LineChoice, PathCompletion, PointChoice};
-use zvx_drawable::kinds::{
-   LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable, QualifiedDrawable,
-   SegmentSequence, Strokeable,
+use zvx_drawable::{
+   ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PathCompletion,
+   PointChoice, PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable,
 };
 
 const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
@@ -58,13 +54,11 @@ pub enum SampleOption {
 #[must_use]
 fn create_rat_quad_path(
    num_segments_hyperbolic: i32,
-   reg_symmetric: &Curve<RegularizedRatQuadPath>,
+   poly_curve: &Curve<RatQuadPolyPath>,
 ) -> OneOfSegment {
-   let ooe_rat_quad_extracted: RatQuadOoeSubclassed =
-      RatQuadOoeSubclassed::create_from_regularized(reg_symmetric, 0.01);
+   let one_of_three_paths = OneThreePath::create_from_ordinary(poly_curve, 0.01).unwrap();
 
-   let one_of_three_paths = ooe_rat_quad_extracted.convert_to_path();
-
+   // This should move to zvx-cairo.
    match one_of_three_paths {
       OneThreePath::Nothing => unimplemented!("Never should reach"),
       OneThreePath::Arc(arc_path) => OneOfSegment::Arc(arc_path),
@@ -88,13 +82,13 @@ fn create_rat_quad_path(
 
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
-pub fn push_rat_quad_drawable(
+fn push_rat_quad_drawable(
    spartan: &mut SpartanDiagram,
-   ooe_rat_quad: &Curve<RegularizedRatQuadPath>,
+   poly_curve: &Curve<RatQuadPolyPath>,
    path_choices: PathChoices,
    layer: i32,
 ) {
-   let one_of_path = create_rat_quad_path(spartan.num_segments_hyperbolic, ooe_rat_quad);
+   let one_of_path = create_rat_quad_path(spartan.num_segments_hyperbolic, poly_curve);
 
    match one_of_path {
       OneOfSegment::Arc(path) => {
@@ -286,8 +280,6 @@ pub fn draw_sample_rat_quad(
          }
 
          let mut pattern_vec = deprecated_rat_quad.eval_no_bilinear(&t);
-         // let regularized_rat_quad: &BaseRatQuad = managed_rat_quad.get_regularized_rat_quad();
-         // regularized_rat_quad = regularized_rat_quad.eval(&t);
 
          // // XXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -308,11 +300,10 @@ pub fn draw_sample_rat_quad(
             }),
          });
       } else {
-         let regularized_rat_quad: Curve<RegularizedRatQuadPath> =
-            managed_rat_quad.get_regularized_rat_quad();
+         let ordinary_rat_quad: &Curve<RatQuadPolyPath> = &managed_rat_quad.poly;
          push_rat_quad_drawable(
             spartan,
-            &regularized_rat_quad,
+            ordinary_rat_quad,
             PathChoices { color: color_choice.clone(), line_choice: curve_config.main_line_choice },
             curve_config.main_line_layer,
          );
@@ -436,10 +427,9 @@ pub fn draw_sample_segment_sequence(
          }
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
-            let regularized_rat_quad: Curve<RegularizedRatQuadPath> =
-               managed_rat_quad.get_regularized_rat_quad();
+            let ordinary_rat_quad: &Curve<RatQuadPolyPath> = &managed_rat_quad.poly;
             segments_paths
-               .push(create_rat_quad_path(spartan.num_segments_hyperbolic, &regularized_rat_quad));
+               .push(create_rat_quad_path(spartan.num_segments_hyperbolic, ordinary_rat_quad));
          }
          OneOfManagedSegment::Polyline(locations) => {
             segments_paths.push(OneOfSegment::Polyline(locations.clone()));
