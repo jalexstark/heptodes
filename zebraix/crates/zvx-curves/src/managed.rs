@@ -24,7 +24,6 @@ use zvx_base::CubicPath;
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
 pub struct ManagedRatQuad {
-   pub regular_rat_quad: Option<Curve<RegularizedRatQuadPath>>,
    pub poly: Curve<RatQuadPolyPath>,
    // How originally specified, FourPoint or ThreePointAngle, for plotting and diagnostics only.
    pub specified: SpecifiedRatQuad,
@@ -79,7 +78,6 @@ impl ManagedRatQuad {
          ..Default::default()
       };
       Self {
-         regular_rat_quad: None,
          poly: Curve::<RatQuadPolyPath>::create_from_weighted(&rat_quad).unwrap(),
          specified: SpecifiedRatQuad::FourPoint(four_points.clone()),
          canvas_range,
@@ -106,7 +104,6 @@ impl ManagedRatQuad {
          ..Default::default()
       };
       Ok(Self {
-         regular_rat_quad: None,
          poly: Curve::<RatQuadPolyPath>::create_from_weighted(&rat_quad).unwrap(),
          specified: SpecifiedRatQuad::ThreePointAngle(three_point_rat_quad.clone()),
          canvas_range,
@@ -116,8 +113,9 @@ impl ManagedRatQuad {
    // In future, this may automatically raise if not already done so.
    #[must_use]
    #[allow(clippy::missing_const_for_fn)]
-   pub fn get_regularized_rat_quad(&self) -> &Curve<RegularizedRatQuadPath> {
-      self.regular_rat_quad.as_ref().expect("Not raised to reg symmetric.")
+   pub fn get_regularized_rat_quad(&self) -> Curve<RegularizedRatQuadPath> {
+      Curve::<RegularizedRatQuadPath>::create_by_raising_to_regularized_symmetric(&self.poly)
+         .unwrap()
    }
 
    #[allow(clippy::missing_errors_doc)]
@@ -128,17 +126,7 @@ impl ManagedRatQuad {
    #[allow(clippy::missing_errors_doc)]
    // Velocity at beginning multiplied by sigma, and velocity at end divided by sigma.
    pub fn apply_bilinear(&mut self, sigma_ratio: (f64, f64)) -> Result<(), &'static str> {
-      self.regular_rat_quad = None;
       self.poly = self.poly.rq_apply_bilinear(sigma_ratio);
-      Ok(())
-   }
-
-   #[allow(clippy::missing_errors_doc)]
-   pub fn raise_to_regularized_symmetric(&mut self) -> Result<(), &'static str> {
-      self.regular_rat_quad = Some(
-         Curve::<RegularizedRatQuadPath>::create_by_raising_to_regularized_symmetric(&self.poly)
-            .unwrap(),
-      );
       Ok(())
    }
 
@@ -161,12 +149,10 @@ impl ManagedRatQuad {
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::option_if_let_else)]
    pub fn classify_offset_odd_even(&self) -> Result<RatQuadOoeSubclassed, &'static str> {
-      match &self.regular_rat_quad {
-         Some(reg_symmetric) => {
-            Ok(RatQuadOoeSubclassed::create_from_regularized(reg_symmetric, 0.01))
-         }
-         None => Err("Classification into odd-even must be from regularized form."),
-      }
+      let reg_symmetric =
+         Curve::<RegularizedRatQuadPath>::create_by_raising_to_regularized_symmetric(&self.poly)
+            .unwrap();
+      Ok(RatQuadOoeSubclassed::create_from_regularized(&reg_symmetric, 0.01))
    }
 }
 
