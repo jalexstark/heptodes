@@ -14,3 +14,6 @@
 
 pub mod axes;
 pub mod diagram;
+
+pub use crate::axes::{AxesSpec, AxesStyle, AxisNumbering};
+pub use crate::diagram::SizingScheme;

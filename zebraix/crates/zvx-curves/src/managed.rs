@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::base::{
-   Curve, CurveTransform, FourPointRatQuad, RatQuadPolyPath, RegularizedRatQuadPath,
-   SpecifiedRatQuad, ThreePointAngleRepr,
+use crate::{
+   Curve, FourPointRatQuad, RatQuadOoeSubclassed, RatQuadPolyPath, SpecifiedRatQuad,
+   ThreePointAngleRepr,
 };
-use crate::threes::RatQuadOoeSubclassed;
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
-use zvx_base::CubicPath;
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
@@ -110,14 +108,6 @@ impl ManagedRatQuad {
       })
    }
 
-   // In future, this may automatically raise if not already done so.
-   #[must_use]
-   #[allow(clippy::missing_const_for_fn)]
-   pub fn get_regularized_rat_quad(&self) -> Curve<RegularizedRatQuadPath> {
-      Curve::<RegularizedRatQuadPath>::create_by_raising_to_regularized_symmetric(&self.poly)
-         .unwrap()
-   }
-
    #[allow(clippy::missing_errors_doc)]
    pub fn get_poly_rat_quad_repr(&self) -> Result<Curve<RatQuadPolyPath>, &'static str> {
       Ok(self.poly.clone())
@@ -149,48 +139,6 @@ impl ManagedRatQuad {
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::option_if_let_else)]
    pub fn classify_offset_odd_even(&self) -> Result<RatQuadOoeSubclassed, &'static str> {
-      let reg_symmetric =
-         Curve::<RegularizedRatQuadPath>::create_by_raising_to_regularized_symmetric(&self.poly)
-            .unwrap();
-      Ok(RatQuadOoeSubclassed::create_from_regularized(&reg_symmetric, 0.01))
-   }
-}
-
-#[derive(Debug, Serialize, DefaultFromSerde, PartialEq, Clone)]
-#[allow(clippy::module_name_repetitions)]
-pub struct ManagedCubic {
-   pub four_point: Curve<CubicPath>,
-   pub canvas_range: [f64; 4],
-}
-
-#[allow(clippy::missing_panics_doc)]
-impl ManagedCubic {
-   #[must_use]
-   pub fn create_from_control_points(
-      control_points: &Curve<CubicPath>,
-      canvas_range: [f64; 4],
-   ) -> Self {
-      Self { four_point: control_points.clone(), canvas_range }
-   }
-
-   #[allow(clippy::missing_errors_doc)]
-   pub fn get_four_point(&self) -> Result<Curve<CubicPath>, &'static str> {
-      Ok(self.four_point.clone())
-   }
-
-   pub fn displace(&mut self, d: [f64; 2]) {
-      self.four_point.displace(d);
-   }
-
-   pub fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
-      self.four_point.bilinear_transform(sigma_ratio);
-   }
-
-   pub fn raw_change_range(&mut self, new_range: [f64; 2]) {
-      self.four_point.raw_change_range(new_range);
-   }
-
-   pub fn select_range(&mut self, new_range: [f64; 2]) {
-      self.four_point.select_range(new_range);
+      RatQuadOoeSubclassed::create_from_ordinary(&self.poly, 0.01)
    }
 }

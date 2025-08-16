@@ -109,6 +109,8 @@ pub enum OneOfSegment {
    Polyline(PolylinePath),
    // TODO: Add here, and more generally for drawable, a Conic. This can be in regularized
    // symmetric form (symmetric range with a[1] == 0).
+   //
+   // Actually, probably just take hyperbolic.
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]

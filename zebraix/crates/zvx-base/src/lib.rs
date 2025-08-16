@@ -13,7 +13,7 @@
 // limitations under the License.
 
 pub mod pieces;
-pub use pieces::*;
+pub use pieces::{ArcPath, CubicPath, HyperbolicPath, PolylinePath};
 
 #[inline]
 pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {

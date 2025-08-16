@@ -16,7 +16,9 @@
 // components. The components can be even-odd (sine-cosine) for elliptical, positive-negative
 // for hyperbolic, and (implied) linear-quadratic for parabolic.
 
-use crate::base::{Curve, RegularizedRatQuadPath};
+use crate::base::TEval;
+use crate::rat_quad::RegularizedRatQuadPath;
+use crate::{Curve, RatQuadPolyPath};
 use serde::Serialize;
 use zvx_base::{ArcPath, CubicPath, HyperbolicPath};
 
@@ -39,109 +41,17 @@ pub enum OneThreePath {
    Hyperbolic(HyperbolicPath),
 }
 
-#[must_use]
-#[allow(clippy::suboptimal_flops)]
-#[allow(clippy::missing_errors_doc)]
 #[allow(clippy::missing_panics_doc)]
-pub fn classify_offset_odd_even(
-   rat_quad: &Curve<RegularizedRatQuadPath>,
-   tolerance: f64,
-) -> RatQuadOoeSubclassed {
-   let mut rat_poly = rat_quad.clone();
-   let orig_rat_poly = rat_quad;
+#[allow(clippy::missing_errors_doc)]
+impl OneThreePath {
+   pub fn create_from_ordinary(
+      poly_curve: &Curve<RatQuadPolyPath>,
+      tolerance: f64,
+   ) -> Result<Self, &'static str> {
+      let ooe_rat_quad_extracted: RatQuadOoeSubclassed =
+         RatQuadOoeSubclassed::create_from_ordinary(poly_curve, tolerance).unwrap();
 
-   let r = rat_poly.path.range_bound;
-   if (rat_poly.path.a_2.abs() * r * r) < (rat_poly.path.a_0.abs() * tolerance) {
-      RatQuadOoeSubclassed::Parabolic(orig_rat_poly.convert_to_parabolic())
-   } else if rat_poly.path.a_2.signum() == rat_poly.path.a_0.signum() {
-      // TODO: Better handle cases where s or f might be infinite.
-      let s = 1.0 / rat_poly.path.a_0;
-      let f = 1.0 / rat_poly.path.a_2;
-      rat_poly.path.a_0 = 1.0;
-      rat_poly.path.a_2 *= s;
-
-      {
-         let offset = 0.5 * (s * rat_poly.path.b[0] + f * rat_poly.path.b[2]);
-         let even = 0.5 * (s * rat_poly.path.b[0] - f * rat_poly.path.b[2]);
-         let odd = rat_poly.path.b[1] * s;
-         rat_poly.path.b = [offset, odd, even];
-      }
-      {
-         let offset = 0.5 * (s * rat_poly.path.c[0] + f * rat_poly.path.c[2]);
-         let even = 0.5 * (s * rat_poly.path.c[0] - f * rat_poly.path.c[2]);
-         let odd = rat_poly.path.c[1] * s;
-         rat_poly.path.c = [offset, odd, even];
-      }
-
-      let sss = 1.0 / rat_poly.path.a_2.sqrt();
-      let (sx, sy) = (0.5 * sss * rat_poly.path.b[1], 0.5 * sss * rat_poly.path.c[1]);
-      let (cx, cy) = (rat_poly.path.b[2], rat_poly.path.c[2]);
-      let determinant = sx * cy - cx * sy;
-      let frobenius_squared = sx * sx + sy * sy + cx * cx + cy * cy;
-      if determinant.abs() < (frobenius_squared * tolerance) {
-         // From the plotting point of view this is not a degenerate case, but renderers may
-         // want the transformation to be invertible.
-         //
-         // If one singular value is much larger than the other, the frobenius norm
-         // (squared) will be approximately the square of larger.  The determinant is their
-         // product, and so the condition effectively compares their magnitude (for small
-         // tolerances).
-
-         RatQuadOoeSubclassed::Parabolic(orig_rat_poly.convert_to_parabolic())
-      } else {
-         // Only outcome that actually uses OOE form.
-         RatQuadOoeSubclassed::Elliptical(rat_poly)
-      }
-   } else {
-      // {
-      let hyperbolic_form = orig_rat_poly.convert_to_hyperbolic();
-      let poly = orig_rat_poly;
-      let reconstructed: Curve<RegularizedRatQuadPath> = From::from(&hyperbolic_form);
-      //      Rat_Quad {
-      //    r: orig_rat_poly.r,
-      //    a_0: orig_rat_poly.a_0,
-      //    a_2: orig_rat_poly.a_2,
-      //    // a: [orig_rat_poly.a[0], 0.0, orig_rat_poly.a[2]],
-      //    b: orig_rat_poly.b,
-      //    c: orig_rat_poly.c,
-      //    sigma: orig_rat_poly.sigma,
-      // };
-      println!("a: [{}, {}, {}]", poly.path.a_0, 0.0, poly.path.a_2);
-      println!("b: [{}, {}, {}]", poly.path.b[0], poly.path.b[1], poly.path.b[2]);
-      println!("c: [{}, {}, {}]", poly.path.c[0], poly.path.c[1], poly.path.c[2]);
-
-      println!("a: [{}, {}, {}]", reconstructed.path.a_0, 0.0, reconstructed.path.a_2);
-      println!(
-         "b: [{}, {}, {}]",
-         reconstructed.path.b[0], reconstructed.path.b[1], reconstructed.path.b[2]
-      );
-      println!(
-         "c: [{}, {}, {}]",
-         reconstructed.path.c[0], reconstructed.path.c[1], reconstructed.path.c[2]
-      );
-
-      // let reconstructed_b = [
-      //    offset[0] * beta * beta + minus_fraction[0] * beta + plus_fraction[0] * beta,
-      //    minus_fraction[0] * gamma - plus_fraction[0] * gamma,
-      //    -offset[0] * gamma * gamma,
-      // ];
-      // let reconstructed_c = [
-      //    offset[1] * beta * beta + minus_fraction[1] * beta + plus_fraction[1] * beta,
-      //    minus_fraction[1] * gamma - plus_fraction[1] * gamma,
-      //    -offset[1] * gamma * gamma,
-      // ];
-      // println!("recon a: [{}, {}, {}]", beta * beta, 0.0, -gamma * gamma);
-      // println!(
-      //    "recon b: [{}, {}, {}]",
-      //    reconstructed_b[0], reconstructed_b[1], reconstructed_b[2]
-      // );
-      // println!(
-      //    "recon c: [{}, {}, {}]",
-      //    reconstructed_c[0], reconstructed_c[1], reconstructed_c[2]
-      // );
-      // }
-
-      RatQuadOoeSubclassed::Hyperbolic(hyperbolic_form)
+      Ok(ooe_rat_quad_extracted.convert_to_path())
    }
 }
 
@@ -187,10 +97,6 @@ impl RatQuadOoeSubclassed {
          }
       }
    }
-}
-
-pub trait TEval {
-   fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
 }
 
 impl TEval for HyperbolicPath {
