@@ -1223,7 +1223,6 @@ fn spartan_sizing_o2_test() {
 
    // TODO: Consider removing or reworking this test, likely redundant.
    // managed_curve.raise_to_symmetric_range().unwrap();
-   managed_curve.raise_to_regularized_symmetric().unwrap();
    managed_curve.patch_up_poly_symmetric();
 
    draw_sample_rat_quad(
@@ -1264,7 +1263,7 @@ fn spartan_sizing_p_test() {
    cairo_spartan.spartan.prepare();
    sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
 
-   let mut managed_curve = ManagedRatQuad::create_from_polynomial(
+   let managed_curve = ManagedRatQuad::create_from_polynomial(
       &Curve::<RatQuadPolyPath> {
          path: RatQuadPolyPath {
             a: [-21.0, 1.0, -2.0],
@@ -1291,7 +1290,6 @@ fn spartan_sizing_p_test() {
    );
 
    // managed_curve.raise_to_symmetric_range().unwrap();
-   managed_curve.raise_to_regularized_symmetric().unwrap();
    // managed_curve.raise_to_offset_odd_even().unwrap();
 
    draw_sample_rat_quad(
@@ -1538,7 +1536,7 @@ fn spartan_sizing_r_test() {
       let shift_x = -3.0;
       let shift_y = -2.0;
       let h = 0.005;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1551,7 +1549,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1572,7 +1569,7 @@ fn spartan_sizing_r_test() {
       let shift_x = -2.0;
       let shift_y = -1.0;
       let h = 0.5;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1585,7 +1582,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1608,7 +1604,7 @@ fn spartan_sizing_r_test() {
 
       let shift_x = -1.0;
       let shift_y = 0.0;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1621,7 +1617,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1641,7 +1636,7 @@ fn spartan_sizing_r_test() {
       let shift_x = 0.0;
       let shift_y = 1.0;
       let h = 4.0 / 3.0;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1654,7 +1649,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1674,7 +1668,7 @@ fn spartan_sizing_r_test() {
       let shift_x = 1.0;
       let shift_y = 2.0;
       let h = 3.0;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1687,7 +1681,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1709,7 +1702,7 @@ fn spartan_sizing_r_test() {
       let shift_x = 2.0;
       let shift_y = -2.0;
       let h = 0.005;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1722,7 +1715,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1743,7 +1735,7 @@ fn spartan_sizing_r_test() {
       let shift_x = 3.0;
       let shift_y = -1.0;
       let h = 1.0 / 3.0;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1756,7 +1748,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1778,7 +1769,7 @@ fn spartan_sizing_r_test() {
 
       let shift_x = 4.0;
       let shift_y = 0.0;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1791,7 +1782,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -1811,7 +1801,7 @@ fn spartan_sizing_r_test() {
       let shift_x = 5.0;
       let shift_y = 1.0;
       let h = 1.0;
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad {
             p: p_from_x_y_4(
                &[1.0 + shift_x, 1.0 + h + shift_x, -1.0 + h + shift_x, -1.0 + shift_x],
@@ -1824,7 +1814,6 @@ fn spartan_sizing_r_test() {
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2260,7 +2249,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 0.0, -1.0], [-1.0, 0.0, 1.0]), [1.0, -1.0, 1.0, 1.0]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
@@ -2272,7 +2261,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2294,7 +2282,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 0.5, -1.0], [-1.0, 0.5, 1.0]), [1.0, -1.0, 1.0, 1.0]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
@@ -2306,7 +2294,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2328,7 +2315,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [1.0, -1.0, 1.0, 1.0]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
@@ -2340,7 +2327,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2362,7 +2348,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 1.5, -1.0], [-1.0, 1.5, 1.0]), [1.0, -1.0, 1.0, 1.0]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
@@ -2374,7 +2360,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2396,7 +2381,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.05),
@@ -2408,7 +2393,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2429,7 +2413,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.5),
@@ -2441,7 +2425,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2462,7 +2445,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(0.75),
@@ -2474,7 +2457,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2495,7 +2477,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(1.25),
@@ -2507,7 +2489,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2528,7 +2509,7 @@ fn spartan_sizing_u_test() {
          rotate_3_simply(([1.0, 1.0, -1.0], [-1.0, 1.0, 1.0]), [0.5, -0.5, 0.5, 0.5]),
          [shift_x, shift_y],
       );
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Quadrant(1.5),
@@ -2540,7 +2521,6 @@ fn spartan_sizing_u_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2606,7 +2586,7 @@ fn spartan_sizing_v_test() {
          shift,
       );
 
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Radians(t.atan()),
@@ -2618,7 +2598,6 @@ fn spartan_sizing_v_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2644,7 +2623,7 @@ fn spartan_sizing_v_test() {
          shift,
       );
 
-      let mut managed_curve = ManagedRatQuad::create_from_three_points(
+      let managed_curve = ManagedRatQuad::create_from_three_points(
          &ThreePointAngleRepr {
             p: p_from_x_y_3(&x, &y),
             angle: ZebraixAngle::Radians((1.0 / t).atan()),
@@ -2656,7 +2635,6 @@ fn spartan_sizing_v_test() {
       .expect("Failure");
 
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -2684,12 +2662,11 @@ fn spartan_sizing_v_test() {
          shift,
       );
 
-      let mut managed_curve = ManagedRatQuad::create_from_four_points(
+      let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
          cairo_spartan.spartan.prep.axes_range,
       );
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.raise_to_regularized_symmetric().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
@@ -3303,12 +3280,11 @@ fn segment_sequence_a_test() {
                scale_4_simply(([0.0, 1.0, 1.0, 0.0], [0.0, 0.65, 3.6, 2.7]), 0.2),
                shift,
             );
-            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+            let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
-            managed_curve.raise_to_regularized_symmetric().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));
@@ -3319,12 +3295,11 @@ fn segment_sequence_a_test() {
                scale_4_simply(([0.0, -1.0, -1.0, 0.0], [2.7, 3.6, 0.65, 0.0]), 0.2),
                shift,
             );
-            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+            let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
-            managed_curve.raise_to_regularized_symmetric().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));
@@ -3346,12 +3321,11 @@ fn segment_sequence_a_test() {
                scale_4_simply(([0.0, 1.0, 1.0, 0.0], [0.0, 0.65, 3.6, 2.7]), 0.2),
                shift,
             );
-            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+            let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
-            managed_curve.raise_to_regularized_symmetric().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));
@@ -3362,12 +3336,11 @@ fn segment_sequence_a_test() {
                scale_4_simply(([0.0, -1.0, -1.0, 0.0], [2.7, 3.6, 0.65, 0.0]), 0.2),
                shift,
             );
-            let mut managed_curve = ManagedRatQuad::create_from_four_points(
+            let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
                cairo_spartan.spartan.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
-            managed_curve.raise_to_regularized_symmetric().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
 
             managed_segments.push_back(OneOfManagedSegment::ManagedRatQuad(managed_curve));

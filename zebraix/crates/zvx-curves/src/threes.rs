@@ -39,62 +39,6 @@ pub enum OneThreePath {
    Hyperbolic(HyperbolicPath),
 }
 
-// #[allow(clippy::suboptimal_flops)]
-// pub fn convert_to_parabolic(rat_quad: &Curve::<RegularizedRatQuadPath> -> Curve::<CubicPath> {
-//    let (x, y) = self.convert_to_general().rq_characterize_endpoints();
-//    let f = 1.0 / 3.0;
-//    let four_c = [
-//       [x[0], y[0]],
-//       [x[0] + f * x[1], y[0] + f * y[1]],
-//       [x[3] - f * x[2], y[3] - f * y[2]],
-//       [x[3], y[3]],
-//    ];
-
-//    Curve::<CubicPath> {
-//       r: [-self.range_bound, self.range_bound],
-//       p: four_c,
-//       sigma: self.sigma,
-//    }
-// }
-
-// // At present there is no proper testing of s. Manual inspection verifies that negating all
-// // a, b and c in the input leaves the output invariant.
-// #[allow(clippy::suboptimal_flops)]
-// pub fn convert_to_hyperbolic(rat_quad: &Curve::<RegularizedRatQuadPath>) -> Curve::<HyperbolicPath> {
-//    let s = rat_quad.a_0.signum();
-
-//    let lambda = (s * rat_quad.a_0).sqrt();
-//    assert!(-s * rat_quad.a_2 > 0.0);
-//    let mu = (-s * rat_quad.a_2).sqrt();
-//    let r_lambda = 1.0 / lambda;
-//    let r_mu = 1.0 / mu;
-//    let r_a_2 = 1.0 / rat_quad.a_2;
-
-//    let offset = [rat_quad.b[2] * r_a_2, rat_quad.c[2] * r_a_2];
-
-//    let f = 0.5 * s;
-//    let plus_partial = [
-//       f * (rat_quad.b[0] * r_lambda + (-rat_quad.b[1] + lambda * r_mu * rat_quad.b[2]) * r_mu),
-//       f * (rat_quad.c[0] * r_lambda + (-rat_quad.c[1] + lambda * r_mu * rat_quad.c[2]) * r_mu),
-//    ];
-//    let minus_partial = [
-//       f * (rat_quad.b[0] * r_lambda + (rat_quad.b[1] + lambda * r_mu * rat_quad.b[2]) * r_mu),
-//       f * (rat_quad.c[0] * r_lambda + (rat_quad.c[1] + lambda * r_mu * rat_quad.c[2]) * r_mu),
-//    ];
-
-//    Curve::<HyperbolicPath> {
-//       path: HyperbolicPath {
-//          range_bound: rat_quad.range_bound,
-//          lambda,
-//          mu,
-//          offset,
-//          plus_partial,
-//          minus_partial,
-//       },
-//       sigma: rat_quad.sigma,
-//    }
-// }
-
 #[must_use]
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_errors_doc)]

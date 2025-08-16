@@ -308,11 +308,11 @@ pub fn draw_sample_rat_quad(
             }),
          });
       } else {
-         let regularized_rat_quad: &Curve<RegularizedRatQuadPath> =
+         let regularized_rat_quad: Curve<RegularizedRatQuadPath> =
             managed_rat_quad.get_regularized_rat_quad();
          push_rat_quad_drawable(
             spartan,
-            regularized_rat_quad,
+            &regularized_rat_quad,
             PathChoices { color: color_choice.clone(), line_choice: curve_config.main_line_choice },
             curve_config.main_line_layer,
          );
@@ -436,10 +436,10 @@ pub fn draw_sample_segment_sequence(
          }
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
-            let regularized_rat_quad: &Curve<RegularizedRatQuadPath> =
+            let regularized_rat_quad: Curve<RegularizedRatQuadPath> =
                managed_rat_quad.get_regularized_rat_quad();
             segments_paths
-               .push(create_rat_quad_path(spartan.num_segments_hyperbolic, regularized_rat_quad));
+               .push(create_rat_quad_path(spartan.num_segments_hyperbolic, &regularized_rat_quad));
          }
          OneOfManagedSegment::Polyline(locations) => {
             segments_paths.push(OneOfSegment::Polyline(locations.clone()));
