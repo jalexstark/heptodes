@@ -13,12 +13,14 @@
 // limitations under the License.
 
 pub mod choices;
+pub mod interface;
 pub mod kinds;
 
 pub use crate::choices::{
    ColorChoice, LineChoice, PathCompletion, PointChoice, TextAnchorChoice, TextAnchorHorizontal,
    TextAnchorVertical, TextOffsetChoice, TextSizeChoice,
 };
+// pub use crate::interface::ZvxTextLayout;
 pub use crate::kinds::{
    CirclesSet, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable, QualifiedDrawable,
    SegmentSequence, Strokeable, TextDrawable, TextSingle,

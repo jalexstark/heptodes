@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::diagram::SpartanDiagram;
+// use crate::diagram::SpartanDiagram;
+use crate::diagram::DrawableDiagram;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
@@ -150,7 +151,7 @@ impl AxesSpec {
 
    #[allow(clippy::too_many_lines)]
    #[allow(clippy::missing_panics_doc)]
-   pub fn generate_axes(&self, diagram: &mut SpartanDiagram) {
+   pub fn generate_axes(&self, diagram: &mut DrawableDiagram) {
       // Future improvement ideas:
       //
       // * Generate box as closed polygon.
@@ -174,7 +175,7 @@ impl AxesSpec {
       let mut lines_ordinary = Strokeable::<LinesSetSet> {
          path: LinesSetSet { offsets: Some(vec![[0.0, 0.0]]), ..Default::default() },
          path_choices: PathChoices {
-            color: diagram.base_color_choice.clone(),
+            color: diagram.prep.main_color_choice.clone(),
             ..Default::default()
          },
       };
@@ -185,7 +186,7 @@ impl AxesSpec {
          },
          path_choices: PathChoices {
             line_choice: LineChoice::Light,
-            color: diagram.light_color_choice.clone(),
+            color: diagram.prep.light_color_choice.clone(),
          },
       };
       let mut vertical_light = Strokeable::<LinesSetSet> {
@@ -195,7 +196,7 @@ impl AxesSpec {
          },
          path_choices: PathChoices {
             line_choice: LineChoice::Light,
-            color: diagram.light_color_choice.clone(),
+            color: diagram.prep.light_color_choice.clone(),
          },
       };
 
@@ -254,7 +255,7 @@ impl AxesSpec {
       if !lines_ordinary.path.coords.is_empty() {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
-            // color_choice: diagram.base_color_choice.clone(),
+            // color_choice: diagram.prep.base_color_choice.clone(),
             drawable: OneOfDrawable::Lines(lines_ordinary),
          };
          diagram.drawables.push(qualified_drawable);
@@ -263,7 +264,7 @@ impl AxesSpec {
       if horizontal_light.path.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
-            // color_choice: diagram.light_color_choice.clone(),
+            // color_choice: diagram.prep.light_color_choice.clone(),
             drawable: OneOfDrawable::Lines(horizontal_light),
          };
          diagram.drawables.push(qualified_drawable);
@@ -271,7 +272,7 @@ impl AxesSpec {
       if vertical_light.path.offsets.as_ref().is_some_and(|x| !x.is_empty()) {
          let qualified_drawable = QualifiedDrawable {
             layer: axes_layer,
-            // color_choice: diagram.light_color_choice.clone(),
+            // color_choice: diagram.prep.light_color_choice.clone(),
             drawable: OneOfDrawable::Lines(vertical_light),
          };
          diagram.drawables.push(qualified_drawable);
@@ -294,7 +295,7 @@ impl AxesSpec {
          };
          let mut horizontal_numbering = TextDrawable {
             size_choice: TextSizeChoice::Small,
-            color_choice: diagram.text_color_choice.clone(),
+            color_choice: diagram.prep.text_color_choice.clone(),
             offset_choice: TextOffsetChoice::Diagram,
             anchor_choice: TextAnchorChoice::ThreeByThree(
                anchor_horizontal,
@@ -304,7 +305,7 @@ impl AxesSpec {
          };
          let mut vertical_numbering = TextDrawable {
             size_choice: TextSizeChoice::Small,
-            color_choice: diagram.text_color_choice.clone(),
+            color_choice: diagram.prep.text_color_choice.clone(),
             offset_choice: TextOffsetChoice::Diagram,
             anchor_choice: TextAnchorChoice::ThreeByThree(
                TextAnchorHorizontal::Right,
@@ -362,7 +363,7 @@ impl AxesSpec {
          if !horizontal_numbering.texts.is_empty() {
             let qualified_drawable = QualifiedDrawable {
                layer: axes_layer,
-               // color_choice: diagram.text_color_choice.clone(),
+               // color_choice: diagram.prep.text_color_choice.clone(),
                drawable: OneOfDrawable::Text(horizontal_numbering),
             };
             diagram.drawables.push(qualified_drawable);
@@ -371,7 +372,7 @@ impl AxesSpec {
          if !vertical_numbering.texts.is_empty() {
             let qualified_drawable = QualifiedDrawable {
                layer: axes_layer,
-               // color_choice: diagram.text_color_choice.clone(),
+               // color_choice: diagram.prep.text_color_choice.clone(),
                drawable: OneOfDrawable::Text(vertical_numbering),
             };
             diagram.drawables.push(qualified_drawable);

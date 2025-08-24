@@ -192,14 +192,18 @@ impl LineChoice {
    }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CanvasLayout {
    pub scale: [f64; 2],
    pub offset: [f64; 2],
    pub canvas_size: [f64; 2],
 }
 
-#[derive(Debug, Default)]
+// DiagramChoices gathers information about the diagram-wide sizing and other attributes.  These
+// are not exactly "global defaults", but rather parameters from which actual sizes are
+// calculated.  Loosely they are base values and parameters used to transform them into real
+// sizes via scaling rules.
+#[derive(Debug, Default, Clone)]
 pub struct DiagramChoices {
    pub annotation_linear_scale: f64,
    pub annotation_area_scale: f64,

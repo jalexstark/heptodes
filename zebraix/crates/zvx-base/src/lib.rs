@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod pieces;
+
 pub use pieces::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
 
 #[inline]
@@ -29,6 +30,7 @@ fn is_near_float(v: f64, w: f64) -> bool {
 pub const fn default_unit_f64() -> f64 {
    1.0
 }
+
 #[allow(clippy::trivially_copy_pass_by_ref)]
 #[must_use]
 pub fn is_default_unit_f64(v: &f64) -> bool {

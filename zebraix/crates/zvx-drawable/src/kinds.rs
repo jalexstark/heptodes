@@ -18,8 +18,7 @@ use crate::choices::{
 };
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
-use zvx_base::is_default;
-use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
+use zvx_base::{is_default, ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
 
 #[derive(Serialize, Debug, Clone, DefaultFromSerde, PartialEq, Eq)]
 pub struct SegmentChoices {

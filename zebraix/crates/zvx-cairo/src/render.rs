@@ -31,56 +31,31 @@ use zvx_drawable::choices::{
    PathCompletion, PointChoice, TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical,
    TextOffsetChoice, TextSizeChoice,
 };
+use zvx_drawable::interface::{TextMetrics, ZvxRenderEngine, ZvxTextLayout};
 use zvx_drawable::kinds::{
    CirclesSet, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable, QualifiedDrawable,
    SegmentChoices, SegmentSequence, Strokeable, TextDrawable, TextSingle,
 };
 
 #[derive(Debug)]
-#[allow(clippy::module_name_repetitions)]
-pub struct CairoSpartanRender {
+pub struct UnfixedCairoSpartanRender {
+   pub context: CairoContext,
+   pub surface: SvgSurface,
+   pub transform_saver: TransformSaver,
+   pub pango_context: PangoContext,
+   pub num_segments_hyperbolic: i32, // Actually fixed, but more convenient here.
+}
+
+#[derive(Debug)]
+pub struct TransformSaver {
    pub saved_matrix: Matrix,
-   pub num_segments_hyperbolic: i32,
 }
 
-pub struct TextMetrics {
-   pub strikethrough_center: f64,
-   pub even_half_height: f64,
-   pub font_ascent: f64,
-   pub font_descent: f64,
-   pub font_height: f64,
-   // Fields above are generally independent of text content.
-   pub text_width: f64,
-   pub text_height: f64,
-}
-
-// Note on special functions.
-//
-// Rust is (as of rustc 1.85.1) unable to convert a boxed heap object to (a reference to) its
-// concrete implementation type when any kind of non-static lifetime is involved.  As a result
-// an implementation such as Cairo+Pango has no means to call functions with its own data.  In
-// order to work around this, the `render_layout` method was created for the text layout trait,
-// even though this really is the business of the implementation.  In order to future-proof the
-// interface, extra placeholder special functions were added.
-//
-// Refs: https://users.rust-lang.org/t/borrowing-as-any-non-static/131565,
-// https://crates.io/crates/better_any
-
-pub trait ZvxTextLayout {
-   fn set_layout(&mut self, font_family: &str, font_size: f64, text_content: &str);
-   fn get_metrics(&mut self) -> &Option<TextMetrics>;
-   #[allow(clippy::missing_errors_doc)]
-   fn render_layout(&mut self) -> Result<(), Box<dyn Error>>;
-
-   // See note above about special functions.
-   #[allow(clippy::missing_errors_doc)]
-   fn special_function_0(&mut self) -> Result<(), Box<dyn Error>>;
-   #[allow(clippy::missing_errors_doc)]
-   fn special_function_1(&mut self) -> Result<(), Box<dyn Error>>;
-   #[allow(clippy::missing_errors_doc)]
-   fn special_function_2(&mut self) -> Result<(), Box<dyn Error>>;
-   #[allow(clippy::missing_errors_doc)]
-   fn special_function_3(&mut self) -> Result<(), Box<dyn Error>>;
+#[derive(Debug)]
+pub struct CairoSpartanRender {
+   pub unfixed: UnfixedCairoSpartanRender,
+   pub canvas_layout: CanvasLayout,
+   pub diagram_choices: DiagramChoices,
 }
 
 pub struct ZvxPangoTextLayout<'parent> {
@@ -108,8 +83,54 @@ impl<'parent> ZvxPangoTextLayout<'parent> {
    }
 }
 
+impl CairoSpartanRender {
+   // Since SvgSurface::for_stream will be monomorphized, this function cannot be made
+   // non-templated.
+   #[allow(clippy::missing_panics_doc)]
+   pub fn create_for_stream<W: Write + 'static>(
+      out_stream: W,
+      canvas_layout: &CanvasLayout,
+      diagram_choices: &DiagramChoices,
+   ) -> Box<dyn ZvxRenderEngine> {
+      Box::new(Self::create_not_boxed_for_stream(out_stream, canvas_layout, diagram_choices))
+   }
+
+   // Since SvgSurface::for_stream will be monomorphized, this function cannot be made
+   // non-templated.
+   #[allow(clippy::missing_panics_doc)]
+   pub fn create_not_boxed_for_stream<W: Write + 'static>(
+      out_stream: W,
+      canvas_layout: &CanvasLayout,
+      diagram_choices: &DiagramChoices,
+   ) -> Self {
+      let mut surface = SvgSurface::for_stream(
+         canvas_layout.canvas_size[0],
+         canvas_layout.canvas_size[1],
+         out_stream,
+      )
+      .unwrap();
+      surface.set_document_unit(Pt);
+
+      let context = cairo::Context::new(&surface).unwrap();
+      let pango_context: PangoContext = pangocairo_create_context(&context);
+
+      Self {
+         unfixed: UnfixedCairoSpartanRender {
+            context,
+            surface,
+            pango_context,
+            transform_saver: TransformSaver { saved_matrix: Matrix::default() },
+            num_segments_hyperbolic: Self::default_num_segments_hyperbolic(),
+         },
+         canvas_layout: canvas_layout.clone(),
+         diagram_choices: diagram_choices.clone(),
+      }
+   }
+}
+
 #[allow(clippy::needless_lifetimes)]
 impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
+   // Not a great method name.
    fn set_layout(&mut self, font_family: &str, font_size: f64, text_content: &str) {
       let mut font_description = FontDescription::new();
 
@@ -148,6 +169,7 @@ impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
       });
    }
 
+   // Call set_layout first.
    fn get_metrics(&mut self) -> &Option<TextMetrics> {
       &self.metrics
    }
@@ -176,30 +198,18 @@ impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
    }
 }
 
-impl Default for CairoSpartanRender {
-   fn default() -> Self {
-      Self {
-         num_segments_hyperbolic: Self::default_num_segments_hyperbolic(),
-         saved_matrix: Matrix::default(),
-      }
+impl CairoSpartanRender {
+   #[must_use]
+   pub const fn default_num_segments_hyperbolic() -> i32 {
+      50
    }
 }
 
-impl CairoSpartanRender {
-   #[must_use]
-   pub fn new() -> Self {
-      Self::default()
-   }
-
-   #[must_use]
-   const fn default_num_segments_hyperbolic() -> i32 {
-      50
-   }
-
+impl TransformSaver {
    // This is necessary because line thicknesses and similar are distorted if the x and y
    // scales differ.  Consequently we only use the scaling transform for the Cairo CTM when
    // creating paths.
-   pub fn save_set_path_transform(&mut self, canvas_layout: &CanvasLayout, context: &CairoContext) {
+   pub fn save_set_path_transform(&mut self, context: &CairoContext, canvas_layout: &CanvasLayout) {
       self.saved_matrix = context.matrix();
 
       context.translate(
@@ -214,14 +224,11 @@ impl CairoSpartanRender {
    pub fn restore_transform(&mut self, context: &CairoContext) {
       context.set_matrix(self.saved_matrix);
    }
+}
 
+impl UnfixedCairoSpartanRender {
    #[allow(clippy::unused_self)]
-   fn set_color(
-      &self,
-      context: &CairoContext,
-      _diagram_choices: &DiagramChoices,
-      color: &ColorChoice,
-   ) {
+   fn set_color(context: &CairoContext, _diagram_choices: &DiagramChoices, color: &ColorChoice) {
       let (r, g, b) = color.to_rgb();
       context.set_source_rgb(r, g, b);
    }
@@ -238,113 +245,110 @@ impl CairoSpartanRender {
 
    fn draw_lines_set(
       &mut self,
-      context: &CairoContext,
       drawable: &Strokeable<LinesSetSet>,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, drawable.path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, &drawable.path_choices.color);
+      Self::set_line_choice(&self.context, drawable.path_choices.line_choice, diagram_choices);
+      Self::set_color(&self.context, diagram_choices, &drawable.path_choices.color);
 
-      self.save_set_path_transform(canvas_layout, context);
+      self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
       for i in 0..drawable.path.coords.len() {
          if let Some(offset_vector) = &drawable.path.offsets {
             for offset in offset_vector {
-               context.move_to(
+               self.context.move_to(
                   drawable.path.coords[i].0[0] + offset[0],
                   drawable.path.coords[i].0[1] + offset[1],
                );
-               context.line_to(
+               self.context.line_to(
                   drawable.path.coords[i].1[0] + offset[0],
                   drawable.path.coords[i].1[1] + offset[1],
                );
             }
          } else {
-            context.move_to(drawable.path.coords[i].0[0], drawable.path.coords[i].0[1]);
-            context.line_to(drawable.path.coords[i].1[0], drawable.path.coords[i].1[1]);
+            self.context.move_to(drawable.path.coords[i].0[0], drawable.path.coords[i].0[1]);
+            self.context.line_to(drawable.path.coords[i].1[0], drawable.path.coords[i].1[1]);
          }
       }
-      self.restore_transform(context);
-      context.stroke().unwrap();
+      self.transform_saver.restore_transform(&self.context);
+      self.context.stroke().unwrap();
    }
 
    fn draw_points_set(
       &mut self,
-      context: &CairoContext,
       drawable: &PointsDrawable,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, LineChoice::Ordinary, diagram_choices);
-      self.set_color(context, diagram_choices, &drawable.color_choice);
+      Self::set_line_choice(&self.context, LineChoice::Ordinary, diagram_choices);
+      Self::set_color(&self.context, diagram_choices, &drawable.color_choice);
 
       match drawable.point_choice {
          PointChoice::Circle => {
             for center in &drawable.centers {
-               self.save_set_path_transform(canvas_layout, context);
-               let (cx, cy) = context.user_to_device(center[0], center[1]);
-               self.restore_transform(context);
-               context.move_to(cx + 2.8, cy);
-               context.arc(cx, cy, 2.8, 0.0 * PI, 2.0 * PI);
-               context.close_path();
+               self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
+               let (cx, cy) = self.context.user_to_device(center[0], center[1]);
+               self.transform_saver.restore_transform(&self.context);
+               self.context.move_to(cx + 2.8, cy);
+               self.context.arc(cx, cy, 2.8, 0.0 * PI, 2.0 * PI);
+               self.context.close_path();
             }
          }
          PointChoice::Dot => {
             for center in &drawable.centers {
-               self.save_set_path_transform(canvas_layout, context);
-               let (cx, cy) = context.user_to_device(center[0], center[1]);
-               self.restore_transform(context);
+               self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
+               let (cx, cy) = self.context.user_to_device(center[0], center[1]);
+               self.transform_saver.restore_transform(&self.context);
                #[allow(clippy::suboptimal_flops)]
-               context.move_to(cx + 2.8 * 0.92, cy);
+               self.context.move_to(cx + 2.8 * 0.92, cy);
                #[allow(clippy::suboptimal_flops)]
-               context.arc(cx, cy, 2.8 * 0.92, 0.0 * PI, 2.0 * PI);
-               context.fill().unwrap();
-               context.close_path();
+               self.context.arc(cx, cy, 2.8 * 0.92, 0.0 * PI, 2.0 * PI);
+               self.context.fill().unwrap();
+               self.context.close_path();
             }
          }
          PointChoice::Plus => {
             for center in &drawable.centers {
-               self.save_set_path_transform(canvas_layout, context);
-               let (cx, cy) = context.user_to_device(center[0], center[1]);
-               self.restore_transform(context);
+               self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
+               let (cx, cy) = self.context.user_to_device(center[0], center[1]);
+               self.transform_saver.restore_transform(&self.context);
                let plus_delta = 2.8 * 1.48;
-               context.move_to(cx, cy - plus_delta);
-               context.line_to(cx, cy + plus_delta);
-               context.move_to(cx + plus_delta, cy);
-               context.line_to(cx - plus_delta, cy);
-               context.close_path();
+               self.context.move_to(cx, cy - plus_delta);
+               self.context.line_to(cx, cy + plus_delta);
+               self.context.move_to(cx + plus_delta, cy);
+               self.context.line_to(cx - plus_delta, cy);
+               self.context.close_path();
             }
          }
          PointChoice::Times => {
             for center in &drawable.centers {
-               self.save_set_path_transform(canvas_layout, context);
-               let (cx, cy) = context.user_to_device(center[0], center[1]);
-               self.restore_transform(context);
+               self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
+               let (cx, cy) = self.context.user_to_device(center[0], center[1]);
+               self.transform_saver.restore_transform(&self.context);
                let times_delta = 2.8 * 1.48 * (0.5_f64).sqrt();
-               context.move_to(cx - times_delta, cy - times_delta);
-               context.line_to(cx + times_delta, cy + times_delta);
-               context.move_to(cx + times_delta, cy - times_delta);
-               context.line_to(cx - times_delta, cy + times_delta);
-               context.close_path();
+               self.context.move_to(cx - times_delta, cy - times_delta);
+               self.context.line_to(cx + times_delta, cy + times_delta);
+               self.context.move_to(cx + times_delta, cy - times_delta);
+               self.context.line_to(cx - times_delta, cy + times_delta);
+               self.context.close_path();
             }
          }
       }
-      context.stroke().unwrap();
+      self.context.stroke().unwrap();
    }
 
    fn draw_arc(
       &mut self,
-      context: &CairoContext,
       path: &ArcPath,
       path_choices: &PathChoices,
       segment_choices: &SegmentChoices,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, &path_choices.color);
+      Self::set_line_choice(&self.context, path_choices.line_choice, diagram_choices);
+      Self::set_color(&self.context, diagram_choices, &path_choices.color);
 
-      self.save_set_path_transform(canvas_layout, context);
+      self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
 
       let arc_transformation_matrix = cairo::Matrix::new(
          path.transform[0],
@@ -354,47 +358,46 @@ impl CairoSpartanRender {
          path.center[0],
          path.center[1],
       );
-      context.transform(arc_transformation_matrix);
+      self.context.transform(arc_transformation_matrix);
 
       // Logically circle is center (0.0, 0.0) radius 1.0.
       if segment_choices.continuation == ContinuationChoice::Starts {
-         context.move_to(path.angle_range[0].cos(), path.angle_range[0].sin());
+         self.context.move_to(path.angle_range[0].cos(), path.angle_range[0].sin());
       }
-      context.arc(0.0, 0.0, 1.0, path.angle_range[0], path.angle_range[1]);
+      self.context.arc(0.0, 0.0, 1.0, path.angle_range[0], path.angle_range[1]);
       match segment_choices.closure {
          LineClosureChoice::Closes => {
-            context.close_path();
-            self.restore_transform(context);
-            context.stroke().unwrap();
+            self.context.close_path();
+            self.transform_saver.restore_transform(&self.context);
+            self.context.stroke().unwrap();
          }
          LineClosureChoice::OpenEnd => {
-            self.restore_transform(context);
-            context.stroke().unwrap();
+            self.transform_saver.restore_transform(&self.context);
+            self.context.stroke().unwrap();
          }
          LineClosureChoice::Unfinished => {
-            self.restore_transform(context);
+            self.transform_saver.restore_transform(&self.context);
          }
       }
    }
 
    fn draw_cubic(
       &mut self,
-      context: &CairoContext,
       path: &CubicPath,
       path_choices: &PathChoices,
       segment_choices: &SegmentChoices,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, &path_choices.color);
+      Self::set_line_choice(&self.context, path_choices.line_choice, diagram_choices);
+      Self::set_color(&self.context, diagram_choices, &path_choices.color);
 
-      self.save_set_path_transform(canvas_layout, context);
+      self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
 
       if segment_choices.continuation == ContinuationChoice::Starts {
-         context.move_to(path.p[0][0], path.p[0][1]);
+         self.context.move_to(path.p[0][0], path.p[0][1]);
       }
-      context.curve_to(
+      self.context.curve_to(
          path.p[1][0],
          path.p[1][1],
          path.p[2][0],
@@ -404,23 +407,22 @@ impl CairoSpartanRender {
       );
       match segment_choices.closure {
          LineClosureChoice::Closes => {
-            context.close_path();
-            self.restore_transform(context);
-            context.stroke().unwrap();
+            self.context.close_path();
+            self.transform_saver.restore_transform(&self.context);
+            self.context.stroke().unwrap();
          }
          LineClosureChoice::OpenEnd => {
-            self.restore_transform(context);
-            context.stroke().unwrap();
+            self.transform_saver.restore_transform(&self.context);
+            self.context.stroke().unwrap();
          }
          LineClosureChoice::Unfinished => {
-            self.restore_transform(context);
+            self.transform_saver.restore_transform(&self.context);
          }
       }
    }
 
    fn draw_hyperbolic(
       &mut self,
-      context: &CairoContext,
       path: &HyperbolicPath,
       path_choices: &PathChoices,
       segment_choices: &SegmentChoices,
@@ -441,7 +443,6 @@ impl CairoSpartanRender {
       let pattern_vec = path.eval_no_bilinear(&t);
 
       self.draw_polyline(
-         context,
          &pattern_vec,
          path_choices,
          segment_choices,
@@ -458,6 +459,12 @@ impl CairoSpartanRender {
    // single_text: The content and text specific to this "string".
    // drawable: The parent of the text, that provides choices such as alignment.
    // prep: Wider choices, such as how fonts are generally scaled in this diagram.
+   //
+   // This is an awkward function, and perhaps be a method in `ZvxTextLayout` trait.
+   //
+   // Also the return values should be in a struct, with perhaps options as to how deeply to
+   // analyse.  For example, it could be that the center of "x" should be a centerline
+   // estimate, or the center of "+", depending on user choice.
    #[inline]
    fn figure_text_adjust<'a>(
       boxed_text_layout: &mut Box<dyn ZvxTextLayout + 'a>,
@@ -465,7 +472,6 @@ impl CairoSpartanRender {
       drawable: &TextDrawable,
       diagram_choices: &DiagramChoices,
    ) -> (f64, f64) {
-      // ) -> (PangoLayout, f64, f64) {
       let area_based_scale = match drawable.size_choice {
          TextSizeChoice::Normal => 1.0,
          TextSizeChoice::Large => 1.0 / diagram_choices.annotation_area_scale,
@@ -525,10 +531,12 @@ impl CairoSpartanRender {
    // single_text: The content and text specific to this "string".
    // drawable: The parent of the text, that provides choices such as alignment.
    // prep: Wider choices, such as how fonts are generally scaled in this diagram.
+   //
+   // This is an awkward function, and perhaps be a method in `ZvxTextLayout` trait.
    #[inline]
    fn layout_text<'a, 'parent>(
       cairo_context: &'parent CairoContext,
-      text_context: &'a PangoContext,
+      pango_context: &'a PangoContext,
       single_text: &TextSingle,
       drawable: &TextDrawable,
       diagram_choices: &DiagramChoices,
@@ -537,7 +545,7 @@ impl CairoSpartanRender {
       'parent: 'a,
    {
       let mut pango_text_layout: Box<(dyn ZvxTextLayout + 'a)> =
-         ZvxPangoTextLayout::create_pango_layout(cairo_context, text_context);
+         ZvxPangoTextLayout::create_pango_layout(cairo_context, pango_context);
 
       let (width_adjust, height_adjust) =
          Self::figure_text_adjust(&mut pango_text_layout, single_text, drawable, diagram_choices);
@@ -545,29 +553,39 @@ impl CairoSpartanRender {
       (pango_text_layout, width_adjust, height_adjust)
    }
 
+   // This is deliberately not a class method.  The caller needs to borrow parts of
+   // `UnfixedCairoSpartanRender` with different mutability.  While some implementations can
+   // resolve the mutability issues by reordring code, this would introduce unacceptable
+   // long-term constraints.
    #[inline]
    fn draw_text_set_with_lifetimes<'semi_global, 'child, 'parent>(
-      &'semi_global mut self,
+      // &'parent mut self,
+      transform_saver: &'semi_global mut TransformSaver,
       cairo_context: &'parent CairoContext,
-      text_context: &'child PangoContext,
+      pango_context: &'child PangoContext,
       single_text: &TextSingle,
       drawable: &TextDrawable,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) where
+      // 'semi_global: 'child,
       'parent: 'child,
    {
+      // This call sits awkwardly here.  It maybe should be in the caller, and be a self-method.
+      //
+      // Or, call `ZvxPangoTextLayout::create_pango_layout` in the caller, and pass the
+      // resulting Box<(dyn ZvxTextLayout + 'a)> in as an argument here.
       let (mut generic_text_layout, width_adjust, height_adjust): (
          Box<dyn ZvxTextLayout + 'child>,
          f64,
          f64,
-      ) = Self::layout_text(cairo_context, text_context, single_text, drawable, diagram_choices);
+      ) = Self::layout_text(cairo_context, pango_context, single_text, drawable, diagram_choices);
 
-      self.set_color(cairo_context, diagram_choices, &drawable.color_choice);
+      Self::set_color(cairo_context, diagram_choices, &drawable.color_choice);
 
-      self.save_set_path_transform(canvas_layout, cairo_context);
+      transform_saver.save_set_path_transform(cairo_context, canvas_layout);
       let (tx, ty) = cairo_context.user_to_device(single_text.location[0], single_text.location[1]);
-      self.restore_transform(cairo_context);
+      transform_saver.restore_transform(cairo_context);
 
       cairo_context.move_to(
          tx - width_adjust / f64::from(pango::SCALE),
@@ -579,91 +597,84 @@ impl CairoSpartanRender {
 
    #[allow(clippy::needless_lifetimes)]
    fn draw_text_set<'parent>(
-      &mut self,
-      cairo_context: &'parent CairoContext,
+      &'parent mut self,
       drawable: &TextDrawable,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
       for single_text in &drawable.texts {
-         // Create a single context, instead of using create_layout.  This
-         // demonstrates avoiding lots of Pango contexts.
-         let text_context: PangoContext = pangocairo_create_context(cairo_context);
-
-         self.draw_text_set_with_lifetimes(
-            cairo_context,
-            &text_context,
+         Self::draw_text_set_with_lifetimes(
+            &mut self.transform_saver,
+            &self.context,
+            &self.pango_context,
             single_text,
             drawable,
             canvas_layout,
             diagram_choices,
          );
-         cairo_context.stroke().unwrap();
+         self.context.stroke().unwrap();
       }
    }
 
    fn draw_polyline(
       &mut self,
-      context: &CairoContext,
       locations: &PolylinePath,
       path_choices: &PathChoices,
       segment_choices: &SegmentChoices,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, &path_choices.color);
+      Self::set_line_choice(&self.context, path_choices.line_choice, diagram_choices);
+      Self::set_color(&self.context, diagram_choices, &path_choices.color);
 
-      self.save_set_path_transform(canvas_layout, context);
+      self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
       assert!(!locations.is_empty());
       if segment_choices.continuation == ContinuationChoice::Starts {
-         context.move_to(locations[0][0], locations[0][1]);
+         self.context.move_to(locations[0][0], locations[0][1]);
       }
       for location in locations.iter().skip(1) {
-         context.line_to(location[0], location[1]);
+         self.context.line_to(location[0], location[1]);
       }
       match segment_choices.closure {
          LineClosureChoice::Closes => {
-            context.close_path();
-            self.restore_transform(context);
-            context.stroke().unwrap();
+            self.context.close_path();
+            self.transform_saver.restore_transform(&self.context);
+            self.context.stroke().unwrap();
          }
          LineClosureChoice::OpenEnd => {
-            self.restore_transform(context);
-            context.stroke().unwrap();
+            self.transform_saver.restore_transform(&self.context);
+            self.context.stroke().unwrap();
          }
          LineClosureChoice::Unfinished => {
-            self.restore_transform(context);
+            self.transform_saver.restore_transform(&self.context);
          }
       }
    }
 
    fn draw_circles_set(
       &mut self,
-      context: &CairoContext,
       drawable: &Strokeable<CirclesSet>,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
    ) {
-      Self::set_line_choice(context, drawable.path_choices.line_choice, diagram_choices);
-      self.set_color(context, diagram_choices, &drawable.path_choices.color);
+      Self::set_line_choice(&self.context, drawable.path_choices.line_choice, diagram_choices);
+      Self::set_color(&self.context, diagram_choices, &drawable.path_choices.color);
 
-      self.save_set_path_transform(canvas_layout, context);
+      self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
       for center in &drawable.path.centers {
          let (cx, cy) = (center[0], center[1]);
          let r = drawable.path.radius;
 
-         context.move_to(cx + r, cy);
-         context.arc(cx, cy, r, 0.0 * PI, 2.0 * PI);
-         context.close_path();
+         self.context.move_to(cx + r, cy);
+         self.context.arc(cx, cy, r, 0.0 * PI, 2.0 * PI);
+         self.context.close_path();
       }
-      self.restore_transform(context);
-      context.stroke().unwrap();
+      self.transform_saver.restore_transform(&self.context);
+      self.context.stroke().unwrap();
    }
 
    fn draw_segment_sequence(
       &mut self,
-      context: &CairoContext,
       segment_sequence: &SegmentSequence,
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
@@ -685,7 +696,6 @@ impl CairoSpartanRender {
          match &segment {
             OneOfSegment::Arc(path) => {
                self.draw_arc(
-                  context,
                   path,
                   &segment_sequence.path_choices,
                   &segment_choices,
@@ -695,7 +705,6 @@ impl CairoSpartanRender {
             }
             OneOfSegment::Cubic(path) => {
                self.draw_cubic(
-                  context,
                   path,
                   &segment_sequence.path_choices,
                   &segment_choices,
@@ -705,7 +714,6 @@ impl CairoSpartanRender {
             }
             OneOfSegment::Hyperbolic(path) => {
                self.draw_hyperbolic(
-                  context,
                   path,
                   &segment_sequence.path_choices,
                   &segment_choices,
@@ -715,7 +723,6 @@ impl CairoSpartanRender {
             }
             OneOfSegment::Polyline(path) => {
                self.draw_polyline(
-                  context,
                   path,
                   &segment_sequence.path_choices,
                   &segment_choices,
@@ -731,12 +738,11 @@ impl CairoSpartanRender {
    }
 
    #[allow(clippy::missing_panics_doc)]
-   pub fn render_drawables(
+   pub fn render_drawables_impl(
       &mut self,
       drawables: &[QualifiedDrawable],
       canvas_layout: &CanvasLayout,
       diagram_choices: &DiagramChoices,
-      context: &CairoContext,
    ) {
       let segment_choices: SegmentChoices = SegmentChoices::default();
 
@@ -746,11 +752,10 @@ impl CairoSpartanRender {
       for i in indices {
          match &drawables[i].drawable {
             OneOfDrawable::Lines(drawable) => {
-               self.draw_lines_set(context, drawable, canvas_layout, diagram_choices);
+               self.draw_lines_set(drawable, canvas_layout, diagram_choices);
             }
             OneOfDrawable::Arc(drawable) => {
                self.draw_arc(
-                  context,
                   &drawable.path,
                   &drawable.path_choices,
                   &segment_choices,
@@ -760,7 +765,6 @@ impl CairoSpartanRender {
             }
             OneOfDrawable::Hyperbolic(drawable) => {
                self.draw_hyperbolic(
-                  context,
                   &drawable.path,
                   &drawable.path_choices,
                   &segment_choices,
@@ -770,7 +774,6 @@ impl CairoSpartanRender {
             }
             OneOfDrawable::Cubic(drawable) => {
                self.draw_cubic(
-                  context,
                   &drawable.path,
                   &drawable.path_choices,
                   &segment_choices,
@@ -779,17 +782,16 @@ impl CairoSpartanRender {
                );
             }
             OneOfDrawable::Points(drawable) => {
-               self.draw_points_set(context, drawable, canvas_layout, diagram_choices);
+               self.draw_points_set(drawable, canvas_layout, diagram_choices);
             }
             OneOfDrawable::Text(drawable) => {
-               self.draw_text_set(context, drawable, canvas_layout, diagram_choices);
+               self.draw_text_set(drawable, canvas_layout, diagram_choices);
             }
             OneOfDrawable::Circles(drawable) => {
-               self.draw_circles_set(context, drawable, canvas_layout, diagram_choices);
+               self.draw_circles_set(drawable, canvas_layout, diagram_choices);
             }
             OneOfDrawable::Polyline(drawable) => {
                self.draw_polyline(
-                  context,
                   &drawable.path,
                   &drawable.path_choices,
                   &segment_choices,
@@ -798,36 +800,58 @@ impl CairoSpartanRender {
                );
             }
             OneOfDrawable::SegmentSequence(drawable) => {
-               self.draw_segment_sequence(context, drawable, canvas_layout, diagram_choices);
+               self.draw_segment_sequence(drawable, canvas_layout, diagram_choices);
             }
             OneOfDrawable::Nothing => {}
          }
       }
    }
+}
 
-   // Move out of class. Pass 3 parts of diagram to render_drawables, not diagram.
-   //     CairoSpartanRender becomes CairoSampleRender.
-   //
-   // Then move to sample.rs
+impl ZvxRenderEngine for CairoSpartanRender {
+   #[must_use]
+   fn create_text_layout<'parent, 'a>(&'parent self) -> Box<(dyn ZvxTextLayout + 'a)>
+   where
+      'parent: 'a,
+   {
+      ZvxPangoTextLayout::create_pango_layout(&self.unfixed.context, &self.unfixed.pango_context)
+   }
 
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::missing_panics_doc)]
-   pub fn render_drawables_to_stream<W: Write + 'static>(
+   fn render_drawables(
       &mut self,
-      out_stream: W,
       drawables: &[QualifiedDrawable],
-      canvas_layout: &CanvasLayout,
-      diagram_choices: &DiagramChoices,
-   ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
-      let canvas_size = &canvas_layout.canvas_size;
-      let mut surface = SvgSurface::for_stream(canvas_size[0], canvas_size[1], out_stream).unwrap();
-      surface.set_document_unit(Pt);
+   ) -> Result<Box<dyn core::any::Any>, Box<dyn Error>> {
+      let canvas_layout: &CanvasLayout = &self.canvas_layout;
+      let diagram_choices: &DiagramChoices = &self.diagram_choices;
 
-      let context = CairoContext::new(&surface).unwrap();
+      self.unfixed.render_drawables_impl(drawables, canvas_layout, diagram_choices);
 
-      self.render_drawables(drawables, canvas_layout, diagram_choices, &context);
+      self.unfixed.surface.flush();
 
-      surface.flush();
-      surface.finish_output_stream()
+      match self.unfixed.surface.finish_output_stream() {
+         Ok(good) => Ok(good),
+         // SvgSurface keeps the stream, and returns when there is an error, but we just drop it
+         // and pass the error.
+         Err(stream_with_error) => Err(Box::new(stream_with_error.error)),
+      }
+   }
+
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_0(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_0`.".into())
+   }
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_1(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_1`.".into())
+   }
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_2(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_2`.".into())
+   }
+   #[allow(clippy::missing_errors_doc)]
+   fn special_function_3(&mut self) -> Result<(), Box<dyn Error>> {
+      Err("Cairo-pango text layout does not implement `special_function_3`.".into())
    }
 }

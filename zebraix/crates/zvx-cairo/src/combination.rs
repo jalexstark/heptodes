@@ -13,37 +13,39 @@
 // limitations under the License.
 
 use crate::render::CairoSpartanRender;
+use std::error::Error;
 use std::io::Write;
-use zvx_docagram::diagram::SpartanDiagram;
+use zvx_docagram::diagram::DrawableDiagram;
+use zvx_docagram::diagram::SpartanPreparation;
+use zvx_drawable::interface::ZvxRenderEngine;
 
 // This may seem odd, but is Rust-inspired. The diagram and the renderer can be separately
 // borrowed with different mutability.
-#[derive(Debug, Default)]
+// #[derive(Debug)]
 pub struct CairoSpartanCombo {
-   pub spartan: SpartanDiagram,
-
-   pub render_controller: CairoSpartanRender,
+   pub drawable_diagram: DrawableDiagram,
+   pub render_engine: Box<(dyn ZvxRenderEngine)>,
 }
 
 impl CairoSpartanCombo {
-   #[must_use]
-   pub fn new() -> Self {
-      Self::default()
-   }
-
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::missing_panics_doc)]
-   pub fn render_diagram_to_write<W: Write + 'static>(
-      &mut self,
-      out_stream: W,
-   ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
-      assert!(self.spartan.is_ready());
+   pub fn render_diagram(&mut self) -> Result<Box<dyn core::any::Any>, Box<dyn Error>> {
+      self.render_engine.render_drawables(&self.drawable_diagram.drawables)
+   }
 
-      self.render_controller.render_drawables_to_stream(
-         out_stream,
-         &self.spartan.drawables,
-         &self.spartan.prep.canvas_layout,
-         &self.spartan.prep.diagram_choices,
-      )
+   #[allow(clippy::missing_panics_doc)]
+   pub fn create_for_stream<W: Write + 'static>(
+      out_stream: W,
+      preparation: &SpartanPreparation,
+   ) -> Self {
+      Self {
+         drawable_diagram: DrawableDiagram { prep: preparation.clone(), drawables: vec![] },
+         render_engine: CairoSpartanRender::create_for_stream(
+            out_stream,
+            &preparation.canvas_layout,
+            &preparation.diagram_choices,
+         ),
+      }
    }
 }

@@ -1,14 +1,4 @@
 {
-  "sizing_scheme": "Fill",
-  "axes_range": [
-    -1.5,
-    -2.5,
-    4.5,
-    2.5
-  ],
-  "padding": [
-    0.05
-  ],
   "drawables": [
     {
       "drawable": {

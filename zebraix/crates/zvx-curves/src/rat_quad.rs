@@ -12,11 +12,7 @@ use crate::threes::RatQuadOoeSubclassed;
 use crate::{Curve, CurveEval, CurveTransform, ZebraixAngle};
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
-use zvx_base::default_unit_f64;
-use zvx_base::is_default;
-use zvx_base::is_default_unit_f64;
-use zvx_base::CubicPath;
-use zvx_base::HyperbolicPath;
+use zvx_base::{default_unit_f64, is_default, is_default_unit_f64, CubicPath, HyperbolicPath};
 
 const fn scale_3(x: &[f64; 3], s: f64) -> [f64; 3] {
    [s * x[0], s * x[1], s * x[2]]
