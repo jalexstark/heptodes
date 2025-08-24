@@ -24,22 +24,23 @@ use pangocairo::functions::show_layout as pangocairo_show_layout;
 use std::error::Error;
 use std::f64::consts::PI;
 use std::io::Write;
-use zvx_base::{ArcPath, CubicPath, PolylinePath};
-use zvx_docagram::diagram::SpartanDiagram;
+use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
+use zvx_curves::base::TEval;
 use zvx_drawable::choices::{
    CanvasLayout, ColorChoice, ContinuationChoice, DiagramChoices, LineChoice, LineClosureChoice,
    PathCompletion, PointChoice, TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical,
    TextOffsetChoice, TextSizeChoice,
 };
 use zvx_drawable::kinds::{
-   CirclesSet, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable,
-   QualifiedDrawable, SegmentChoices, SegmentSequence, Strokeable, TextDrawable, TextSingle,
+   CirclesSet, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable, QualifiedDrawable,
+   SegmentChoices, SegmentSequence, Strokeable, TextDrawable, TextSingle,
 };
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 #[allow(clippy::module_name_repetitions)]
 pub struct CairoSpartanRender {
    pub saved_matrix: Matrix,
+   pub num_segments_hyperbolic: i32,
 }
 
 pub struct TextMetrics {
@@ -56,10 +57,10 @@ pub struct TextMetrics {
 // Note on special functions.
 //
 // Rust is (as of rustc 1.85.1) unable to convert a boxed heap object to (a reference to) its
-// concrete implementation type when any kind of non-static lifetime is involved. As a result an
-// implementation such as Cairo+Pango has no means to call functions with its own data. In order
-// to work around this, the `render_layout` method was created for the text layout trait, even
-// though this really is the business of the implementation. In order to future-proof the
+// concrete implementation type when any kind of non-static lifetime is involved.  As a result
+// an implementation such as Cairo+Pango has no means to call functions with its own data.  In
+// order to work around this, the `render_layout` method was created for the text layout trait,
+// even though this really is the business of the implementation.  In order to future-proof the
 // interface, extra placeholder special functions were added.
 //
 // Refs: https://users.rust-lang.org/t/borrowing-as-any-non-static/131565,
@@ -175,11 +176,26 @@ impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
    }
 }
 
+impl Default for CairoSpartanRender {
+   fn default() -> Self {
+      Self {
+         num_segments_hyperbolic: Self::default_num_segments_hyperbolic(),
+         saved_matrix: Matrix::default(),
+      }
+   }
+}
+
 impl CairoSpartanRender {
    #[must_use]
    pub fn new() -> Self {
       Self::default()
    }
+
+   #[must_use]
+   const fn default_num_segments_hyperbolic() -> i32 {
+      50
+   }
+
    // This is necessary because line thicknesses and similar are distorted if the x and y
    // scales differ.  Consequently we only use the scaling transform for the Cairo CTM when
    // creating paths.
@@ -400,6 +416,38 @@ impl CairoSpartanRender {
             self.restore_transform(context);
          }
       }
+   }
+
+   fn draw_hyperbolic(
+      &mut self,
+      context: &CairoContext,
+      path: &HyperbolicPath,
+      path_choices: &PathChoices,
+      segment_choices: &SegmentChoices,
+      canvas_layout: &CanvasLayout,
+      diagram_choices: &DiagramChoices,
+   ) {
+      // OK to delete when actual numbers are set (other than default).
+      assert_eq!(self.num_segments_hyperbolic, 50);
+      // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
+      let t_int: Vec<i32> = (0..self.num_segments_hyperbolic).collect();
+      let mut t = Vec::<f64>::with_capacity(t_int.len());
+      let scale = (path.range.1 - path.range.0) / f64::from(self.num_segments_hyperbolic);
+      let offset = path.range.0;
+      for item in &t_int {
+         t.push(f64::from(*item).mul_add(scale, offset));
+      }
+
+      let pattern_vec = path.eval_no_bilinear(&t);
+
+      self.draw_polyline(
+         context,
+         &pattern_vec,
+         path_choices,
+         segment_choices,
+         canvas_layout,
+         diagram_choices,
+      );
    }
 
    // This function is (somewhat) disassociated from the renderer and from Cairo, and is specific to Pango.
@@ -655,6 +703,16 @@ impl CairoSpartanRender {
                   diagram_choices,
                );
             }
+            OneOfSegment::Hyperbolic(path) => {
+               self.draw_hyperbolic(
+                  context,
+                  path,
+                  &segment_sequence.path_choices,
+                  &segment_choices,
+                  canvas_layout,
+                  diagram_choices,
+               );
+            }
             OneOfSegment::Polyline(path) => {
                self.draw_polyline(
                   context,
@@ -692,6 +750,16 @@ impl CairoSpartanRender {
             }
             OneOfDrawable::Arc(drawable) => {
                self.draw_arc(
+                  context,
+                  &drawable.path,
+                  &drawable.path_choices,
+                  &segment_choices,
+                  canvas_layout,
+                  diagram_choices,
+               );
+            }
+            OneOfDrawable::Hyperbolic(drawable) => {
+               self.draw_hyperbolic(
                   context,
                   &drawable.path,
                   &drawable.path_choices,
@@ -761,37 +829,5 @@ impl CairoSpartanRender {
 
       surface.flush();
       surface.finish_output_stream()
-   }
-}
-
-// This may seem odd, but is Rust-inspired. The diagram and the renderer can be separately
-// borrowed with different mutability.
-#[derive(Debug, Default)]
-pub struct CairoSpartanCombo {
-   pub spartan: SpartanDiagram,
-
-   pub render_controller: CairoSpartanRender,
-}
-
-impl CairoSpartanCombo {
-   #[must_use]
-   pub fn new() -> Self {
-      Self::default()
-   }
-
-   #[allow(clippy::missing_errors_doc)]
-   #[allow(clippy::missing_panics_doc)]
-   pub fn render_diagram_to_write<W: Write + 'static>(
-      &mut self,
-      out_stream: W,
-   ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
-      assert!(self.spartan.is_ready());
-
-      self.render_controller.render_drawables_to_stream(
-         out_stream,
-         &self.spartan.drawables,
-         &self.spartan.prep.canvas_layout,
-         &self.spartan.prep.diagram_choices,
-      )
    }
 }

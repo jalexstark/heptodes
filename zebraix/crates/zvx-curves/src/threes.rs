@@ -20,7 +20,7 @@ use crate::base::TEval;
 use crate::rat_quad::RegularizedRatQuadPath;
 use crate::{Curve, RatQuadPolyPath};
 use serde::Serialize;
-use zvx_base::{ArcPath, CubicPath, HyperbolicPath};
+use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment};
 
 #[derive(Serialize, Default, Debug, Clone, PartialEq)]
 pub enum RatQuadOoeSubclassed {
@@ -32,34 +32,22 @@ pub enum RatQuadOoeSubclassed {
    Hyperbolic(Curve<HyperbolicPath>),
 }
 
-#[derive(Serialize, Default, Debug, Clone, PartialEq)]
-pub enum OneThreePath {
-   #[default]
-   Nothing,
-   Arc(ArcPath),
-   Cubic(CubicPath),
-   Hyperbolic(HyperbolicPath),
-}
-
-#[allow(clippy::missing_panics_doc)]
-#[allow(clippy::missing_errors_doc)]
-impl OneThreePath {
-   pub fn create_from_ordinary(
+impl RatQuadOoeSubclassed {
+   #[allow(clippy::missing_panics_doc)]
+   #[allow(clippy::missing_errors_doc)]
+   pub fn segment_from_ordinary(
       poly_curve: &Curve<RatQuadPolyPath>,
       tolerance: f64,
-   ) -> Result<Self, &'static str> {
-      let ooe_rat_quad_extracted: RatQuadOoeSubclassed =
-         RatQuadOoeSubclassed::create_from_ordinary(poly_curve, tolerance).unwrap();
+   ) -> Result<OneOfSegment, &'static str> {
+      let ooe_rat_quad_extracted: Self = Self::create_from_ordinary(poly_curve, tolerance).unwrap();
 
       Ok(ooe_rat_quad_extracted.convert_to_path())
    }
-}
 
-impl RatQuadOoeSubclassed {
    #[must_use]
-   pub fn convert_to_path(&self) -> OneThreePath {
+   pub fn convert_to_path(&self) -> OneOfSegment {
       match self {
-         Self::Nothing => OneThreePath::Nothing,
+         Self::Nothing => OneOfSegment::Nothing,
          Self::Elliptical(ooe_rat_quad) => {
             let r = ooe_rat_quad.path.range_bound;
             let s = 1.0 / ooe_rat_quad.path.a_2.sqrt();
@@ -72,29 +60,16 @@ impl RatQuadOoeSubclassed {
             let angle_range =
                2.0 * (r * (ooe_rat_quad.path.a_2 / ooe_rat_quad.path.a_0).sqrt()).atan();
 
-            OneThreePath::Arc(ArcPath {
+            OneOfSegment::Arc(ArcPath {
                angle_range: [-angle_range, angle_range],
                center: [mx, my],
                transform: [cx, cy, sx, sy],
             })
          }
 
-         Self::Parabolic(four_point) => OneThreePath::Cubic(four_point.path.clone()),
+         Self::Parabolic(four_point) => OneOfSegment::Cubic(four_point.path.clone()),
 
-         // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
-         Self::Hyperbolic(hyper_rat_quad) => {
-            // let t_int: Vec<i32> = (0..num_segments_hyperbolic).collect();
-            // let mut t = Vec::<f64>::with_capacity(t_int.len());
-            // let scale = 2.0 * hyper_rat_quad.path.range_bound / f64::from(num_segments_hyperbolic);
-            // let offset = -hyper_rat_quad.path.range_bound;
-            // for item in &t_int {
-            //    t.push(f64::from(*item).mul_add(scale, offset));
-            // }
-
-            // let pattern_vec = hyper_rat_quad.eval(&t);
-
-            OneThreePath::Hyperbolic(hyper_rat_quad.path.clone())
-         }
+         Self::Hyperbolic(hyper_rat_quad) => OneOfSegment::Hyperbolic(hyper_rat_quad.path.clone()),
       }
    }
 }

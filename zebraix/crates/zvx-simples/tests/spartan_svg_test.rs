@@ -15,8 +15,8 @@
 use serde_json::to_writer_pretty;
 use std::collections::VecDeque;
 use std::io::Write;
-use zvx_base::{CubicPath, PolylinePath};
-use zvx_cairo::render::CairoSpartanCombo;
+use zvx_base::{CubicPath, OneOfSegment, PolylinePath};
+use zvx_cairo::CairoSpartanCombo;
 use zvx_curves::managed::ManagedRatQuad;
 use zvx_curves::{
    Curve, CurveEval, FourPointRatQuad, ManagedCubic, RatQuadPolyPath, ThreePointAngleRepr,
@@ -24,10 +24,10 @@ use zvx_curves::{
 };
 use zvx_docagram::{AxesSpec, AxesStyle, AxisNumbering, SizingScheme};
 use zvx_drawable::{
-   CirclesSet, ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices,
-   PathCompletion, PointChoice, PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable,
-   TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical, TextDrawable, TextOffsetChoice,
-   TextSingle, TextSizeChoice,
+   CirclesSet, ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, PathChoices, PathCompletion,
+   PointChoice, PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable, TextAnchorChoice,
+   TextAnchorHorizontal, TextAnchorVertical, TextDrawable, TextOffsetChoice, TextSingle,
+   TextSizeChoice,
 };
 use zvx_golden::filtered::JsonGoldenTest;
 use zvx_golden::filtered::SvgGoldenTest;

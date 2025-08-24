@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{
-   Curve, FourPointRatQuad, RatQuadOoeSubclassed, RatQuadPolyPath, SpecifiedRatQuad,
-   ThreePointAngleRepr,
-};
+use crate::{Curve, FourPointRatQuad, RatQuadPolyPath, SpecifiedRatQuad, ThreePointAngleRepr};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 
@@ -27,6 +24,8 @@ pub struct ManagedRatQuad {
    pub specified: SpecifiedRatQuad,
    pub canvas_range: [f64; 4],
 }
+
+// ========== Now really ratquad-managed.  Cubic-managed is in cubic.rs.
 
 const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
    [p[0][0], p[1][0], p[2][0], p[3][0]]
@@ -134,11 +133,5 @@ impl ManagedRatQuad {
       let sigma_ratio = (combo_d.abs().sqrt(), combo_s.abs().sqrt());
 
       self.poly = rat_poly.rq_apply_bilinear(sigma_ratio);
-   }
-
-   #[allow(clippy::missing_errors_doc)]
-   #[allow(clippy::option_if_let_else)]
-   pub fn classify_offset_odd_even(&self) -> Result<RatQuadOoeSubclassed, &'static str> {
-      RatQuadOoeSubclassed::create_from_ordinary(&self.poly, 0.01)
    }
 }

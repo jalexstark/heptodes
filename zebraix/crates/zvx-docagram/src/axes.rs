@@ -16,13 +16,14 @@ use crate::diagram::SpartanDiagram;
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
+use zvx_base::OneOfSegment;
 use zvx_drawable::choices::{
    LineChoice, PathCompletion, TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical,
    TextOffsetChoice, TextSizeChoice,
 };
 use zvx_drawable::kinds::{
-   LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, QualifiedDrawable, SegmentSequence,
-   Strokeable, TextDrawable, TextSingle,
+   LinesSetSet, OneOfDrawable, PathChoices, QualifiedDrawable, SegmentSequence, Strokeable,
+   TextDrawable, TextSingle,
 };
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]

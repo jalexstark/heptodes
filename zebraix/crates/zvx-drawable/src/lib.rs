@@ -20,6 +20,6 @@ pub use crate::choices::{
    TextAnchorVertical, TextOffsetChoice, TextSizeChoice,
 };
 pub use crate::kinds::{
-   CirclesSet, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PointsDrawable,
-   QualifiedDrawable, SegmentSequence, Strokeable, TextDrawable, TextSingle,
+   CirclesSet, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable, QualifiedDrawable,
+   SegmentSequence, Strokeable, TextDrawable, TextSingle,
 };

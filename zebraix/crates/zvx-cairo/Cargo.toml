@@ -13,6 +13,7 @@ categories = ["graphics", "development-tools::testing"]
 
 [dependencies]
 pangocairo = "0.20"
+zvx-curves =  { path = "../zvx-curves", version = "0.1" }
 zvx-docagram =  { path = "../zvx-docagram", version = "0.1" }
 zvx-drawable =  { path = "../zvx-drawable", version = "0.1" }
 zvx-base =  { path = "../zvx-base", version = "0.1" }
