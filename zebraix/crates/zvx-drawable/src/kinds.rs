@@ -19,7 +19,7 @@ use crate::choices::{
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
-use zvx_base::{ArcPath, CubicPath, PolylinePath};
+use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
 
 #[derive(Serialize, Debug, Clone, DefaultFromSerde, PartialEq, Eq)]
 pub struct SegmentChoices {
@@ -100,18 +100,15 @@ pub struct TextDrawable {
    pub texts: Vec<TextSingle>,
 }
 
-#[derive(Serialize, Debug, Default, PartialEq)]
-pub enum OneOfSegment {
-   #[default]
-   Nothing,
-   Arc(ArcPath),
-   Cubic(CubicPath),
-   Polyline(PolylinePath),
-   // TODO: Add here, and more generally for drawable, a Conic. This can be in regularized
-   // symmetric form (symmetric range with a[1] == 0).
-   //
-   // Actually, probably just take hyperbolic.
-}
+// #[derive(Serialize, Debug, Default, PartialEq)]
+// pub enum OneOfSegment {
+//    #[default]
+//    Nothing,
+//    Arc(ArcPath),
+//    Cubic(CubicPath),
+//    Hyperbolic(HyperbolicPath),
+//    Polyline(PolylinePath),
+// }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct SegmentSequence {
@@ -129,6 +126,7 @@ pub enum OneOfDrawable {
    Nothing,
    Arc(Strokeable<ArcPath>),
    Cubic(Strokeable<CubicPath>),
+   Hyperbolic(Strokeable<HyperbolicPath>),
    Polyline(Strokeable<PolylinePath>),
    Lines(Strokeable<LinesSetSet>),
    Circles(Strokeable<CirclesSet>),

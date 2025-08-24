@@ -130,9 +130,6 @@ pub struct SpartanDiagram {
 
    #[serde(skip_serializing_if = "is_default")]
    pub drawables: Vec<QualifiedDrawable>,
-
-   #[serde(skip, default = "SpartanDiagram::default_num_segments_hyperbolic")]
-   pub num_segments_hyperbolic: i32,
 }
 
 impl SpartanDiagram {
@@ -242,11 +239,6 @@ impl SpartanDiagram {
       let default_value = Self::default_annotation_offset();
       Self::is_near_float((*v)[0], default_value[0])
          && Self::is_near_float((*v)[1], default_value[1])
-   }
-
-   #[must_use]
-   const fn default_num_segments_hyperbolic() -> i32 {
-      50
    }
 
    fn multiply_default_one(a: f64, b: f64) -> f64 {

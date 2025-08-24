@@ -324,34 +324,6 @@ impl CurveEval for Curve<RatQuadPolyPath> {
 }
 
 #[allow(clippy::suboptimal_flops)]
-impl From<&HyperbolicPath> for RegularizedRatQuadPath {
-   fn from(hyper: &HyperbolicPath) -> Self {
-      let lambda = hyper.lambda;
-      let mu = hyper.mu;
-      let b = [
-         lambda * (hyper.offset[0] * lambda + hyper.minus_partial[0] + hyper.plus_partial[0]),
-         mu * (hyper.minus_partial[0] - hyper.plus_partial[0]),
-         -hyper.offset[0] * mu * mu,
-      ];
-      let c = [
-         lambda * (hyper.offset[1] * lambda + hyper.minus_partial[1] + hyper.plus_partial[1]),
-         mu * (hyper.minus_partial[1] - hyper.plus_partial[1]),
-         -hyper.offset[1] * mu * mu,
-      ];
-      let a_0 = lambda * lambda;
-      let a_2 = -mu * mu;
-
-      Self { range_bound: hyper.range_bound, a_0, a_2, b, c }
-   }
-}
-
-impl From<&Curve<HyperbolicPath>> for Curve<RegularizedRatQuadPath> {
-   fn from(curve: &Curve<HyperbolicPath>) -> Self {
-      Self { path: RegularizedRatQuadPath::from(&curve.path), sigma: curve.sigma }
-   }
-}
-
-#[allow(clippy::suboptimal_flops)]
 impl From<&RegularizedRatQuadPath> for RatQuadPolyPath {
    fn from(regular: &RegularizedRatQuadPath) -> Self {
       Self {
@@ -420,7 +392,7 @@ impl Curve<RegularizedRatQuadPath> {
 
       Curve::<HyperbolicPath> {
          path: HyperbolicPath {
-            range_bound: self.path.range_bound,
+            range: (-self.path.range_bound, self.path.range_bound),
             lambda,
             mu,
             offset,
@@ -430,37 +402,6 @@ impl Curve<RegularizedRatQuadPath> {
          sigma: self.sigma,
       }
    }
-
-   // #[must_use]
-   // pub fn eval(&self, t: &[f64]) -> Result<Vec<[f64; 2]>, &'static str> {
-   //    let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
-
-   //    //  XXXXXXXXXXXXXXXXX
-
-   //    match self {
-   //       Self::RationalPoly(repr) => Ok(*repr),
-   //       Self::RegularizedSymmetric(symm) => Ok(Curve::<RatQuadPolyPath> {
-   //          r: [-symm.range_bound, symm.range_bound],
-   //          a: [symm.a_0, 0.0, symm.a_2],
-   //          b: symm.b,
-   //          c: symm.c,
-   //          sigma: symm.sigma,
-   //       }),
-   //       Self::Nothing
-   //       | Self::FourPoint(_)
-   //       | Self::ThreePointAngle(_) => Err("QR not  proper rational poly."),
-   //    }
-
-   //    for item in t {
-   //       let denom_reciprocal = 1.0 / self.a[2].mul_add(*item, self.a[1]).mul_add(*item, self.a[0]);
-   //       ret_val.push([
-   //          self.b[2].mul_add(*item, self.b[1]).mul_add(*item, self.b[0]) * denom_reciprocal,
-   //          self.c[2].mul_add(*item, self.c[1]).mul_add(*item, self.c[0]) * denom_reciprocal,
-   //       ]);
-   //    }
-
-   //    ret_val
-   // }
 
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_panics_doc)]
@@ -574,53 +515,7 @@ impl RatQuadOoeSubclassed {
          // Rust clippy effectively makes this check impossible.
          // assert_ne!(rat_poly.path.a_2.signum(), rat_poly.path.a_0.signum());
 
-         // {
          let hyperbolic_form = rat_poly.convert_to_hyperbolic();
-         let poly = rat_poly;
-         let reconstructed: Curve<RegularizedRatQuadPath> = From::from(&hyperbolic_form);
-         //      Reg_Curve {
-         //    r: orig_rat_poly.r,
-         //    a_0: orig_rat_poly.a_0,
-         //    a_2: orig_rat_poly.a_2,
-         //    // a: [orig_rat_poly.a[0], 0.0, orig_rat_poly.a[2]],
-         //    b: orig_rat_poly.b,
-         //    c: orig_rat_poly.c,
-         //    sigma: orig_rat_poly.sigma,
-         // };
-         println!("a: [{}, {}, {}]", poly.path.a_0, 0.0, poly.path.a_2);
-         println!("b: [{}, {}, {}]", poly.path.b[0], poly.path.b[1], poly.path.b[2]);
-         println!("c: [{}, {}, {}]", poly.path.c[0], poly.path.c[1], poly.path.c[2]);
-
-         println!("a: [{}, {}, {}]", reconstructed.path.a_0, 0.0, reconstructed.path.a_2);
-         println!(
-            "b: [{}, {}, {}]",
-            reconstructed.path.b[0], reconstructed.path.b[1], reconstructed.path.b[2]
-         );
-         println!(
-            "c: [{}, {}, {}]",
-            reconstructed.path.c[0], reconstructed.path.c[1], reconstructed.path.c[2]
-         );
-
-         // let reconstructed_b = [
-         //    offset[0] * beta * beta + minus_fraction[0] * beta + plus_fraction[0] * beta,
-         //    minus_fraction[0] * gamma - plus_fraction[0] * gamma,
-         //    -offset[0] * gamma * gamma,
-         // ];
-         // let reconstructed_c = [
-         //    offset[1] * beta * beta + minus_fraction[1] * beta + plus_fraction[1] * beta,
-         //    minus_fraction[1] * gamma - plus_fraction[1] * gamma,
-         //    -offset[1] * gamma * gamma,
-         // ];
-         // println!("recon a: [{}, {}, {}]", beta * beta, 0.0, -gamma * gamma);
-         // println!(
-         //    "recon b: [{}, {}, {}]",
-         //    reconstructed_b[0], reconstructed_b[1], reconstructed_b[2]
-         // );
-         // println!(
-         //    "recon c: [{}, {}, {}]",
-         //    reconstructed_c[0], reconstructed_c[1], reconstructed_c[2]
-         // );
-         // }
 
          Ok(Self::Hyperbolic(hyperbolic_form))
       }
@@ -643,14 +538,4 @@ impl RatQuadOoeSubclassed {
          Self::create_hyperbolic_or_parabolic(poly_curve, tolerance)
       }
    }
-
-   // #[allow(clippy::missing_errors_doc)]
-   // pub fn create_from_ordinary(
-   //    poly_curve: &Curve<RatQuadPolyPath>,
-   //    tolerance: f64,
-   // ) -> Result<Self, &'static str> {
-   //    let reg_symmetric =
-   //       Curve::<RegularizedRatQuadPath>::create_by_raising_to_regularized_symmetric(poly_curve)?;
-   //    Ok(Self::create_from_regularized(&reg_symmetric, tolerance))
-   // }
 }

@@ -17,7 +17,7 @@ use cairo::SvgUnit::Pt;
 use serde_json::to_writer_pretty;
 use std::f64::consts::PI;
 use std::io::Write;
-use zvx_cairo::render::CairoSpartanCombo;
+use zvx_cairo::CairoSpartanCombo;
 use zvx_docagram::diagram::SizingScheme;
 use zvx_golden::filtered::JsonGoldenTest;
 use zvx_golden::filtered::SvgGoldenTest;

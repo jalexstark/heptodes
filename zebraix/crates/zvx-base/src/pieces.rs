@@ -46,10 +46,20 @@ pub type PolylinePath = Vec<[f64; 2]>;
 // offset + minus_partial / (lambda - mu * t) + plus_partial / (lambda + mu * t).
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
 pub struct HyperbolicPath {
-   pub range_bound: f64, // Range is [-range_bound, range_bound].
+   pub range: (f64, f64),
    pub lambda: f64,
    pub mu: f64,
    pub offset: [f64; 2],
    pub minus_partial: [f64; 2],
    pub plus_partial: [f64; 2],
+}
+
+#[derive(Serialize, Debug, Default, PartialEq)]
+pub enum OneOfSegment {
+   #[default]
+   Nothing,
+   Arc(ArcPath),
+   Cubic(CubicPath),
+   Hyperbolic(HyperbolicPath),
+   Polyline(PolylinePath),
 }

@@ -14,16 +14,16 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use zvx_base::{ArcPath, CubicPath, PolylinePath};
-use zvx_curves::base::TEval;
-use zvx_curves::threes::OneThreePath;
+use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
+// use zvx_curves::threes::OneThreePath;
 use zvx_curves::{
-   Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadPolyPath, SpecifiedRatQuad,
+   Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, RatQuadPolyPath,
+   SpecifiedRatQuad,
 };
 use zvx_docagram::diagram::SpartanDiagram;
 use zvx_drawable::{
-   ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, OneOfSegment, PathChoices, PathCompletion,
-   PointChoice, PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable,
+   ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, PathChoices, PathCompletion, PointChoice,
+   PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable,
 };
 
 const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
@@ -52,32 +52,8 @@ pub enum SampleOption {
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
-fn create_rat_quad_path(
-   num_segments_hyperbolic: i32,
-   poly_curve: &Curve<RatQuadPolyPath>,
-) -> OneOfSegment {
-   let one_of_three_paths = OneThreePath::create_from_ordinary(poly_curve, 0.01).unwrap();
-
-   // This should move to zvx-cairo.
-   match one_of_three_paths {
-      OneThreePath::Nothing => unimplemented!("Never should reach"),
-      OneThreePath::Arc(arc_path) => OneOfSegment::Arc(arc_path),
-      OneThreePath::Cubic(four_point) => OneOfSegment::Cubic(four_point),
-      // Since hyperbolic is not supported in SVG, we do a simple polyline approximation.
-      OneThreePath::Hyperbolic(hyper_path) => {
-         let t_int: Vec<i32> = (0..num_segments_hyperbolic).collect();
-         let mut t = Vec::<f64>::with_capacity(t_int.len());
-         let scale = 2.0 * hyper_path.range_bound / f64::from(num_segments_hyperbolic);
-         let offset = -hyper_path.range_bound;
-         for item in &t_int {
-            t.push(f64::from(*item).mul_add(scale, offset));
-         }
-
-         let pattern_vec = hyper_path.eval_no_bilinear(&t);
-
-         OneOfSegment::Polyline(pattern_vec)
-      }
-   }
+fn create_rat_quad_path(poly_curve: &Curve<RatQuadPolyPath>) -> OneOfSegment {
+   RatQuadOoeSubclassed::segment_from_ordinary(poly_curve, 0.01).unwrap()
 }
 
 #[allow(clippy::suboptimal_flops)]
@@ -88,7 +64,7 @@ fn push_rat_quad_drawable(
    path_choices: PathChoices,
    layer: i32,
 ) {
-   let one_of_path = create_rat_quad_path(spartan.num_segments_hyperbolic, poly_curve);
+   let one_of_path = create_rat_quad_path(poly_curve);
 
    match one_of_path {
       OneOfSegment::Arc(path) => {
@@ -101,6 +77,15 @@ fn push_rat_quad_drawable(
          spartan.drawables.push(QualifiedDrawable {
             layer,
             drawable: OneOfDrawable::Cubic(Strokeable::<CubicPath> { path, path_choices }),
+         });
+      }
+      OneOfSegment::Hyperbolic(path) => {
+         spartan.drawables.push(QualifiedDrawable {
+            layer,
+            drawable: OneOfDrawable::Hyperbolic(Strokeable::<HyperbolicPath> {
+               path,
+               path_choices,
+            }),
          });
       }
       OneOfSegment::Polyline(path) => {
@@ -428,8 +413,7 @@ pub fn draw_sample_segment_sequence(
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
             let ordinary_rat_quad: &Curve<RatQuadPolyPath> = &managed_rat_quad.poly;
-            segments_paths
-               .push(create_rat_quad_path(spartan.num_segments_hyperbolic, ordinary_rat_quad));
+            segments_paths.push(create_rat_quad_path(ordinary_rat_quad));
          }
          OneOfManagedSegment::Polyline(locations) => {
             segments_paths.push(OneOfSegment::Polyline(locations.clone()));
