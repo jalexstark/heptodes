@@ -15,12 +15,11 @@
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
-// use zvx_curves::threes::OneThreePath;
 use zvx_curves::{
    Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, RatQuadPolyPath,
    SpecifiedRatQuad,
 };
-use zvx_docagram::diagram::SpartanDiagram;
+use zvx_docagram::diagram::DrawableDiagram;
 use zvx_drawable::{
    ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, PathChoices, PathCompletion, PointChoice,
    PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable,
@@ -59,7 +58,7 @@ fn create_rat_quad_path(poly_curve: &Curve<RatQuadPolyPath>) -> OneOfSegment {
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
 fn push_rat_quad_drawable(
-   spartan: &mut SpartanDiagram,
+   spartan: &mut DrawableDiagram,
    poly_curve: &Curve<RatQuadPolyPath>,
    path_choices: PathChoices,
    layer: i32,
@@ -147,7 +146,7 @@ impl Default for SampleCurveConfig {
 #[allow(clippy::missing_panics_doc)]
 pub fn draw_sample_rat_quad(
    managed_rat_quad: &ManagedRatQuad,
-   spartan: &mut SpartanDiagram,
+   spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
    let deprecated_rat_quad: Curve<RatQuadPolyPath> =
@@ -300,7 +299,7 @@ pub fn draw_sample_rat_quad(
 #[allow(clippy::suboptimal_flops)]
 pub fn draw_sample_cubilinear(
    managed_cubic: &ManagedCubic,
-   spartan: &mut SpartanDiagram,
+   spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
    let four_point = &managed_cubic.four_point;
@@ -400,7 +399,7 @@ pub fn draw_sample_segment_sequence(
    path_choices: PathChoices,
    completion: PathCompletion,
    layer: i32,
-   spartan: &mut SpartanDiagram,
+   spartan: &mut DrawableDiagram,
 ) {
    let mut segments_paths: Vec<OneOfSegment> = Vec::new();
 

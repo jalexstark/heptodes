@@ -1,14 +1,4 @@
 {
-  "sizing_scheme": "SquareCenter",
-  "base_width": 600.0,
-  "base_height": 500.0,
-  "axes_range": [
-    6.5,
-    5.0
-  ],
-  "padding": [
-    0.05
-  ],
   "drawables": [
     {
       "drawable": {

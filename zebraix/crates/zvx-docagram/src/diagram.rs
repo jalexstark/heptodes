@@ -18,13 +18,6 @@ use zvx_base::is_default;
 use zvx_drawable::choices::{CanvasLayout, ColorChoice, DiagramChoices};
 use zvx_drawable::kinds::QualifiedDrawable;
 
-#[derive(Debug, Default)]
-enum SpartanTypestate {
-   #[default]
-   Unready,
-   Ready,
-}
-
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone)]
 pub enum SizingScheme {
    #[default]
@@ -33,37 +26,34 @@ pub enum SizingScheme {
    Fill,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SpartanPreparation {
    pub canvas_layout: CanvasLayout,
    pub diagram_choices: DiagramChoices,
    pub padding: Vec<f64>,
    pub scale_content: f64,
    pub axes_range: [f64; 4],
+   pub main_color_choice: ColorChoice,
+   pub light_color_choice: ColorChoice,
+   pub text_color_choice: ColorChoice,
 }
 
-#[derive(Debug, Serialize, DefaultFromSerde)]
+#[derive(Debug, Serialize, DefaultFromSerde, Clone)]
 #[allow(clippy::module_name_repetitions)]
 pub struct SpartanDiagram {
-   // pub scale: f64,
-   // // #[serde(skip_serializing_if = "is_default", default)]
-   #[serde(skip)]
-   typestate: SpartanTypestate,
-
-   #[serde(skip)]
-   pub prep: SpartanPreparation,
-
    pub sizing_scheme: SizingScheme,
+
+   // At the creation of the renderer the canvas size is required.  If in future other
+   // renderers require more information, this will be expanded into, say, a
+   // CanvasSpecification structure.
+   //
+   // The units of the canvas are, for now, fixed to pt.
    #[serde(
-      skip_serializing_if = "SpartanDiagram::is_default_base_width",
-      default = "SpartanDiagram::default_base_width"
+      skip_serializing_if = "SpartanDiagram::is_default_canvas_size",
+      default = "SpartanDiagram::default_canvas_size"
    )]
-   pub base_width: f64,
-   #[serde(
-      skip_serializing_if = "SpartanDiagram::is_default_base_height",
-      default = "SpartanDiagram::default_base_height"
-   )]
-   pub base_height: f64,
+   pub canvas_size: (f64, f64),
+
    #[serde(
       skip_serializing_if = "SpartanDiagram::is_default_base_font_size",
       default = "SpartanDiagram::default_base_font_size"
@@ -109,11 +99,12 @@ pub struct SpartanDiagram {
    )]
    pub annotation_offset: [f64; 2],
 
-   // Optionally (if non-zero) specify scaling of diagram size from base values.
-   #[serde(skip_serializing_if = "is_default")]
-   pub scale_width: f64,
-   #[serde(skip_serializing_if = "is_default")]
-   pub scale_height: f64,
+   // Removed because apparently just complicating things.
+   // // // Optionally (if non-zero) specify scaling of diagram size from base values.
+   // // #[serde(skip_serializing_if = "is_default")]
+   // // pub scale_width: f64,
+   // // #[serde(skip_serializing_if = "is_default")]
+   // // pub scale_height: f64,
    // Main line-width scaling as diagram scales. If zero, use something like the square
    // root of the geometric mean of the width and height scaling, so that content grows
    // gradually.
@@ -127,6 +118,13 @@ pub struct SpartanDiagram {
    pub axes_range: Vec<f64>,
    #[serde(skip_serializing_if = "is_default")]
    pub padding: Vec<f64>,
+}
+
+#[derive(Debug, Serialize, DefaultFromSerde)]
+#[allow(clippy::module_name_repetitions)]
+pub struct DrawableDiagram {
+   #[serde(skip)]
+   pub prep: SpartanPreparation,
 
    #[serde(skip_serializing_if = "is_default")]
    pub drawables: Vec<QualifiedDrawable>,
@@ -142,29 +140,16 @@ impl SpartanDiagram {
    fn is_near_float(v: f64, w: f64) -> bool {
       (v - w).abs() < 0.0001
    }
-   #[must_use]
-   pub const fn is_ready(&self) -> bool {
-      matches!(self.typestate, SpartanTypestate::Ready)
-   }
 
    #[must_use]
-   const fn default_base_width() -> f64 {
-      400.0
+   const fn default_canvas_size() -> (f64, f64) {
+      (400.0, 300.0)
    }
    #[allow(clippy::trivially_copy_pass_by_ref)]
    #[must_use]
-   fn is_default_base_width(v: &f64) -> bool {
-      Self::is_near_float(*v, Self::default_base_width())
-   }
-
-   #[must_use]
-   const fn default_base_height() -> f64 {
-      300.0
-   }
-   #[allow(clippy::trivially_copy_pass_by_ref)]
-   #[must_use]
-   fn is_default_base_height(v: &f64) -> bool {
-      Self::is_near_float(*v, Self::default_base_height())
+   fn is_default_canvas_size(v: &(f64, f64)) -> bool {
+      Self::is_near_float(v.0, Self::default_canvas_size().0)
+         && Self::is_near_float(v.1, Self::default_canvas_size().1)
    }
 
    #[must_use]
@@ -241,24 +226,22 @@ impl SpartanDiagram {
          && Self::is_near_float((*v)[1], default_value[1])
    }
 
-   fn multiply_default_one(a: f64, b: f64) -> f64 {
-      if b == 0.0 {
-         a
-      } else {
-         a * b
-      }
-   }
+   // fn multiply_default_one(a: f64, b: f64) -> f64 {
+   //    if b == 0.0 {
+   //       a
+   //    } else {
+   //       a * b
+   //    }
+   // }
 
    #[allow(clippy::too_many_lines)]
    #[allow(clippy::missing_panics_doc)]
    #[allow(clippy::suboptimal_flops)]
-   pub fn prepare(&mut self) {
-      assert!(matches!(self.typestate, SpartanTypestate::Unready));
+   #[must_use]
+   pub fn prepare(&self) -> SpartanPreparation {
+      let mut preparation = SpartanPreparation::default();
 
-      self.prep.canvas_layout.canvas_size = [
-         Self::multiply_default_one(self.base_width, self.scale_width),
-         Self::multiply_default_one(self.base_height, self.scale_height),
-      ];
+      preparation.canvas_layout.canvas_size = [self.canvas_size.0, self.canvas_size.1];
 
       let mut axes_range = self.axes_range.clone();
       match axes_range.len() {
@@ -276,7 +259,7 @@ impl SpartanDiagram {
             );
          }
       }
-      self.prep.axes_range = [axes_range[0], axes_range[1], axes_range[2], axes_range[3]];
+      preparation.axes_range = [axes_range[0], axes_range[1], axes_range[2], axes_range[3]];
 
       let mut padding = self.padding.clone();
       match padding.len() {
@@ -294,7 +277,7 @@ impl SpartanDiagram {
             panic!("padding must be vector of size 0, 1, 2 or 4, but found size {}", padding.len());
          }
       }
-      self.prep.padding.clone_from(&padding);
+      preparation.padding.clone_from(&padding);
 
       let x_min = axes_range[0];
       let y_min = axes_range[1];
@@ -310,46 +293,46 @@ impl SpartanDiagram {
       let mut width_adjustment = 0.0;
       let mut height_adjustment = 0.0;
 
-      let is_width_limited: bool = (total_width_range * self.prep.canvas_layout.canvas_size[1])
-         > (total_height_range * self.prep.canvas_layout.canvas_size[0]);
+      let is_width_limited: bool = (total_width_range * preparation.canvas_layout.canvas_size[1])
+         > (total_height_range * preparation.canvas_layout.canvas_size[0]);
 
       match self.sizing_scheme {
          SizingScheme::SquareShrink => {
             if is_width_limited {
-               self.prep.canvas_layout.canvas_size[1] =
-                  total_height_range * self.prep.canvas_layout.canvas_size[0] / total_width_range;
+               preparation.canvas_layout.canvas_size[1] =
+                  total_height_range * preparation.canvas_layout.canvas_size[0] / total_width_range;
             } else {
-               self.prep.canvas_layout.canvas_size[0] =
-                  total_width_range * self.prep.canvas_layout.canvas_size[1] / total_height_range;
+               preparation.canvas_layout.canvas_size[0] =
+                  total_width_range * preparation.canvas_layout.canvas_size[1] / total_height_range;
             }
          }
          SizingScheme::SquareCenter => {
             if is_width_limited {
                height_adjustment = 0.5
-                  * (total_width_range * self.prep.canvas_layout.canvas_size[1]
-                     / self.prep.canvas_layout.canvas_size[0]
+                  * (total_width_range * preparation.canvas_layout.canvas_size[1]
+                     / preparation.canvas_layout.canvas_size[0]
                      - total_height_range);
             } else {
                width_adjustment = 0.5
-                  * (total_height_range * self.prep.canvas_layout.canvas_size[0]
-                     / self.prep.canvas_layout.canvas_size[1]
+                  * (total_height_range * preparation.canvas_layout.canvas_size[0]
+                     / preparation.canvas_layout.canvas_size[1]
                      - total_width_range);
             }
          }
          SizingScheme::Fill => {}
       }
 
-      self.prep.canvas_layout.scale = [
-         self.prep.canvas_layout.canvas_size[0]
+      preparation.canvas_layout.scale = [
+         preparation.canvas_layout.canvas_size[0]
             / width_adjustment.mul_add(2.0f64, total_width_range),
-         self.prep.canvas_layout.canvas_size[1]
+         preparation.canvas_layout.canvas_size[1]
             / height_adjustment.mul_add(2.0f64, total_height_range),
       ];
 
-      self.prep.canvas_layout.offset = [
-         self.prep.canvas_layout.scale[0]
+      preparation.canvas_layout.offset = [
+         preparation.canvas_layout.scale[0]
             * ((x_max - x_min) * left_padding - x_min + width_adjustment),
-         self.prep.canvas_layout.scale[1]
+         preparation.canvas_layout.scale[1]
             * ((y_max - y_min) * bottom_padding - y_min + height_adjustment),
       ];
 
@@ -357,34 +340,38 @@ impl SpartanDiagram {
 
       // If content scaling not specified, use a heuristic based on overall diagram scaling.
       if scale_content == 0.0 {
-         scale_content = (self.prep.canvas_layout.scale[0]
+         scale_content = (preparation.canvas_layout.scale[0]
             * (x_max - x_min)
-            * self.prep.canvas_layout.scale[1]
+            * preparation.canvas_layout.scale[1]
             * (y_max - y_min)
-            / Self::default_base_width()
-            / Self::default_base_height())
-         .sqrt();
+            / self.canvas_size.0
+            / self.canvas_size.1)
+            .sqrt();
       }
-      self.prep.scale_content = scale_content;
+      preparation.scale_content = scale_content;
 
-      self.prep.diagram_choices.font_size = self.base_font_size * self.prep.scale_content;
-      self.prep.diagram_choices.point_size = self.base_point_size * self.prep.scale_content;
-      self.prep.diagram_choices.line_width = self.base_line_width * self.prep.scale_content;
-      self.prep.diagram_choices.annotation_offset_absolute[0] =
+      preparation.diagram_choices.font_size = self.base_font_size * preparation.scale_content;
+      preparation.diagram_choices.point_size = self.base_point_size * preparation.scale_content;
+      preparation.diagram_choices.line_width = self.base_line_width * preparation.scale_content;
+      preparation.diagram_choices.annotation_offset_absolute[0] =
          self.base_font_size * self.annotation_offset[0];
-      self.prep.diagram_choices.annotation_offset_absolute[1] =
+      preparation.diagram_choices.annotation_offset_absolute[1] =
          self.base_font_size * self.annotation_offset[1];
-      self.prep.diagram_choices.annotation_linear_scale = self.annotation_linear_scale;
-      self.prep.diagram_choices.annotation_area_scale = self.annotation_area_scale;
+      preparation.diagram_choices.annotation_linear_scale = self.annotation_linear_scale;
+      preparation.diagram_choices.annotation_area_scale = self.annotation_area_scale;
 
+      preparation.main_color_choice = self.base_color_choice.clone();
       if self.light_color_choice == ColorChoice::default() {
-         self.light_color_choice = self.base_color_choice.clone();
+         preparation.light_color_choice = self.base_color_choice.clone();
+      } else {
+         preparation.light_color_choice = self.light_color_choice.clone();
       }
-
       if self.text_color_choice == ColorChoice::default() {
-         self.text_color_choice = self.base_color_choice.clone();
+         preparation.text_color_choice = self.base_color_choice.clone();
+      } else {
+         preparation.text_color_choice = self.text_color_choice.clone();
       }
 
-      self.typestate = SpartanTypestate::Ready;
+      preparation
    }
 }

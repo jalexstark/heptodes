@@ -17,11 +17,11 @@ use std::collections::VecDeque;
 use std::io::Write;
 use zvx_base::{CubicPath, OneOfSegment, PolylinePath};
 use zvx_cairo::CairoSpartanCombo;
-use zvx_curves::managed::ManagedRatQuad;
 use zvx_curves::{
-   Curve, CurveEval, FourPointRatQuad, ManagedCubic, RatQuadPolyPath, ThreePointAngleRepr,
-   ZebraixAngle,
+   Curve, CurveEval, FourPointRatQuad, ManagedCubic, ManagedRatQuad, RatQuadPolyPath,
+   ThreePointAngleRepr, ZebraixAngle,
 };
+use zvx_docagram::diagram::{DrawableDiagram, SpartanDiagram, SpartanPreparation};
 use zvx_docagram::{AxesSpec, AxesStyle, AxisNumbering, SizingScheme};
 use zvx_drawable::{
    CirclesSet, ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, PathChoices, PathCompletion,
@@ -31,12 +31,10 @@ use zvx_drawable::{
 };
 use zvx_golden::filtered::JsonGoldenTest;
 use zvx_golden::filtered::SvgGoldenTest;
-use zvx_simples::generate::draw_sample_cubilinear;
-use zvx_simples::generate::draw_sample_rat_quad;
-use zvx_simples::generate::draw_sample_segment_sequence;
-use zvx_simples::generate::OneOfManagedSegment;
-use zvx_simples::generate::SampleCurveConfig;
-use zvx_simples::generate::SampleOption;
+use zvx_simples::generate::{
+   draw_sample_cubilinear, draw_sample_rat_quad, draw_sample_segment_sequence, OneOfManagedSegment,
+   SampleCurveConfig, SampleOption,
+};
 
 fn scale_coord_vec(v: &[[f64; 2]], s: f64) -> Vec<[f64; 2]> {
    let mut result = v.to_owned();
@@ -64,31 +62,17 @@ struct TestSizing {
    axes_spec: AxesSpec,
 }
 
-// // After dependency to test_utils is added, use type-def for the result box.
-// fn write_sample_to_write<W: Write + 'static>(
-//    out_stream: W,
-//    cairo_spartan: &mut CairoSpartanCombo,
-// ) -> Result<Box<dyn core::any::Any>, cairo::StreamWithError> {
-//    assert!(cairo_spartan.spartan.is_ready());
-//    cairo_spartan.render_diagram_to_stream(out_stream)
-// }
-
-fn create_sized_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
-   let mut cairo_spartan = CairoSpartanCombo::new();
-   cairo_spartan.spartan.sizing_scheme = sizing.sizing_scheme;
-   cairo_spartan.spartan.base_width = sizing.canvas_size[0];
-   cairo_spartan.spartan.base_height = sizing.canvas_size[1];
-   cairo_spartan.spartan.axes_range.clone_from(&sizing.axes_range);
-   cairo_spartan.spartan.padding.clone_from(&sizing.padding);
-
-   cairo_spartan
+fn create_sized_diagram(sizing: &TestSizing) -> SpartanDiagram {
+   SpartanDiagram {
+      sizing_scheme: sizing.sizing_scheme,
+      canvas_size: (sizing.canvas_size[0], sizing.canvas_size[1]),
+      axes_range: sizing.axes_range.clone(),
+      padding: sizing.padding.clone(),
+      ..Default::default()
+   }
 }
 
-fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
-   let mut cairo_spartan = create_sized_diagram(sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
-
+fn add_debug_box(drawable_diagram: &mut DrawableDiagram, sizing: &TestSizing) {
    {
       let pattern_layer = 0;
       let qualified_drawable = QualifiedDrawable {
@@ -104,7 +88,7 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
             ..Default::default()
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
    {
       let pattern_layer = 0;
@@ -127,36 +111,72 @@ fn build_diagram(sizing: &TestSizing) -> CairoSpartanCombo {
             },
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
-
-   cairo_spartan
 }
 
-fn run_json_svg(filestem: &str, cairo_spartan: &mut CairoSpartanCombo) {
-   {
-      // let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", filestem);
-      // let serialized = to_string_pretty::<SpartanDiagram>(&cairo_spartan.spartan).unwrap();
-      // json_golden.writeln_as_bytes(&serialized);
-      let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", filestem);
+struct JsonSvgRunner {
+   filestem: String,
+   svg_golden: SvgGoldenTest,
+   combo: CairoSpartanCombo,
+   raw_result: Option<Box<dyn core::any::Any>>,
+}
+
+impl JsonSvgRunner {
+   fn new(filestem: &str, preparation: &SpartanPreparation) -> Self {
+      let svg_golden = SvgGoldenTest::new("tests/goldenfiles/", filestem);
+      let combo = CairoSpartanCombo::create_for_stream(svg_golden.get_raw_writeable(), preparation);
+
+      Self { filestem: filestem.to_string(), svg_golden, combo, raw_result: None }
+   }
+
+   fn render(&mut self) {
+      self.raw_result = Some(self.combo.render_diagram().unwrap());
+   }
+
+   fn check_svg_and_json(&mut self) {
+      let raw_result = self.raw_result.take();
+      self.svg_golden.handover_result(raw_result.expect("No output generated in SVG test runner."));
+
+      //
+
+      let mut json_golden = JsonGoldenTest::new("tests/goldenfiles/", &self.filestem);
       // This only really fails if keys cannot be rendered.
       //
       // Consider moving into golden test crate. This is only trigger for serde_json dependency.
-      to_writer_pretty(&json_golden.out_stream, &cairo_spartan.spartan).unwrap();
+      to_writer_pretty(&json_golden.out_stream, &self.combo.drawable_diagram).unwrap();
       let bytes_amount_nl = json_golden.out_stream.write(b"\n").unwrap();
       assert!(bytes_amount_nl == 1);
    }
+}
 
-   {
-      let svg_golden = SvgGoldenTest::new("tests/goldenfiles/", filestem);
-      let raw_result = cairo_spartan.render_diagram_to_write(svg_golden.get_raw_writeable());
-      svg_golden.handover_result(raw_result.unwrap());
+impl Drop for JsonSvgRunner {
+   fn drop(&mut self) {
+      // Improve error reporting.  A check method should have been run to clear the drawing
+      // result.
+      assert!(self.raw_result.is_none());
    }
 }
 
+fn build_from_sizing(filestem: &str, sizing: &TestSizing) -> JsonSvgRunner {
+   let spartan = create_sized_diagram(sizing);
+   let preparation = spartan.prepare();
+
+   let mut runner = JsonSvgRunner::new(filestem, &preparation);
+   sizing.axes_spec.generate_axes(&mut runner.combo.drawable_diagram);
+
+   runner
+}
+
+fn render_and_check(runner: &mut JsonSvgRunner) {
+   runner.render();
+   runner.check_svg_and_json();
+}
+
 fn spartan_sizing(filestem: &str, sizing: &TestSizing) {
-   let mut cairo_spartan = build_diagram(sizing);
-   run_json_svg(filestem, &mut cairo_spartan);
+   let mut runner = build_from_sizing(filestem, sizing);
+   add_debug_box(&mut runner.combo.drawable_diagram, sizing);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -283,11 +303,13 @@ fn spartan_sizing_h_test() {
       },
    };
 
-   let mut cairo_spartan = build_diagram(&sizing);
+   let mut runner = build_from_sizing("spartan_sizing_h", &sizing);
+   add_debug_box(&mut runner.combo.drawable_diagram, &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let title_layer = 10;
    let vertical_title_anchor = -2.48;
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: title_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
@@ -304,7 +326,7 @@ fn spartan_sizing_h_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: title_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -321,7 +343,8 @@ fn spartan_sizing_h_test() {
          ..Default::default()
       }),
    });
-   run_json_svg("spartan_sizing_h", &mut cairo_spartan);
+
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -340,9 +363,8 @@ fn spartan_sizing_i_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_i", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    {
       let pattern_layer = 0;
@@ -360,7 +382,7 @@ fn spartan_sizing_i_test() {
             ..Default::default()
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
    {
       let pattern_layer = 0;
@@ -378,7 +400,7 @@ fn spartan_sizing_i_test() {
             },
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
 
    let pattern_vec =
@@ -393,7 +415,7 @@ fn spartan_sizing_i_test() {
             ..Default::default()
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
 
    {
@@ -405,7 +427,7 @@ fn spartan_sizing_i_test() {
             ..Default::default()
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
 
    {
@@ -417,7 +439,7 @@ fn spartan_sizing_i_test() {
             ..Default::default()
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
 
    {
@@ -429,10 +451,10 @@ fn spartan_sizing_i_test() {
             ..Default::default()
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
 
-   run_json_svg("spartan_sizing_i", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -452,9 +474,8 @@ fn spartan_sizing_j_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_j", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let pattern_vec = vec![
       [2.0, 0.0],
@@ -473,7 +494,7 @@ fn spartan_sizing_j_test() {
 
    let pattern_layer = 0;
    {
-      cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+      drawable_diagram.drawables.push(QualifiedDrawable {
          layer: pattern_layer,
          drawable: OneOfDrawable::Points(PointsDrawable {
             point_choice: PointChoice::Dot,
@@ -491,12 +512,12 @@ fn spartan_sizing_j_test() {
             centers: scale_coord_vec(&pattern_vec, -1.0),
          }),
       };
-      cairo_spartan.spartan.drawables.push(qualified_drawable);
+      drawable_diagram.drawables.push(qualified_drawable);
    }
 
    let spanning_string = "Elpo xftdg";
 
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -505,7 +526,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
@@ -518,7 +539,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 1.5] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -531,7 +552,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 0.0] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Small,
@@ -544,7 +565,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, -1.5] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -557,7 +578,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
@@ -570,7 +591,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -583,7 +604,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Small,
@@ -596,7 +617,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -608,7 +629,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -621,7 +642,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 1.5] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
@@ -634,7 +655,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 3.0] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Small,
@@ -647,7 +668,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
@@ -660,7 +681,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 1.5] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -673,7 +694,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 0.0] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Small,
@@ -686,7 +707,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, -1.5] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
@@ -702,7 +723,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -718,7 +739,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Small,
@@ -734,7 +755,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -746,7 +767,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -759,7 +780,7 @@ fn spartan_sizing_j_test() {
          ..Default::default()
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
@@ -772,7 +793,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -1.5] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Large,
@@ -785,7 +806,7 @@ fn spartan_sizing_j_test() {
          texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -3.0] }],
       }),
    });
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: pattern_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Small,
@@ -799,7 +820,7 @@ fn spartan_sizing_j_test() {
       }),
    });
 
-   run_json_svg("spartan_sizing_j", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -818,17 +839,18 @@ fn spartan_sizing_k_test() {
       ..Default::default()
    };
 
-   // let mut cairo_spartan = build_diagram(&sizing);
+   let mut spartan = create_sized_diagram(&sizing);
+   spartan.base_line_width = 4.0;
+   let preparation = spartan.prepare();
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.base_line_width = 4.0;
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = JsonSvgRunner::new("spartan_sizing_k", &preparation);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
+   sizing.axes_spec.generate_axes(drawable_diagram);
 
    let behind_layer = 10;
    let front_layer = 15;
 
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: front_layer,
       drawable: OneOfDrawable::Circles(Strokeable::<CirclesSet> {
          path_choices: PathChoices { color: ColorChoice::BrightRed, ..Default::default() },
@@ -836,7 +858,7 @@ fn spartan_sizing_k_test() {
       }),
    });
 
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: behind_layer,
       drawable: OneOfDrawable::Circles(Strokeable::<CirclesSet> {
          path_choices: PathChoices { color: ColorChoice::Blue, ..Default::default() },
@@ -844,7 +866,7 @@ fn spartan_sizing_k_test() {
       }),
    });
 
-   run_json_svg("spartan_sizing_k", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -863,13 +885,12 @@ fn spartan_sizing_l_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_l", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let drawable_layer = 0;
 
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: drawable_layer,
       drawable: OneOfDrawable::Polyline(Strokeable::<PolylinePath> {
          path_choices: PathChoices { color: ColorChoice::Red, ..Default::default() },
@@ -885,7 +906,7 @@ fn spartan_sizing_l_test() {
       }),
    });
 
-   cairo_spartan.spartan.drawables.push(QualifiedDrawable {
+   drawable_diagram.drawables.push(QualifiedDrawable {
       layer: drawable_layer,
       drawable: OneOfDrawable::SegmentSequence(SegmentSequence {
          path_choices: PathChoices { color: ColorChoice::Green, ..Default::default() },
@@ -902,7 +923,7 @@ fn spartan_sizing_l_test() {
       }),
    });
 
-   run_json_svg("spartan_sizing_l", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -923,9 +944,8 @@ fn spartan_sizing_m_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_m", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let rat_quad = Curve::<RatQuadPolyPath> {
       path: RatQuadPolyPath {
@@ -938,10 +958,10 @@ fn spartan_sizing_m_test() {
    };
 
    let managed_curve =
-      ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
+      ManagedRatQuad::create_from_polynomial(&rat_quad, drawable_diagram.prep.axes_range);
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Red),
          points_color: Some(ColorChoice::Blue),
@@ -953,7 +973,7 @@ fn spartan_sizing_m_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_m", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -974,9 +994,8 @@ fn spartan_sizing_n_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_n", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let rat_quad = Curve::<RatQuadPolyPath> {
       path: RatQuadPolyPath {
@@ -989,10 +1008,10 @@ fn spartan_sizing_n_test() {
    };
 
    let managed_curve =
-      ManagedRatQuad::create_from_polynomial(&rat_quad, cairo_spartan.spartan.prep.axes_range);
+      ManagedRatQuad::create_from_polynomial(&rat_quad, drawable_diagram.prep.axes_range);
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Red),
          points_color: Some(ColorChoice::Blue),
@@ -1003,7 +1022,7 @@ fn spartan_sizing_n_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_n", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // This does not need to be graphical, but instead should match numerically.  The polyline
@@ -1026,9 +1045,8 @@ fn spartan_sizing_n1_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_n1", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let managed_curve = ManagedRatQuad::create_from_polynomial(
       &Curve::<RatQuadPolyPath> {
@@ -1040,14 +1058,14 @@ fn spartan_sizing_n1_test() {
          },
          ..Default::default()
       },
-      cairo_spartan.spartan.prep.axes_range,
+      drawable_diagram.prep.axes_range,
    );
    // TODO: Consider removing or reworking this test, likely redundant.
    // managed_curve.raise_to_symmetric_range().unwrap();
 
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Red),
          points_color: Some(ColorChoice::Blue),
@@ -1058,7 +1076,7 @@ fn spartan_sizing_n1_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_n1", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -1080,9 +1098,8 @@ fn spartan_sizing_o_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_o", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &Curve::<RatQuadPolyPath> {
@@ -1094,14 +1111,14 @@ fn spartan_sizing_o_test() {
          },
          ..Default::default()
       },
-      cairo_spartan.spartan.prep.axes_range,
+      drawable_diagram.prep.axes_range,
    );
 
    managed_curve.apply_bilinear((sigma, 1.0)).unwrap();
 
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Red),
          points_color: Some(ColorChoice::Blue),
@@ -1112,7 +1129,7 @@ fn spartan_sizing_o_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_o", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Symmetric range, warped.
@@ -1138,9 +1155,8 @@ fn spartan_sizing_o1_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_o1", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &Curve::<RatQuadPolyPath> {
@@ -1152,7 +1168,7 @@ fn spartan_sizing_o1_test() {
          },
          ..Default::default()
       },
-      cairo_spartan.spartan.prep.axes_range,
+      drawable_diagram.prep.axes_range,
    );
 
    // Doesn't make much sense. Remove.
@@ -1162,7 +1178,7 @@ fn spartan_sizing_o1_test() {
 
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Red),
          points_color: Some(ColorChoice::Blue),
@@ -1173,7 +1189,7 @@ fn spartan_sizing_o1_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_o1", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Symmetric range, warped.
@@ -1198,9 +1214,8 @@ fn spartan_sizing_o2_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_o2", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let mut managed_curve = ManagedRatQuad::create_from_polynomial(
       &Curve::<RatQuadPolyPath> {
@@ -1212,7 +1227,7 @@ fn spartan_sizing_o2_test() {
          },
          ..Default::default()
       },
-      cairo_spartan.spartan.prep.axes_range,
+      drawable_diagram.prep.axes_range,
    );
 
    // TODO: Consider removing or reworking this test, likely redundant.
@@ -1221,7 +1236,7 @@ fn spartan_sizing_o2_test() {
 
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Red),
          points_color: Some(ColorChoice::Blue),
@@ -1232,7 +1247,7 @@ fn spartan_sizing_o2_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_o2", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -1253,9 +1268,8 @@ fn spartan_sizing_p_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_p", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let managed_curve = ManagedRatQuad::create_from_polynomial(
       &Curve::<RatQuadPolyPath> {
@@ -1267,12 +1281,12 @@ fn spartan_sizing_p_test() {
          },
          ..Default::default()
       },
-      cairo_spartan.spartan.prep.axes_range,
+      drawable_diagram.prep.axes_range,
    );
 
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Green),
          points_color: Some(ColorChoice::Blue),
@@ -1288,7 +1302,7 @@ fn spartan_sizing_p_test() {
 
    draw_sample_rat_quad(
       &managed_curve,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::BrightBlue),
          points_color: None,
@@ -1296,7 +1310,7 @@ fn spartan_sizing_p_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_p", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Test transformations relevant especially to linear point arrangement.
@@ -1416,9 +1430,8 @@ fn spartan_sizing_q_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_q", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let managed_curve_a = ManagedCubic::create_from_control_points(
       &Curve::<CubicPath> {
@@ -1428,11 +1441,11 @@ fn spartan_sizing_q_test() {
          },
          sigma: 1.0,
       },
-      cairo_spartan.spartan.prep.axes_range,
+      drawable_diagram.prep.axes_range,
    );
    draw_sample_cubilinear(
       &managed_curve_a,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Green),
          control_color: Some(ColorChoice::YellowBrown),
@@ -1446,7 +1459,7 @@ fn spartan_sizing_q_test() {
    managed_curve_b.bilinear_transform((sigma, 1.0));
    draw_sample_cubilinear(
       &managed_curve_b,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::BrightBlue),
          points_color: Some(ColorChoice::Blue),
@@ -1459,7 +1472,7 @@ fn spartan_sizing_q_test() {
    managed_curve_d.select_range([t_range[0] + 0.5, t_range[0] + 5.5]);
    draw_sample_cubilinear(
       &managed_curve_d,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Green),
          points_color: Some(ColorChoice::Green),
@@ -1470,13 +1483,13 @@ fn spartan_sizing_q_test() {
       },
    );
 
-   let mut managed_curve_c = managed_curve_a.clone();
+   let mut managed_curve_c = managed_curve_a;
    managed_curve_c.displace([4.0, 0.0]);
    managed_curve_c.bilinear_transform((sigma, 1.0));
    managed_curve_c.raw_change_range([t_range[0] - 1.5, t_range[1] + 4.5]);
    draw_sample_cubilinear(
       &managed_curve_c,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::BrightBlue),
          points_color: Some(ColorChoice::Blue),
@@ -1489,7 +1502,7 @@ fn spartan_sizing_q_test() {
    managed_curve_e.select_range([t_range[0] - 1.5 + 1.5 * 4.0, t_range[0] - 1.5 + 1.5 * 10.0]);
    draw_sample_cubilinear(
       &managed_curve_e,
-      &mut cairo_spartan.spartan,
+      drawable_diagram,
       &SampleCurveConfig {
          main_color: Some(ColorChoice::Green),
          points_color: Some(ColorChoice::Green),
@@ -1500,7 +1513,7 @@ fn spartan_sizing_q_test() {
       },
    );
 
-   run_json_svg("spartan_sizing_q", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -1522,9 +1535,8 @@ fn spartan_sizing_r_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_r", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    {
       let shift_x = -3.0;
@@ -1539,7 +1551,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1547,7 +1559,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1572,7 +1584,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1580,7 +1592,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1607,7 +1619,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1615,7 +1627,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1639,7 +1651,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1647,7 +1659,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1671,7 +1683,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1679,7 +1691,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1705,7 +1717,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1713,7 +1725,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1738,7 +1750,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1746,7 +1758,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1772,7 +1784,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1780,7 +1792,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1804,7 +1816,7 @@ fn spartan_sizing_r_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
 
       // managed_curve.raise_to_symmetric_range().unwrap();
@@ -1812,7 +1824,7 @@ fn spartan_sizing_r_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -1823,7 +1835,7 @@ fn spartan_sizing_r_test() {
       );
    }
 
-   run_json_svg("spartan_sizing_r", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -1845,9 +1857,8 @@ fn spartan_sizing_s_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_s", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let s = 2.5;
 
@@ -1864,11 +1875,11 @@ fn spartan_sizing_s_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: None,
@@ -1902,11 +1913,11 @@ fn spartan_sizing_s_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: None,
             points_color: Some(ColorChoice::Blue),
@@ -1932,11 +1943,11 @@ fn spartan_sizing_s_test() {
                r: t_range,
                ..Default::default()
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          draw_sample_rat_quad(
             &managed_curve,
-            &mut cairo_spartan.spartan,
+            drawable_diagram,
             &SampleCurveConfig {
                main_color: Some(ColorChoice::Green),
                points_color: Some(ColorChoice::Blue),
@@ -1949,7 +1960,7 @@ fn spartan_sizing_s_test() {
       }
    }
 
-   run_json_svg("spartan_sizing_s", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Parabola test, with most plotted via RatQuad, but confirmatory circles via cubic.
@@ -1972,9 +1983,8 @@ fn spartan_sizing_t_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_t", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let x_a = [-3.0, -1.0, -1.0, -3.0];
    let y_a = [-2.0, 0.0, 0.0, 2.0];
@@ -1998,12 +2008,12 @@ fn spartan_sizing_t_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       // Switch from approx when implemented!!!!!!!
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::BrightGreen),
@@ -2026,11 +2036,11 @@ fn spartan_sizing_t_test() {
             },
             sigma: 1.0,
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       draw_sample_cubilinear(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: None,
             points_color: Some(ColorChoice::Blue),
@@ -2050,12 +2060,12 @@ fn spartan_sizing_t_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       // Switch from approx when implemented!!!!!!!
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::BrightGreen),
@@ -2078,11 +2088,11 @@ fn spartan_sizing_t_test() {
             },
             sigma: 1.0,
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       draw_sample_cubilinear(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: None,
             points_color: Some(ColorChoice::Blue),
@@ -2102,12 +2112,12 @@ fn spartan_sizing_t_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       // Switch from approx when implemented!!!!!!!
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::BrightGreen),
@@ -2130,11 +2140,11 @@ fn spartan_sizing_t_test() {
             },
             sigma: 1.0,
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       draw_sample_cubilinear(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: None,
             points_color: Some(ColorChoice::Blue),
@@ -2144,7 +2154,7 @@ fn spartan_sizing_t_test() {
       );
    }
 
-   run_json_svg("spartan_sizing_t", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 fn translate_vec(coords: &[[f64; 2]], offset: [f64; 2]) -> Vec<[f64; 2]> {
@@ -2230,9 +2240,8 @@ fn spartan_sizing_u_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_u", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    // Need to enable: fix ratquad rendering that is parabolic.
 
@@ -2250,7 +2259,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2259,7 +2268,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -2283,7 +2292,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2292,7 +2301,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -2316,7 +2325,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2325,7 +2334,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -2349,7 +2358,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2358,7 +2367,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -2382,7 +2391,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2391,7 +2400,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: None,
@@ -2414,7 +2423,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2423,7 +2432,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: None,
@@ -2446,7 +2455,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2455,7 +2464,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: None,
@@ -2478,7 +2487,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2487,7 +2496,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: None,
@@ -2510,7 +2519,7 @@ fn spartan_sizing_u_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2519,7 +2528,7 @@ fn spartan_sizing_u_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: None,
@@ -2528,7 +2537,7 @@ fn spartan_sizing_u_test() {
       );
    }
 
-   run_json_svg("spartan_sizing_u", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 #[test]
@@ -2551,9 +2560,8 @@ fn spartan_sizing_v_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_v", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    let p_d = [1.5, 0.5];
    let p_a = [0.0, 3.0];
@@ -2587,7 +2595,7 @@ fn spartan_sizing_v_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2596,7 +2604,7 @@ fn spartan_sizing_v_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             // main_color: None,
             main_color: Some(ColorChoice::Green),
@@ -2624,7 +2632,7 @@ fn spartan_sizing_v_test() {
             r: t_range,
             ..Default::default()
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       )
       .expect("Failure");
 
@@ -2633,7 +2641,7 @@ fn spartan_sizing_v_test() {
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -2658,14 +2666,14 @@ fn spartan_sizing_v_test() {
 
       let managed_curve = ManagedRatQuad::create_from_four_points(
          &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       // managed_curve.raise_to_symmetric_range().unwrap();
       // managed_curve.raise_to_offset_odd_even().unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::RedRedBlue),
             // main_line_choice: LineChoice::Light,
@@ -2675,7 +2683,7 @@ fn spartan_sizing_v_test() {
       );
    }
 
-   run_json_svg("spartan_sizing_v", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Closed polyline test.
@@ -2698,9 +2706,8 @@ fn spartan_sizing_w_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_w", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    {
       let managed_curve = ManagedCubic::create_from_control_points(
@@ -2711,11 +2718,11 @@ fn spartan_sizing_w_test() {
             },
             sigma: 1.0,
          },
-         cairo_spartan.spartan.prep.axes_range,
+         drawable_diagram.prep.axes_range,
       );
       draw_sample_cubilinear(
          &managed_curve,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             points_color: Some(ColorChoice::Blue),
@@ -2725,7 +2732,7 @@ fn spartan_sizing_w_test() {
       );
    }
 
-   run_json_svg("spartan_sizing_w", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Mid-range tangent.
@@ -2748,9 +2755,8 @@ fn spartan_sizing_x_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_x", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    {
       let c_x = 2.0;
@@ -2770,11 +2776,11 @@ fn spartan_sizing_x_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
             &managed_curve,
-            &mut cairo_spartan.spartan,
+            drawable_diagram,
             &SampleCurveConfig {
                main_color: Some(ColorChoice::Green),
                points_color: Some(ColorChoice::Blue),
@@ -2803,7 +2809,7 @@ fn spartan_sizing_x_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
       {
          let qualified_drawable = QualifiedDrawable {
@@ -2819,7 +2825,7 @@ fn spartan_sizing_x_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
       {
          let qualified_drawable = QualifiedDrawable {
@@ -2838,7 +2844,7 @@ fn spartan_sizing_x_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
    }
 
@@ -2860,11 +2866,11 @@ fn spartan_sizing_x_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
             &managed_curve,
-            &mut cairo_spartan.spartan,
+            drawable_diagram,
             &SampleCurveConfig {
                main_color: None,
                points_color: Some(ColorChoice::Red),
@@ -2889,11 +2895,11 @@ fn spartan_sizing_x_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
             &managed_curve,
-            &mut cairo_spartan.spartan,
+            drawable_diagram,
             &SampleCurveConfig {
                main_color: Some(ColorChoice::Green),
                points_color: Some(ColorChoice::Green),
@@ -2916,11 +2922,11 @@ fn spartan_sizing_x_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
             &managed_curve,
-            &mut cairo_spartan.spartan,
+            drawable_diagram,
             &SampleCurveConfig {
                main_color: Some(ColorChoice::Blue),
                points_color: Some(ColorChoice::Blue),
@@ -2943,11 +2949,11 @@ fn spartan_sizing_x_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
    }
 
-   run_json_svg("spartan_sizing_x", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Mid-range tangent.
@@ -2970,9 +2976,8 @@ fn spartan_sizing_y_test() {
       ..Default::default()
    };
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("spartan_sizing_y", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
 
    {
       let c_x = 2.0;
@@ -2992,11 +2997,11 @@ fn spartan_sizing_y_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
             &managed_curve,
-            &mut cairo_spartan.spartan,
+            drawable_diagram,
             &SampleCurveConfig {
                main_color: Some(ColorChoice::Green),
                points_color: Some(ColorChoice::Blue),
@@ -3025,7 +3030,7 @@ fn spartan_sizing_y_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
       {
          let qualified_drawable = QualifiedDrawable {
@@ -3041,7 +3046,7 @@ fn spartan_sizing_y_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
       {
          let qualified_drawable = QualifiedDrawable {
@@ -3060,7 +3065,7 @@ fn spartan_sizing_y_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
    }
 
@@ -3086,11 +3091,11 @@ fn spartan_sizing_y_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
             &managed_curve,
-            &mut cairo_spartan.spartan,
+            drawable_diagram,
             &SampleCurveConfig {
                main_color: Some(ColorChoice::Green),
                points_color: Some(ColorChoice::Blue),
@@ -3119,11 +3124,11 @@ fn spartan_sizing_y_test() {
             }),
             ..Default::default()
          };
-         cairo_spartan.spartan.drawables.push(qualified_drawable);
+         drawable_diagram.drawables.push(qualified_drawable);
       }
    }
 
-   run_json_svg("spartan_sizing_y", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }
 
 // Mid-range tangent.
@@ -3145,9 +3150,9 @@ fn segment_sequence_a_test() {
    };
    let drawable_layer = 30;
 
-   let mut cairo_spartan = create_sized_diagram(&sizing);
-   cairo_spartan.spartan.prepare();
-   sizing.axes_spec.generate_axes(&mut cairo_spartan.spartan);
+   let mut runner = build_from_sizing("segment_sequence_a", &sizing);
+   let drawable_diagram = &mut runner.combo.drawable_diagram;
+
    {
       let mut managed_segments: VecDeque<OneOfManagedSegment> = VecDeque::new();
 
@@ -3164,7 +3169,7 @@ fn segment_sequence_a_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
 
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
@@ -3174,7 +3179,7 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Blue, ..Default::default() },
          PathCompletion::Closed,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
@@ -3191,7 +3196,7 @@ fn segment_sequence_a_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
       }
@@ -3200,7 +3205,7 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Green, ..Default::default() },
          PathCompletion::Open,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
@@ -3218,7 +3223,7 @@ fn segment_sequence_a_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
 
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
@@ -3232,7 +3237,7 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Blue, ..Default::default() },
          PathCompletion::Closed,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
@@ -3249,7 +3254,7 @@ fn segment_sequence_a_test() {
                path: CubicPath { r: t_range, p: p_from_x_y_4(&x, &y) },
                sigma: 1.0,
             },
-            cairo_spartan.spartan.prep.axes_range,
+            drawable_diagram.prep.axes_range,
          );
 
          managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
@@ -3263,7 +3268,7 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Green, ..Default::default() },
          PathCompletion::Open,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
@@ -3276,7 +3281,7 @@ fn segment_sequence_a_test() {
             );
             let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
-               cairo_spartan.spartan.prep.axes_range,
+               drawable_diagram.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
@@ -3291,7 +3296,7 @@ fn segment_sequence_a_test() {
             );
             let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
-               cairo_spartan.spartan.prep.axes_range,
+               drawable_diagram.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
@@ -3304,7 +3309,7 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Blue, ..Default::default() },
          PathCompletion::Closed,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
@@ -3317,7 +3322,7 @@ fn segment_sequence_a_test() {
             );
             let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
-               cairo_spartan.spartan.prep.axes_range,
+               drawable_diagram.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
@@ -3332,7 +3337,7 @@ fn segment_sequence_a_test() {
             );
             let managed_curve = ManagedRatQuad::create_from_four_points(
                &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
-               cairo_spartan.spartan.prep.axes_range,
+               drawable_diagram.prep.axes_range,
             );
             // managed_curve.raise_to_symmetric_range().unwrap();
             // managed_curve.raise_to_offset_odd_even().unwrap();
@@ -3345,7 +3350,7 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Green, ..Default::default() },
          PathCompletion::Open,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
@@ -3368,7 +3373,7 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Green, ..Default::default() },
          PathCompletion::Open,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
@@ -3391,11 +3396,11 @@ fn segment_sequence_a_test() {
          PathChoices { color: ColorChoice::Blue, ..Default::default() },
          PathCompletion::Closed,
          drawable_layer,
-         &mut cairo_spartan.spartan,
+         drawable_diagram,
       );
 
       managed_segments.clear();
    }
 
-   run_json_svg("segment_sequence_a", &mut cairo_spartan);
+   render_and_check(&mut runner);
 }

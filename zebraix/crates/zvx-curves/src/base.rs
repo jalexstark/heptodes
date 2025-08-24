@@ -8,9 +8,7 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
-use zvx_base::default_unit_f64;
-use zvx_base::is_default;
-use zvx_base::is_default_unit_f64;
+use zvx_base::{default_unit_f64, is_default, is_default_unit_f64};
 
 // Intended for use directly on paths, rather than those wrapped into Curves.
 pub trait TEval {

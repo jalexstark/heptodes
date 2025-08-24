@@ -1,11 +1,4 @@
 {
-  "sizing_scheme": "SquareCenter",
-  "axes_range": [
-    5.0
-  ],
-  "padding": [
-    0.05
-  ],
   "drawables": [
     {
       "drawable": {

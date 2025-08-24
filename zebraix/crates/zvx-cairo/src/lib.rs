@@ -16,3 +16,4 @@ pub mod combination;
 pub mod render;
 
 pub use combination::CairoSpartanCombo;
+pub use render::CairoSpartanRender;
