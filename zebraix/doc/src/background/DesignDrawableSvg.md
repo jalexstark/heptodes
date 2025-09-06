@@ -95,7 +95,7 @@ Font:
 
 Path:
 
-*   Ellipse arc, ellipse. Most common RQS. arc(&self, xc: f64, yc: f64, radius:
+*   Ellipse arc, ellipse. Most common RQC. arc(&self, xc: f64, yc: f64, radius:
     f64, angle1: f64, angle2: f64)
 *   Bézier cubic. curve_to(&self, x1: f64, y1: f64, x2: f64, y2: f64, x3: f64,
     y3: f64)

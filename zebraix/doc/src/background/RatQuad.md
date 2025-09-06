@@ -21,7 +21,7 @@ as in figure captions.
 <!-- mdformat off (Document metadata) -->
 
 ---
-title: Rational Quadratic Splines and Bézier Splines
+title: Rational Quadratic Curves and Bézier Curves
 author:
 - J. Alex Stark
 date: 2003--2022
@@ -57,17 +57,17 @@ circles with external labels, we would still need to attach the edges to the
 circles. We would benefit from being able to lay out edge attachment points
 automatically. This benefit would grow quickly with an only modest expansion of
 vertex shapes to rectangles, to rounded rectangles parallelograms, and so on.
-Cubic splines provide an underlying mechanism for this, but circles and more
+Cubic curves provide an underlying mechanism for this, but circles and more
 general arcs are challenging. Zebraix could take a hard-coded approach to
 circles and rectangles. Here we explore what it would take to be more flexible.
 
 For the foreseeable future Zebraix's rendering will be primarily to SVG. Since
 any SVG renderer, like Cairo, has to handle text, we assume that it will handle
-cubic splines and elliptical arcs. We want to avoid adding a lot of complexity
+cubic curves and elliptical arcs. We want to avoid adding a lot of complexity
 to Zebraix. We might characterize our present discussion asking what it would
 take to "teach Zebraix" about affine transformations and circular arcs, and
 hence also affine transformations of circular arcs. This assume that Zebraix
-already "knows" about cubic splines.
+already "knows" about cubic curves.
 
 This document is not short. Nonetheless, the solutions that we propose are not
 especially complex or extensive to code, and they are approachable and practical
@@ -75,42 +75,42 @@ for the user.
 
 ## Specific aims
 
-Cubic splines can, as mentioned, above, be readily split parametrically into
+Cubic curves can, as mentioned, above, be readily split parametrically into
 pieces and otherwise be joined, transformed, and specified quite elegantly. On
 the other hand, elliptical arcs, and indeed segments of conic sections more
 generally, are a bit more tricky, even when expressed as rational polynomials.
-Consequently this document is really about rational quadratic splines and how
+Consequently this document is really about rational quadratic curves and how
 they might be used in the context of Zebraix. We explore the topics that follow
 below. These correspond approximately to sections. From henceforth we will often
-abbreviate *rational quadratic spline* to *RQS*.
+abbreviate *rational quadratic curve* to *RQC*.
 
-*   Matching RQSs to cubic splines. Particular attention paid to parabolas, we
+*   Matching RQCs to cubic curves. Particular attention paid to parabolas, we
     are common to both, and to matching velocities.
 
-*   Path redundancy in RQSs, and bilinear transformation.
+*   Path redundancy in RQCs, and bilinear transformation.
 
-*   Conversion of RQSs to elliptical arcs, when appropriate for rendering
+*   Conversion of RQCs to elliptical arcs, when appropriate for rendering
     engines.
 
-*   Schemes for distributing points along RQSs.
+*   Schemes for distributing points along RQCs.
 
-*   Specification of RQSs in ways that are invariant under affine
+*   Specification of RQCs in ways that are invariant under affine
     transformation.
 
-*   Conversion of RQSs to approximating cubic splines when the equivalent
+*   Conversion of RQCs to approximating cubic curves when the equivalent
     elliptical arc has a very large axis.
 
-# Topic: Matching splines
+# Topic: Matching curves
 
 Familiarity with the content of this section iss assumed in subsequent sections.
-We assume familiarity with the basics of cubic Bézier splines, but will try to
-give a more standalone discussion of rational quadratic splines. Understanding
+We assume familiarity with the basics of cubic Bézier curves, but will try to
+give a more standalone discussion of rational quadratic curves. Understanding
 of conic sections is assumed.
 
-# Splines foundation
+# Curves foundation
 
 We will base all our discussion on two defining equations: one for cubic
-splines, and one for RQSs. The cubic spline is defined with respect to $t$,
+curves, and one for RQCs. The cubic curve is defined with respect to $t$,
 which has the range $[0, 1]$ over the path. The path and its derivative are
 
 $$
@@ -121,7 +121,7 @@ $$
 g'(t) = 3(1-t)^2(p_1-p_0) + 6t(1-t)(p_2-p_1) + 3t^2(p_3-p_2) \label{Eq02}
 $$
 
-For RQSs, we use a three-point expression along with three weights ($w_A$,
+For RQCs, we use a three-point expression along with three weights ($w_A$,
 $w_B$, $w_C$). The path and its derivative are
 
 <!-- mdformat off (Document metadata) -->
@@ -147,13 +147,13 @@ $$
 There is redundancy in the weights: they can be multiplied by an arbitrary
 scaling factor.
 
-![Examples of cubic splines and rational quadratic splines (RQSs) that fit into
+![Examples of cubic curves and rational quadratic curves (RQCs) that fit into
 the same parallelogram. The top-left curve is cubic with control points evenly
 spaced with respect to the end points. In the next the control points are
-unevenly spaced. The top-right curve illustrates the ability of cubic cplines to
+unevenly spaced. The top-right curve illustrates the ability of cubic curves to
 take an S shape. (Pandoc has no paragraph break in captions.) The bottom-left
-curve is a parabole, and thus is both a cubic spline and a RQS. The next is an
-elliptical RQS, and one that is like a quadrant in that it is the affine
+curve is a parabole, and thus is both a cubic curve and a RQC. The next is an
+elliptical RQC, and one that is like a quadrant in that it is the affine
 transformation of a circle quadrant. Finally, in the bottom-right the curve is
 also an elliptical arc, this one with a flatter
 shape\label{figA}.](figs-ratquad/RatQuad-A.svg)
@@ -176,20 +176,20 @@ $$
 f'(1) = \frac{2w_B}{w_C}(p_3-p_m) \label{Eq08}
 $$
 
-So both forms of spline have readily explicable path directions at the end
-points. Cubic splines have a velocity interpretation that is somewhat
-understandable, but the three weights in the RQS expression are not very
+So both forms of curve have readily explicable path directions at the end
+points. Cubic curves have a velocity interpretation that is somewhat
+understandable, but the three weights in the RQC expression are not very
 helpful.
 
-## Matching spline specification
+## Matching curve specification
 
-We now proceed to formulate a RQS specification that matches that of cubic
-splines. We recommend this for consideration as one method for a real software
+We now proceed to formulate a RQC specification that matches that of cubic
+curves. We recommend this for consideration as one method for a real software
 package.
 
-Our general approach is to narrow cubic splines to those for which $p_m$ exists.
+Our general approach is to narrow cubic curves to those for which $p_m$ exists.
 This is the intersection of the lines from $p_0$ to $p_1$ and $p_3$ to $p_2$. We
-then formulate a four-point specification for RQSs that match the cubic
+then formulate a four-point specification for RQCs that match the cubic
 velocities at either end, and that can be identical for parabolas. In a sense
 $p_1$ and $p_2$ subdivide the lines to $p_m$. Let us, with this in mind, define
 proportions $\lambda$ and $\mu$ according to the following.
@@ -222,14 +222,14 @@ $$
 \mu = \frac{2w_B}{3w_C} \label{Eq14}
 $$
 
-Aside: we can the rewrite the cubic spline gradients as
+Aside: we can the rewrite the cubic curve gradients as
 
 $$
 g'(t) = 3\lambda(1-t)^2(p_m-p_0) + 6t(1-t)((1-\mu)p_3-(1-\lambda)p_0+(\mu-\lambda)p_m) - 3\mu t^2(p_m-p_3) \label{Eq15}
 $$
 
 There should be an exact match for parabolas, since these can be expressed as
-cubic splines and RQSs. The following hold for parabolas, simplifying both
+cubic curves and RQCs. The following hold for parabolas, simplifying both
 $f(t)$ and $g(t)$, and tying in with our subdivision proportions $\lambda$ and
 $\mu$.
 
@@ -256,7 +256,7 @@ $p_2$ is a problem.
 
 # Topic: Path-invariant bilinear transformation
 
-The RQS representation incorporates redundancy. The formula in terms of three
+The RQC representation incorporates redundancy. The formula in terms of three
 weights is specified by 3 points and 3 weights. We can remove 1 weight as a
 degree of freedom, since scaling the numerator and denominator by the same value
 leaves $f(t)$ unchanged. Suppose that $f(t)$ produces and elliptical arc. We can
@@ -311,9 +311,9 @@ provides a means for redistributing anchor points along a curve.
 Changing the path in this way involves merely moving $p_1$ and $p_2$ such that
 the lengths of $p_0$ to $p_1$ , and of $p_3$ to $p_2$, are multiplied by
 reciprocal amounts. In other words, we scale $\lambda$ and $\mu$ in opposite
-ways. In some cases, especially when manipulating RQSs, it is useful to have
+ways. In some cases, especially when manipulating RQCs, it is useful to have
 $w_A=w_C$, and equivalently $\lambda=\mu$. This simplifies the denominator of
-the RQS and creates a canonical form for a path. We call this *rebalancing*.
+the RQC and creates a canonical form for a path. We call this *rebalancing*.
 
 ![Example elliptical arcs and the distribution of points, shown with $t$ evenly
 spread, along the paths. The top-left is a semicircle and the vertical locations
@@ -337,7 +337,7 @@ spreading the anchor points according to need. For example, one might want a
 distribution that is even in one axis. Alternatively, as shown, one might prefer
 a distribution that is even along the path direction.
 
-Linear RQSs are basically squashed elliptical arcs, with parabolas as an extreme
+Linear RQCs are basically squashed elliptical arcs, with parabolas as an extreme
 case. By *squashed* we mean that the points on the curve are transformed such
 that they lie on the line between $p_0$ and $p_3$. Put another way, it is like
 decomposing locations into components parallel and perpendicular to that line,
@@ -346,24 +346,24 @@ figure illustrate this, with the distribution of vertical locations shown. We
 can choose a distribution of points that is symmetric or with a chosen degree of
 asymmetry. We can also choose the central spread.
 
-A key feature of this four-point specification of RQSs is that it is consistent
+A key feature of this four-point specification of RQCs is that it is consistent
 under affine transformation. While an affine transformation may result in
-unequal changes to the distances to control points, the RQS is consistently
+unequal changes to the distances to control points, the RQC is consistently
 transformed.
 
 # Topic: Arc angles
 
 ## Quarter circles and semicircles
 
-![Quarter-circle and semicircle surves. The left curve shows the control points
-for a quarter circle, for which the RQS formula combines the tan-half-angle
+![Quarter-circle and semicircle curves. The left curve shows the control points
+for a quarter circle, for which the RQC formula combines the tan-half-angle
 formulae for sine and cosine. If we extend the range of tan half angles to
-$[-1,1]$, we get a semicircle. RQS paths require a parameter in the range
+$[-1,1]$, we get a semicircle. RQC paths require a parameter in the range
 $[0,1]$, but we can obtain the wider range by simple scale and offset. The
 corresponding control points are shown for the right
 curve\label{figD}.](figs-ratquad/RatQuad-D.svg)
 
-A RQS can be used to generate a quarter circle if it is formulated in terms of
+A RQC can be used to generate a quarter circle if it is formulated in terms of
 tan half angles. That is, we can write
 
 $$
@@ -386,7 +386,7 @@ f_Q(t) = \frac{%
 $$
 
 We can also extend the curve to a semicircle. If we do this by extending the
-tan-half-angle range to $[-1,1]$, we can keep $t$ to its RQS range by using
+tan-half-angle range to $[-1,1]$, we can keep $t$ to its RQC range by using
 $2t-1$.
 
 <!-- mdformat off (Document metadata) -->
@@ -407,8 +407,8 @@ $$
 
 <!-- mdformat on -->
 
-While we can write a quarter-circle RQS in terms of $p_m$, this is not possible
-for a semiscircle RQS, since there is no intersection. Nonetheless, we can get
+While we can write a quarter-circle RQC in terms of $p_m$, this is not possible
+for a semiscircle RQC, since there is no intersection. Nonetheless, we can get
 close.
 
 $$
@@ -422,13 +422,13 @@ $$
 ## General circular arc
 
 ![A general view of a circular arc, paramaterized by the radius and tan of the
-half angle. The triangle that contains the RQS is drawn separately to show the
+half angle. The triangle that contains the RQC is drawn separately to show the
 side lengths and relative location of $p_1$ and
 $p_2$\label{figE}.](figs-ratquad/RatQuad-E.svg)
 
-In like manner to the semicircle we can create a symmetric circular arc RQS as
+In like manner to the semicircle we can create a symmetric circular arc RQC as
 illustrated\text{ (see figure \ref{figE})}. Let$\delta$ be the tangent of half
-the arc angle. If we take the quarter circle RQS and replace $t$ with $\delta
+the arc angle. If we take the quarter circle RQC and replace $t$ with $\delta
 t$.
 
 $$
@@ -441,7 +441,7 @@ $$
 
 While this has some fussy details, it is what we expect in terms of $p_3$, and
 so on. Now let us consider the velocities at either end. These are those at the
-original locations in the quarter-circle RQS, but scaled by $\delta$ since we
+original locations in the quarter-circle RQC, but scaled by $\delta$ since we
 replaced by $\delta t$.
 
 $$
@@ -473,7 +473,7 @@ $$
 \left| f'_\delta(1) \right| = \frac{2r\delta}{1+\delta^2} \label{Eq49}
 $$
 
-If $p_1$ and $p_2$ are our RQS control points located by $\lambda$ and $\mu$,
+If $p_1$ and $p_2$ are our RQC control points located by $\lambda$ and $\mu$,
 then the product of the velocities can be matched.
 
 $$
@@ -502,10 +502,10 @@ characterization.
 
 ## Most-circular elliptical arc
 
-![Illustration of circular arc RQS (top-left) and an RQS found by affine
+![Illustration of circular arc RQC (top-left) and an RQC found by affine
 transformation (top-middle). The top-right drawing shows an alternative pair of
 locations for the control points based on the a-b-c formulae in the text. The
-bottom row shows a similar set of RQSs, but for a quarter
+bottom row shows a similar set of RQCs, but for a quarter
 ellipse\label{figF}.](figs-ratquad/RatQuad-F.svg)
 
 Let
@@ -552,11 +552,11 @@ $$
 $$
 
 This looks as if we just got back where we started, but not quite. Suppose that
-we start with a circular arc RQS based on $p_1$ and $p_2$ from the above a-b-c
+we start with a circular arc RQC based on $p_1$ and $p_2$ from the above a-b-c
 formulae\text{ equations \ref{Eq54} and \ref{Eq55}}. Then we transform into an
-ellipse, preserving $\Omega$. Suppose we then create a fresh RQS using the same
+ellipse, preserving $\Omega$. Suppose we then create a fresh RQC using the same
 formulae \text{ equations \ref{Eq54} and \ref{Eq55}} based on $a$, $b$ and $c$
-for the transformed positions. The new RQS has the same path as the transformed
+for the transformed positions. The new RQC has the same path as the transformed
 one, albeit incorporating a bilinear transformation.
 
 In the figure this illustrates how this works when $\Omega=90^\circ$. We can use
@@ -567,7 +567,7 @@ ellipse" in that it has a low eccentricity for a given case.
 
 # Topic: Practical method for finding polynomials
 
-The scheme for specifying an RQS in terms of control points $p_1$ and $p_2$ is
+The scheme for specifying an RQC in terms of control points $p_1$ and $p_2$ is
 often convenient, but we need to be able to convert to a canonical form. The
 form that we adopt is the one with $p_m$, $w_A$, $w_B$ and $w_C$, modified such
 that if $w_B$ is zero and $p_m$ infinitely far away the numerator term $w_Bp_m$
@@ -623,7 +623,7 @@ $$
 \gamma = \frac{(a\cdot d)(b\cdot n)-(b\cdot d)(a\cdot n)}{\left| d\right|^4} \label{Eq28}
 $$
 
-Hence we can find weights for the RQS to satisfy earlier conditions\text{ (ref.
+Hence we can find weights for the RQC to satisfy earlier conditions\text{ (ref.
 \
 equations \ref{Eq14} and \ref{Eq15})}.
 
@@ -641,7 +641,7 @@ $$
 
 ## Numerical generality
 
-Two conditions must be met for a RQS to be valid.
+Two conditions must be met for a RQC to be valid.
 
 $$
 w_A \neq 0 \label{Eq32}
@@ -720,7 +720,7 @@ not need to correspond to any topological sort of the calculation graph.
 ## Denominator balancing
 
 Let us revisit the bilinear transformation, which enables us to adjust the
-velocities at either end of an RQS while keeping the product of those velocities
+velocities at either end of an RQC while keeping the product of those velocities
 constant. If we apply a transformation with
 
 $$
@@ -737,16 +737,16 @@ $$
 
 ### Scope of ellipse conversion
 
-Rendering libraries like Cairo may not directly support RQSs, so we convert to
+Rendering libraries like Cairo may not directly support RQCs, so we convert to
 elliptical arcs. Hyperbolic conic sections may not be supported. For this
-reason, for the present, Zebraix restricts the type of RQS accordingly. One
-option is to divide such curves into pieces approximated by cubic splines.
+reason, for the present, Zebraix restricts the type of RQC accordingly. One
+option is to divide such curves into pieces approximated by cubic curves.
 However, we want to be cautious about adding capabilities to Zebraix that might
 either complicate code or significantly increase the size of output files.
 
-When a RQS is close to a limitation, such as when a parabola is specified, it is
+When a RQC is close to a limitation, such as when a parabola is specified, it is
 possible that numerical realities cause the conditions to go over the boundary.
-Zebraix incorporates some tolerance for this, and will "snap" the RQS to a
+Zebraix incorporates some tolerance for this, and will "snap" the RQC to a
 parabola.
 
 ### Ellipse conversion method
@@ -756,11 +756,11 @@ centre is transformed to $p_a$, the point $(1,0)$ is transformed to $p_a+p_s$,
 and the point $(0,1)$ is transformed to
 $p_a+p_s$\label{figG}.](figs-ratquad/RatQuad-G.svg)
 
-The overall flow of the conversion from RQS to ellipse arc is as follows.
+The overall flow of the conversion from RQC to ellipse arc is as follows.
 
-1.  First, balance the denominator of the RQS.
+1.  First, balance the denominator of the RQC.
 2.  Normalize by the sign of $w_A$.
-3.  Shift the range of $t$ so that the RQS is over the range $[-1/2, 1/2]$.
+3.  Shift the range of $t$ so that the RQC is over the range $[-1/2, 1/2]$.
 
 For these first $3$ steps let
 
@@ -808,7 +808,7 @@ f_\rho(t) = \frac{%
 } \label{Eq76}
 $$
 
-1.  (Step 5) Split the spline path into trigonometric parts. That is, let
+1.  (Step 5) Split the curve path into trigonometric parts. That is, let
 
 $$
 p_a = \frac1{8\alpha}\Bigl(p_0+2p_q+p_3\Bigr) + \frac1{2\alpha\beta^2}\Bigl(p_0-2p_q+p_3\Bigr) \label{Eq77}
@@ -862,7 +862,7 @@ $$
 w_Aw_C > 0 \label{Eq84}
 $$
 
-In step 2 above we normalized the RQS to have $w_A>0$, so this implies $w_C>0$
+In step 2 above we normalized the RQC to have $w_A>0$, so this implies $w_C>0$
 thereafter. If
 
 $$
@@ -888,7 +888,7 @@ Arc greater than semicircle                                            $(2,\inft
 Full circle / indeterminate        $-180^\circ,180^\circ$              $\infty$      $-1$           $0$
 --------------------------------------------------------------------------------
 
-Table: Ranges of $\beta$, $\rho$ and $\alpha$ for ranges of RQS with
+Table: Ranges of $\beta$, $\rho$ and $\alpha$ for ranges of RQC with
 trigonometric curves.  An arc of small angle ($\epsilon$ here), and very large
 scaling becomes, in the limit, a parabola.  The range of $t$ is $[-1/2,1/2]$.
 Outside of these ranges the curve is a hyperbola.  Zebraix does not support
@@ -900,7 +900,7 @@ Otherwise, that is if the value\text{ in equation \ref{Eq85}} is above the
 threshold, then $\rho$ is well-determined. We then need to consider $\alpha$ and
 $\beta$. It works best to consider which values lead to which ranges of arc
 angles. These are set out in the table\text{ (see table \ref{tabH})}. Zebraix
-only supports elliptical-arc and parabolic RQSs, and therefore
+only supports elliptical-arc and parabolic RQCs, and therefore
 
 $$
 -1 < \rho < 1 \label{Eq86}
@@ -925,21 +925,21 @@ $$
 
 The adjusted curve is a bilinear transformation of a parabola/
 
-a. When extracting points we use the adjusted RQS.
+a. When extracting points we use the adjusted RQC.
 
-b. When drawing the spline path, we convert to a cubic spline using $f_\rho(t)$.
+b. When drawing the curve path, we convert to a cubic curve using $f_\rho(t)$.
 Let this be $f_\alpha(t)$ for $0\leq t\leq 1$.
 
 $$
 f_\alpha(t) = (1-t)^3p_0 + 3t(1-t)^2\left(\frac23p_q + \frac13p_0\right) + 3t^2(1-t)\left(\frac23p_q + \frac13p_3\right) + t^3p_3 \label{Eq89}
 $$
 
-If, on the other hand, $\rho$ is close to $-1$ we reject the RQS as invalid: it
+If, on the other hand, $\rho$ is close to $-1$ we reject the RQC as invalid: it
 is hyperbolic, or too close to being so.
 
 ## Intersection-angle form
 
-If an RQS is specified in intersection-angle form ($p_m$, $\Omega$, $\sigma$),
+If an RQC is specified in intersection-angle form ($p_m$, $\Omega$, $\sigma$),
 we can convert to weighted form as follows.
 
 $$
@@ -972,22 +972,22 @@ parabola.
 
 ## Summary
 
-We typically cannot use RQSs directly in many key cases, including rendering to
-SVGs. Therefore we convert RQSs using 4 forms.
+We typically cannot use RQCs directly in many key cases, including rendering to
+SVGs. Therefore we convert RQCs using 4 forms.
 
-1.  The form of RQS in which it is specified. This might be the control-points
+1.  The form of RQC in which it is specified. This might be the control-points
     form or the intersection-angle form.
 
-2.  The RQS converted to ($W_A$, $w_B$, $w_C$, $p_m$)-form: weights form.
+2.  The RQC converted to ($W_A$, $w_B$, $w_C$, $p_m$)-form: weights form.
 
 3.  Adjusted form. This is the weights form, but when appropriate with the
     denominator adjusted to bilinear-parabola. If this adjustment is made, the
-    path may change slightly. In that use, the spline is not a parabolic spline,
+    path may change slightly. In that use, the curve is not a parabolic curve,
     but a parabola with bilinear transformation. Therefore points extracted from
-    the adjusted RQS will be close to those originally specifid.
+    the adjusted RQC will be close to those originally specifid.
 
 4.  Path form, either: (a) Elliptical arc in ($\beta$, $p_a$, $p_s$,
-    $p_c$)-form, or (b) Parabolic spline in $f_\alpha(t)$ form.
+    $p_c$)-form, or (b) Parabolic curve in $f_\alpha(t)$ form.
 
 In addition to the above, parabolas may be used in colinear cases. This must be
 via the intersection-angle specification.
@@ -996,13 +996,13 @@ via the intersection-angle specification.
 
 ## Requirements
 
-We could not find a single scheme for specifying RQSs. Basically the difficulty
+We could not find a single scheme for specifying RQCs. Basically the difficulty
 is in the range of angles. We want to be able to specify semi-circles and to be
-able to specify colinear RQSs. We want to be able to specify cases near these
+able to specify colinear RQCs. We want to be able to specify cases near these
 with convenience and accuracy.
 
 It is also important that the specification of the curves be invariant on
-transformation. This means that we get the same RQS if (a) we find a curve path,
+transformation. This means that we get the same RQC if (a) we find a curve path,
 or points along one, and then apply a transformation, or (b) we transform the
 specification and find the curve path.
 
@@ -1014,11 +1014,11 @@ deprecation would necessitate migration of drawing libraries.
 
 ## Specification schemes
 
-Zebraix supports 2 specification schemes for RQSs.
+Zebraix supports 2 specification schemes for RQCs.
 
 *   a. A *four point*, or *control-point*, scheme: ($p_0$, $p_1$, $p_2$, $p_3$).
-    *   (i) When a Bézier cubic spline is a parabola, the four points used for
-        an RQS also generate a parabola.
+    *   (i) When a Bézier cubic curve is a parabola, the four points used for
+        an RQC also generate a parabola.
     *   (ii) An intersection point is not required, so semi-circles can be
         specified.
     *   (iii) Intersection points that are colinear with the end points are not
@@ -1033,19 +1033,19 @@ Zebraix supports 2 specification schemes for RQSs.
     bilinear transformation on $\sigma$ is incorporated, speeding up the
     velocity by $\sigma$ at $p_0$ and slowing it down by $\sigma$ at $p_3$.
 
-In addition to RQSs, Zebraix supports cubic splines and straight lines. Straight
+In addition to RQCs, Zebraix supports cubic curves and straight lines. Straight
 lines can have bilinear transformation to adjust end-point velocities. Zebraix
 also supports complete circles and ellipses. It also provides a most-circular
 version of the intersection-angle scheme in which $\Omega$ is set automatically
 for the ease of rounding corners. (This must be calculable before
 transformation.)
 
-![RQSs with $\cos(\Omega)=0$ and $\sigma=1$ can be used conveniently for
+![RQCs with $\cos(\Omega)=0$ and $\sigma=1$ can be used conveniently for
 purposes such as the rounded corners of a parallelogram. The drawing shows such
 a parallelogram (top) along with a breakdown highlighting the corners. This
 illustrates how the mid-point with respect to $t$, that is $t=1/2$ within the
-range $[0,1]$, divides the corner RQS at its logical mid-point. This is where
-the parallelogram diagonal intersects the RQS\label{figI}.](figs-ratquad/RatQuad-I.svg)
+range $[0,1]$, divides the corner RQC at its logical mid-point. This is where
+the parallelogram diagonal intersects the RQC\label{figI}.](figs-ratquad/RatQuad-I.svg)
 
 ## Convenience features of intersection-angle scheme
 
@@ -1055,19 +1055,19 @@ are similarly transformed quarter circles. This is illustrated\text{ (see figure
 \ref{figI})}.
 
 Another convenience is that the scheme maintains symmetry. That is to saym, if
-the RQS is symmetric and we choose $\sigma=1$, then our formulation retains that
+the RQC is symmetric and we choose $\sigma=1$, then our formulation retains that
 symmetry. For instance, it means that we can substitute $1-t$ for $t$ and
 exchange $p_0$ and $p_3$. This is possible because, in the symmetric case, the
 displacement of $p_m$ from the centre (or just $p_m$?) is proportional to
 $(p_0+p_3)$. This has two consequences that we note here.
 
-a. If we extract points from the RQS and if symmetry is retained, then the
+a. If we extract points from the RQC and if symmetry is retained, then the
 points are logically symmetric. If we round the corners of a square or rhombus,
 they are literally symmetric. (The parallelogram is logically a stretched
 version of the literal case.)
 
 b. The mid-point is at $t=1/2$. For example, in the parallelogram example this
-is the intersection of the diagonal and the RQS.
+is the intersection of the diagonal and the RQC.
 
 # Topic: Point distribution, parameterization and attachment
 
@@ -1135,7 +1135,7 @@ implied design decisions. The illustration depict these\text( see figures
 5.  Vertegrams are required, even if they prefer parallel attachment, to provide
     a continuous attachment "perimeter" divided into the four faces.
 
-6.  Each face has a connected spline sequence. For example, the input face of a
+6.  Each face has a connected curve sequence. For example, the input face of a
     rounded rectangle would be 1/8 of a circle connected to a straight line
     connected to 1/8 of a circle.
 
@@ -1148,23 +1148,23 @@ implied design decisions. The illustration depict these\text( see figures
     change for a logic gate if there are a large number of inputs.
 
 9.  Locations are parameterized in the range $[-1/2, 1/2]$, with $0$ ordinarily
-    connecting at the centreline. This contrasts by offset with spline
+    connecting at the centreline. This contrasts by offset with curve
     components, which are parameterized in the more traditional $[0,1]$ range.
 
-10. Spline ranges can be subdivided. Offsets and scale factors are incorporated
+10. Curve ranges can be subdivided. Offsets and scale factors are incorporated
     as approriate. For example, the input face of a rounded rectangle can take
     subdivisions, specifically half, of the top-left and bottom-left
     quarter-circle rounded corners. Thus the attachment faces would not specify
-    their own splines, but select, subdivide, and chain those from the vertegram
+    their own curves, but select, subdivide, and chain those from the vertegram
     drawing.
 
 11. The subdivision of the parameter can be used to avoid, or at least
-    discourage, attachment to specific splines. For example, we may wish to
+    discourage, attachment to specific curves. For example, we may wish to
     discourage attachment to rounded corners. Parallel attachment is guaranteed
     to be in the range 5%-95%, and strongly avoids outside of 10%-90% of the
     range. If there are lots of inputs they may extend into the wider range.
     Discouragement is specified through weights that reduce the parameter range
-    associated with a particular spline. This should not be too strong, as
+    associated with a particular curve. This should not be too strong, as
     otherwise angular attachment could be undesirably jumpy. This mechanism is
     called *segment weighting*.
 
@@ -1184,12 +1184,12 @@ implied design decisions. The illustration depict these\text( see figures
     "logically" or "semantically" consistent. We are less concerned with exact
     geometry.
 
-14. Often we want even attachment for a spline that does not have even
+14. Often we want even attachment for a curve that does not have even
     displacement. In contrast to a parabola, which we can fix to have uniform
     attachment, a circle would not by angle space evenly. Equivalently, a
     straight edge would not attach evenly with respect to angle. The table\text{
     (see table \ref {tabL})} shows some candidate conversions that Zebraix may
-    use in conjunction with splines in order to achieve even parallel or angular
+    use in conjunction with curves in order to achieve even parallel or angular
     attachment.
 
 # Other design choices and considerations
