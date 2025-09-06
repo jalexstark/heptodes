@@ -1,7 +1,8 @@
 
 STYLING_DIR=styling
 
-BASENAMES=background/RatQuad background/JaywalkConcepts background/JaywalkBuilder background/DesignDrawableSvg
+BASENAMES=background/RatQuad background/JaywalkConcepts background/JaywalkBuilder \
+	background/DesignDrawableSvg curves/CurveMath curves/CurveIntro curves/Cookbook
 
 HTML_TARGETS=$(addprefix html/,$(addsuffix .html,$(BASENAMES)))
 GFM_TARGETS=$(addprefix gfm/,$(addsuffix .md,$(BASENAMES)))
