@@ -49,17 +49,28 @@ JaywalkConcepts-FIGS=$(addprefix background/figs-concepts/, $(addsuffix .svg, \
 	Concepts-A Concepts-C Concepts-E Concepts-F Concepts-G Concepts-H Concepts-I \
 	Concepts-O-1 Concepts-O-2 Concepts-P Concepts-Q Concepts-R Concepts-S \
 	Concepts-T Concepts-U Concepts-V Concepts-W Concepts-X))
+CurveIntro-FIGS=$(addprefix curves/figs-intro/, $(addsuffix .svg, \
+	intro_cubic_controlled intro_cubic_slider))
 
-HTML_FIGS=$(addprefix html/,$(RatQuad-FIGS) $(JaywalkBuilder-FIGS) $(JaywalkConcepts-FIGS))
-GFM_FIGS=$(addprefix gfm/,$(RatQuad-FIGS) $(JaywalkBuilder-FIGS) $(JaywalkConcepts-FIGS))
+AUTO_FIGS=$(CurveIntro-FIGS)
+SRC_AUTO_FIGS=$(addprefix src/,$(CurveIntro-FIGS))
+
+HTML_FIGS=$(addprefix html/,$(RatQuad-FIGS) $(JaywalkBuilder-FIGS) \
+	$(JaywalkConcepts-FIGS) $(AUTO_FIGS))
+GFM_FIGS=$(addprefix gfm/,$(RatQuad-FIGS) $(JaywalkBuilder-FIGS) \
+	$(JaywalkConcepts-FIGS) $(AUTO_FIGS))
 
 html/background/RatQuad.html:	$(addprefix html/,$(RatQuad-FIGS))
 html/background/JaywalkBuilder.html:	$(addprefix html/,$(JaywalkBuilder-FIGS))
 html/background/JaywalkConcepts.html:	$(addprefix html/,$(JaywalkConcepts-FIGS))
+html/curves/CurveIntro.html:	$(addprefix html/,$(CurveIntro-FIGS))
 gfm/background/RatQuad.md:	$(addprefix gfm/,$(RatQuad-FIGS))
 gfm/background/JaywalkBuilder.md:	$(addprefix gfm/,$(JaywalkBuilder-FIGS))
 gfm/background/JaywalkConcepts.md:	$(addprefix gfm/,$(JaywalkConcepts-FIGS))
+gfm/curves/CurveIntro.md:	$(addprefix gfm/,$(CurveIntro-FIGS))
 
+$(SRC_AUTO_FIGS):	src/%:	../crates/zvx-simples/tests/goldenfiles/%
+	mkdir -p $(dir $@) && cp $< $@
 $(HTML_FIGS):	html/%:	src/%
 	mkdir -p $(dir $@) && cp $< $@
 $(GFM_FIGS):	gfm/%:	src/%

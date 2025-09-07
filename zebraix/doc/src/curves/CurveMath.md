@@ -32,3 +32,7 @@ date: 2025
 # Task
 
 ## General purpose
+
+$$
+g(t) = (1-t)^3p_0 + 3t(1-t)^2p_1 + 3t^2(1-t)p_2 + t^3p_3 \text{.} \label{Eq01}
+$$

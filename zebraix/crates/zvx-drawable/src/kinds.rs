@@ -112,16 +112,6 @@ pub struct TextDrawable {
    pub texts: Vec<TextSingle>,
 }
 
-// #[derive(Serialize, Debug, Default, PartialEq)]
-// pub enum OneOfSegment {
-//    #[default]
-//    Nothing,
-//    Arc(ArcPath),
-//    Cubic(CubicPath),
-//    Hyperbolic(HyperbolicPath),
-//    Polyline(PolylinePath),
-// }
-
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct SegmentSequence {
    #[serde(skip_serializing_if = "is_default")]
@@ -135,7 +125,7 @@ pub struct SegmentSequence {
 #[derive(Serialize, Debug, Default, PartialEq)]
 pub enum OneOfDrawable {
    #[default]
-   Nothing,
+   Neither,
    Arc(Strokeable<ArcPath>),
    Cubic(Strokeable<CubicPath>),
    Hyperbolic(Strokeable<HyperbolicPath>),

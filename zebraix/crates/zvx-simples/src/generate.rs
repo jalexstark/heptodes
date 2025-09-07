@@ -22,7 +22,9 @@ use zvx_curves::{
 use zvx_docagram::diagram::DrawableDiagram;
 use zvx_drawable::{
    ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, PathChoices, PathCompletion, PointChoice,
-   PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable,
+   PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable, TextAnchorChoice,
+   TextAnchorHorizontal, TextAnchorVertical, TextDrawable, TextOffsetChoice, TextSingle,
+   TextSizeChoice,
 };
 
 const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
@@ -93,7 +95,7 @@ fn push_rat_quad_drawable(
             drawable: OneOfDrawable::Polyline(Strokeable::<PolylinePath> { path, path_choices }),
          });
       }
-      OneOfSegment::Nothing => {
+      OneOfSegment::Neither => {
          panic!("Unreachable code.");
       }
    }
@@ -434,6 +436,27 @@ pub fn draw_sample_segment_sequence(
          path_choices,
          completion,
          segments: segments_paths,
+      }),
+   });
+}
+
+pub fn add_centered_text(
+   drawable_diagram: &mut DrawableDiagram,
+   curve_config: &SampleCurveConfig,
+   text: &'static str,
+   location: [f64; 2],
+) {
+   drawable_diagram.drawables.push(QualifiedDrawable {
+      layer: curve_config.main_line_layer,
+      drawable: OneOfDrawable::Text(TextDrawable {
+         size_choice: TextSizeChoice::Normal,
+         color_choice: curve_config.main_color.clone().unwrap_or(ColorChoice::default()),
+         offset_choice: TextOffsetChoice::Diagram,
+         anchor_choice: TextAnchorChoice::ThreeByThree(
+            TextAnchorHorizontal::Center,
+            TextAnchorVertical::Middle,
+         ),
+         texts: vec![TextSingle { content: text.to_string(), location }],
       }),
    });
 }

@@ -20,7 +20,6 @@ pub use crate::choices::{
    ColorChoice, LineChoice, PathCompletion, PointChoice, TextAnchorChoice, TextAnchorHorizontal,
    TextAnchorVertical, TextOffsetChoice, TextSizeChoice,
 };
-// pub use crate::interface::ZvxTextLayout;
 pub use crate::kinds::{
    CirclesSet, FillChoices, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable,
    QualifiedDrawable, SegmentSequence, Strokeable, TextDrawable, TextSingle,

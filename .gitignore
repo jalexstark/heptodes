@@ -9,6 +9,7 @@ zebraix/doc/html/**/*.html
 zebraix/doc/html/**/*.svg
 zebraix/doc/html/**/crested.css
 zebraix/doc/pdf/**/*.pdf
+zebraix/doc/src/curves/**/*.svg
 
 *~
 *.aux
