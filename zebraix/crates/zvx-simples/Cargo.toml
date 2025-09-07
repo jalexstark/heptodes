@@ -18,7 +18,10 @@ zvx-docagram =  { path = "../zvx-docagram", version = "0.1" }
 zvx-drawable =  { path = "../zvx-drawable", version = "0.1" }
 zvx-base =  { path = "../zvx-base", version = "0.1" }
 
-[dev-dependencies]
+# These are test-only dependencies, but Rust does not apply cfg(test)
+# during cargo test.
+#
+# [dev-dependencies]
 pangocairo = "0.20"
 serde_json = "1.0"
 zvx-cairo =  { path = "../zvx-cairo", version = "0.1" }
