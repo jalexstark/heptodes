@@ -243,6 +243,20 @@ impl UnfixedCairoSpartanRender {
       context.set_dash(&line_parameters.dashes, line_parameters.dash_offset);
    }
 
+   fn stroke_and_fill(
+      &self,
+      context: &CairoContext,
+      diagram_choices: &DiagramChoices,
+      path_choices: &PathChoices,
+   ) {
+      if path_choices.fill_choices.opacity != 0.0 {
+         Self::set_color(context, diagram_choices, &path_choices.fill_choices.color);
+         self.context.fill_preserve().unwrap();
+      }
+      Self::set_color(context, diagram_choices, &path_choices.color);
+      self.context.stroke().unwrap();
+   }
+
    fn draw_lines_set(
       &mut self,
       drawable: &Strokeable<LinesSetSet>,
@@ -346,7 +360,6 @@ impl UnfixedCairoSpartanRender {
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(&self.context, path_choices.line_choice, diagram_choices);
-      Self::set_color(&self.context, diagram_choices, &path_choices.color);
 
       self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
 
@@ -369,11 +382,11 @@ impl UnfixedCairoSpartanRender {
          LineClosureChoice::Closes => {
             self.context.close_path();
             self.transform_saver.restore_transform(&self.context);
-            self.context.stroke().unwrap();
+            self.stroke_and_fill(&self.context, diagram_choices, path_choices);
          }
          LineClosureChoice::OpenEnd => {
             self.transform_saver.restore_transform(&self.context);
-            self.context.stroke().unwrap();
+            self.stroke_and_fill(&self.context, diagram_choices, path_choices);
          }
          LineClosureChoice::Unfinished => {
             self.transform_saver.restore_transform(&self.context);
@@ -390,7 +403,6 @@ impl UnfixedCairoSpartanRender {
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(&self.context, path_choices.line_choice, diagram_choices);
-      Self::set_color(&self.context, diagram_choices, &path_choices.color);
 
       self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
 
@@ -409,11 +421,11 @@ impl UnfixedCairoSpartanRender {
          LineClosureChoice::Closes => {
             self.context.close_path();
             self.transform_saver.restore_transform(&self.context);
-            self.context.stroke().unwrap();
+            self.stroke_and_fill(&self.context, diagram_choices, path_choices);
          }
          LineClosureChoice::OpenEnd => {
             self.transform_saver.restore_transform(&self.context);
-            self.context.stroke().unwrap();
+            self.stroke_and_fill(&self.context, diagram_choices, path_choices);
          }
          LineClosureChoice::Unfinished => {
             self.transform_saver.restore_transform(&self.context);
@@ -449,6 +461,40 @@ impl UnfixedCairoSpartanRender {
          canvas_layout,
          diagram_choices,
       );
+   }
+
+   fn draw_polyline(
+      &mut self,
+      locations: &PolylinePath,
+      path_choices: &PathChoices,
+      segment_choices: &SegmentChoices,
+      canvas_layout: &CanvasLayout,
+      diagram_choices: &DiagramChoices,
+   ) {
+      Self::set_line_choice(&self.context, path_choices.line_choice, diagram_choices);
+
+      self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
+      assert!(!locations.is_empty());
+      if segment_choices.continuation == ContinuationChoice::Starts {
+         self.context.move_to(locations[0][0], locations[0][1]);
+      }
+      for location in locations.iter().skip(1) {
+         self.context.line_to(location[0], location[1]);
+      }
+      match segment_choices.closure {
+         LineClosureChoice::Closes => {
+            self.context.close_path();
+            self.transform_saver.restore_transform(&self.context);
+            self.stroke_and_fill(&self.context, diagram_choices, path_choices);
+         }
+         LineClosureChoice::OpenEnd => {
+            self.transform_saver.restore_transform(&self.context);
+            self.stroke_and_fill(&self.context, diagram_choices, path_choices);
+         }
+         LineClosureChoice::Unfinished => {
+            self.transform_saver.restore_transform(&self.context);
+         }
+      }
    }
 
    // This function is (somewhat) disassociated from the renderer and from Cairo, and is specific to Pango.
@@ -616,41 +662,6 @@ impl UnfixedCairoSpartanRender {
       }
    }
 
-   fn draw_polyline(
-      &mut self,
-      locations: &PolylinePath,
-      path_choices: &PathChoices,
-      segment_choices: &SegmentChoices,
-      canvas_layout: &CanvasLayout,
-      diagram_choices: &DiagramChoices,
-   ) {
-      Self::set_line_choice(&self.context, path_choices.line_choice, diagram_choices);
-      Self::set_color(&self.context, diagram_choices, &path_choices.color);
-
-      self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
-      assert!(!locations.is_empty());
-      if segment_choices.continuation == ContinuationChoice::Starts {
-         self.context.move_to(locations[0][0], locations[0][1]);
-      }
-      for location in locations.iter().skip(1) {
-         self.context.line_to(location[0], location[1]);
-      }
-      match segment_choices.closure {
-         LineClosureChoice::Closes => {
-            self.context.close_path();
-            self.transform_saver.restore_transform(&self.context);
-            self.context.stroke().unwrap();
-         }
-         LineClosureChoice::OpenEnd => {
-            self.transform_saver.restore_transform(&self.context);
-            self.context.stroke().unwrap();
-         }
-         LineClosureChoice::Unfinished => {
-            self.transform_saver.restore_transform(&self.context);
-         }
-      }
-   }
-
    fn draw_circles_set(
       &mut self,
       drawable: &Strokeable<CirclesSet>,
@@ -658,7 +669,6 @@ impl UnfixedCairoSpartanRender {
       diagram_choices: &DiagramChoices,
    ) {
       Self::set_line_choice(&self.context, drawable.path_choices.line_choice, diagram_choices);
-      Self::set_color(&self.context, diagram_choices, &drawable.path_choices.color);
 
       self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
       for center in &drawable.path.centers {
@@ -670,7 +680,7 @@ impl UnfixedCairoSpartanRender {
          self.context.close_path();
       }
       self.transform_saver.restore_transform(&self.context);
-      self.context.stroke().unwrap();
+      self.stroke_and_fill(&self.context, diagram_choices, &drawable.path_choices);
    }
 
    fn draw_segment_sequence(

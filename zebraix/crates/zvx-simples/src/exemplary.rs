@@ -20,6 +20,7 @@ pub mod tests {
    use zvx_cairo::CairoSpartanCombo;
    use zvx_docagram::diagram::{SpartanDiagram, SpartanPreparation};
    use zvx_docagram::{AxesSpec, SizingScheme};
+   use zvx_drawable::{ColorChoice, FillChoices, LineChoice, PathChoices};
    use zvx_golden::filtered::JsonGoldenTest;
    use zvx_golden::filtered::SvgGoldenTest;
 
@@ -43,6 +44,13 @@ pub mod tests {
    }
 
    #[derive(Default)]
+   pub enum BackgroundBox {
+      #[default]
+      Nothing,
+      Shrink,
+   }
+
+   #[derive(Default)]
    pub struct TestSizing {
       pub sizing_scheme: SizingScheme,
       pub canvas_size: [f64; 2],
@@ -50,17 +58,30 @@ pub mod tests {
       pub padding: Vec<f64>,
       pub debug_box: [f64; 4],
       pub axes_spec: AxesSpec,
+      pub background_box: BackgroundBox,
    }
 
    #[must_use]
    pub fn create_sized_diagram(sizing: &TestSizing) -> SpartanDiagram {
-      SpartanDiagram {
+      let mut spartan = SpartanDiagram {
          sizing_scheme: sizing.sizing_scheme,
          canvas_size: (sizing.canvas_size[0], sizing.canvas_size[1]),
          axes_range: sizing.axes_range.clone(),
          padding: sizing.padding.clone(),
          ..Default::default()
-      }
+      };
+
+      // Only shrink (currently) supported in axes generation.
+      spartan.background_box = match sizing.background_box {
+         BackgroundBox::Nothing => None,
+         BackgroundBox::Shrink => Some(PathChoices {
+            line_choice: LineChoice::Ordinary,
+            color: spartan.base_color_choice.clone(),
+            fill_choices: FillChoices { color: ColorChoice::ZvxBackground, opacity: 1.0 },
+         }),
+      };
+
+      spartan
    }
 
    pub struct JsonSvgRunner {

@@ -1,6 +1,42 @@
 {
   "drawables": [
     {
+      "layer": -10,
+      "drawable": {
+        "SegmentSequence": {
+          "completion": "Closed",
+          "path_choices": {
+            "fill_choices": {
+              "color": "ZvxBackground",
+              "opacity": 1.0
+            }
+          },
+          "segments": [
+            {
+              "Polyline": [
+                [
+                  -7.126166666666667,
+                  -5.476166666666667
+                ],
+                [
+                  -7.126166666666667,
+                  5.476166666666667
+                ],
+                [
+                  7.126166666666667,
+                  5.476166666666667
+                ],
+                [
+                  7.126166666666667,
+                  -5.476166666666667
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
       "drawable": {
         "Lines": {
           "path": {

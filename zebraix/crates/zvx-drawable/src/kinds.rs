@@ -28,12 +28,25 @@ pub struct SegmentChoices {
    pub closure: LineClosureChoice,
 }
 
-#[derive(Serialize, Debug, Clone, DefaultFromSerde, PartialEq, Eq)]
+// Default opacity is 0.0, which disables.
+//
+// Opacity will likely eventually be folded into color.
+#[derive(Serialize, Debug, Clone, DefaultFromSerde, PartialEq)]
+pub struct FillChoices {
+   #[serde(skip_serializing_if = "is_default")]
+   pub color: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub opacity: f64,
+}
+
+#[derive(Serialize, Debug, Clone, DefaultFromSerde, PartialEq)]
 pub struct PathChoices {
    #[serde(skip_serializing_if = "is_default")]
    pub line_choice: LineChoice,
    #[serde(skip_serializing_if = "is_default")]
    pub color: ColorChoice,
+   #[serde(skip_serializing_if = "is_default")]
+   pub fill_choices: FillChoices,
 }
 
 #[allow(clippy::derive_partial_eq_without_eq)]

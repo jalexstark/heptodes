@@ -18,13 +18,10 @@ use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
 use zvx_base::OneOfSegment;
-use zvx_drawable::choices::{
-   LineChoice, PathCompletion, TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical,
-   TextOffsetChoice, TextSizeChoice,
-};
-use zvx_drawable::kinds::{
-   LinesSetSet, OneOfDrawable, PathChoices, QualifiedDrawable, SegmentSequence, Strokeable,
-   TextDrawable, TextSingle,
+use zvx_drawable::{
+   LineChoice, LinesSetSet, OneOfDrawable, PathChoices, PathCompletion, QualifiedDrawable,
+   SegmentSequence, Strokeable, TextAnchorChoice, TextAnchorHorizontal, TextAnchorVertical,
+   TextDrawable, TextOffsetChoice, TextSingle, TextSizeChoice,
 };
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone, PartialEq, Eq)]
@@ -151,7 +148,47 @@ impl AxesSpec {
 
    #[allow(clippy::too_many_lines)]
    #[allow(clippy::missing_panics_doc)]
+   #[allow(clippy::cognitive_complexity)]
+   #[allow(clippy::suboptimal_flops)]
    pub fn generate_axes(&self, diagram: &mut DrawableDiagram) {
+      // Future possible enhancement would be to provide options for form of box.  Currently
+      // this shrink-wraps to the axes-plus-padding.
+      //
+      // The line around the edge is brought in by a line width, leaving a very small gap
+      // around the edge.  This is intentional, so that the line is never clipped.
+      if let Some(box_choices) = &diagram.prep.background_box {
+         // Create background box.
+         let background_layer = -10;
+         let left = diagram.prep.axes_range[0]
+            - (diagram.prep.axes_range[2] - diagram.prep.axes_range[0]) * diagram.prep.padding[0]
+            + diagram.prep.diagram_choices.line_width / diagram.prep.canvas_layout.scale[0];
+         let right = diagram.prep.axes_range[2]
+            + (diagram.prep.axes_range[2] - diagram.prep.axes_range[0]) * diagram.prep.padding[2]
+            - diagram.prep.diagram_choices.line_width / diagram.prep.canvas_layout.scale[0];
+         let bottom = diagram.prep.axes_range[1]
+            - (diagram.prep.axes_range[3] - diagram.prep.axes_range[1]) * diagram.prep.padding[1]
+            + diagram.prep.diagram_choices.line_width / diagram.prep.canvas_layout.scale[1];
+         let top = diagram.prep.axes_range[3]
+            + (diagram.prep.axes_range[3] - diagram.prep.axes_range[1]) * diagram.prep.padding[3]
+            - diagram.prep.diagram_choices.line_width / diagram.prep.canvas_layout.scale[1];
+
+         let qualified_drawable = QualifiedDrawable {
+            layer: background_layer,
+            drawable: OneOfDrawable::SegmentSequence(SegmentSequence {
+               // This should be miter-join even if we switch default later.
+               completion: PathCompletion::Closed,
+               segments: vec![OneOfSegment::Polyline(vec![
+                  [left, bottom],
+                  [left, top],
+                  [right, top],
+                  [right, bottom],
+               ])],
+               path_choices: box_choices.clone(),
+            }),
+         };
+         diagram.drawables.push(qualified_drawable);
+      }
+
       // Future improvement ideas:
       //
       // * Generate box as closed polygon.
@@ -187,6 +224,7 @@ impl AxesSpec {
          path_choices: PathChoices {
             line_choice: LineChoice::Light,
             color: diagram.prep.light_color_choice.clone(),
+            ..Default::default()
          },
       };
       let mut vertical_light = Strokeable::<LinesSetSet> {
@@ -197,6 +235,7 @@ impl AxesSpec {
          path_choices: PathChoices {
             line_choice: LineChoice::Light,
             color: diagram.prep.light_color_choice.clone(),
+            ..Default::default()
          },
       };
 

@@ -30,7 +30,7 @@ mod tests {
    };
    use zvx_simples::exemplary::tests::{
       build_from_sizing, create_sized_diagram, p_from_x_y_3, p_from_x_y_4, render_and_check,
-      scale_coord_vec, JsonSvgRunner, TestSizing,
+      scale_coord_vec, BackgroundBox, JsonSvgRunner, TestSizing,
    };
    use zvx_simples::generate::{
       draw_sample_cubilinear, draw_sample_rat_quad, draw_sample_segment_sequence,
@@ -188,6 +188,7 @@ mod tests {
             grid_precision: vec![0, 1],
             ..Default::default()
          },
+         ..Default::default()
       };
       spartan_sizing("spartan_sizing_g", &sizing);
    }
@@ -208,6 +209,7 @@ mod tests {
             grid_interval: [0.4, 0.75],
             grid_precision: vec![1, 2],
          },
+         ..Default::default()
       };
 
       let mut runner = build_from_sizing("spartan_sizing_h", &sizing);
@@ -378,6 +380,7 @@ mod tests {
             grid_precision: vec![1],
             ..Default::default()
          },
+         background_box: BackgroundBox::Shrink,
          ..Default::default()
       };
 
@@ -2746,6 +2749,7 @@ mod tests {
                   path_choices: PathChoices {
                      line_choice: LineChoice::Ordinary,
                      color: ColorChoice::Red,
+                     ..Default::default()
                   },
                   path: LinesSetSet {
                      coords: vec![(
@@ -2784,6 +2788,7 @@ mod tests {
                   path_choices: PathChoices {
                      line_choice: LineChoice::Ordinary,
                      color: ColorChoice::Blue,
+                     ..Default::default()
                   },
                   path: LinesSetSet {
                      coords: vec![([-c_x, 0.0], [c_x, 0.0])],
@@ -2892,6 +2897,7 @@ mod tests {
                   path_choices: PathChoices {
                      line_choice: LineChoice::Ordinary,
                      color: ColorChoice::Red,
+                     ..Default::default()
                   },
                   path: LinesSetSet {
                      coords: vec![([-c_x, 0.0], [c_x, 0.0])],
@@ -2970,6 +2976,7 @@ mod tests {
                   path_choices: PathChoices {
                      line_choice: LineChoice::Ordinary,
                      color: ColorChoice::Red,
+                     ..Default::default()
                   },
                   path: LinesSetSet {
                      coords: vec![(
@@ -3008,6 +3015,7 @@ mod tests {
                   path_choices: PathChoices {
                      line_choice: LineChoice::Ordinary,
                      color: ColorChoice::Blue,
+                     ..Default::default()
                   },
                   path: LinesSetSet {
                      coords: vec![([-c_x, 0.0], [c_x, 0.0])],
@@ -3067,6 +3075,7 @@ mod tests {
                   path_choices: PathChoices {
                      line_choice: LineChoice::Ordinary,
                      color: ColorChoice::Red,
+                     ..Default::default()
                   },
                   path: LinesSetSet {
                      coords: vec![(
