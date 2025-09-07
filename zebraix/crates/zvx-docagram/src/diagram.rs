@@ -15,8 +15,8 @@
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use zvx_base::is_default;
-use zvx_drawable::choices::{CanvasLayout, ColorChoice, DiagramChoices};
-use zvx_drawable::kinds::QualifiedDrawable;
+use zvx_drawable::choices::{CanvasLayout, DiagramChoices};
+use zvx_drawable::{ColorChoice, PathChoices, QualifiedDrawable};
 
 #[derive(Serialize, Deserialize, Debug, Default, Copy, Clone)]
 pub enum SizingScheme {
@@ -36,6 +36,7 @@ pub struct SpartanPreparation {
    pub main_color_choice: ColorChoice,
    pub light_color_choice: ColorChoice,
    pub text_color_choice: ColorChoice,
+   pub background_box: Option<PathChoices>,
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, Clone)]
@@ -118,6 +119,9 @@ pub struct SpartanDiagram {
    pub axes_range: Vec<f64>,
    #[serde(skip_serializing_if = "is_default")]
    pub padding: Vec<f64>,
+
+   #[serde(skip_serializing_if = "is_default")]
+   pub background_box: Option<PathChoices>,
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde)]
@@ -371,6 +375,8 @@ impl SpartanDiagram {
       } else {
          preparation.text_color_choice = self.text_color_choice.clone();
       }
+
+      preparation.background_box.clone_from(&self.background_box);
 
       preparation
    }

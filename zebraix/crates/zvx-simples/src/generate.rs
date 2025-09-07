@@ -207,6 +207,7 @@ pub fn draw_sample_rat_quad(
             path_choices: PathChoices {
                color: color_choice.clone(),
                line_choice: curve_config.control_line_choice,
+               ..Default::default()
             },
             path: LinesSetSet {
                coords: vec![
@@ -279,6 +280,7 @@ pub fn draw_sample_rat_quad(
                path_choices: PathChoices {
                   color: color_choice.clone(),
                   line_choice: curve_config.main_line_choice,
+                  ..Default::default()
                },
                path: pattern_vec,
             }),
@@ -288,7 +290,11 @@ pub fn draw_sample_rat_quad(
          push_rat_quad_drawable(
             spartan,
             ordinary_rat_quad,
-            PathChoices { color: color_choice.clone(), line_choice: curve_config.main_line_choice },
+            PathChoices {
+               color: color_choice.clone(),
+               line_choice: curve_config.main_line_choice,
+               ..Default::default()
+            },
             curve_config.main_line_layer,
          );
       }
@@ -332,6 +338,7 @@ pub fn draw_sample_cubilinear(
             path_choices: PathChoices {
                color: color_choice.clone(),
                line_choice: curve_config.control_line_choice,
+               ..Default::default()
             },
             path: LinesSetSet {
                coords: vec![
@@ -378,6 +385,7 @@ pub fn draw_sample_cubilinear(
             path_choices: PathChoices {
                color: color_choice.clone(),
                line_choice: curve_config.main_line_choice,
+               ..Default::default()
             },
             path: four_point.path.clone(),
          }),

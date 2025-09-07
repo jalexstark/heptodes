@@ -133,6 +133,7 @@ pub enum ColorChoice {
    GreenGreenBlue,
    RedRedBlue,
    BlueBlueRed,
+   ZvxBackground, // Standard Heptodes / Zebraix background colour.
 }
 
 impl LineChoice {
@@ -143,6 +144,7 @@ impl LineChoice {
 
 impl ColorChoice {
    #[must_use]
+   #[allow(clippy::eq_op)]
    pub const fn to_rgb(&self) -> (f64, f64, f64) {
       match self {
          Self::DefaultBlack | Self::Black => (0.0, 0.0, 0.0),
@@ -167,6 +169,7 @@ impl ColorChoice {
          Self::GreenGreenBlue => (0.0, 0.36, 0.18),
          Self::RedRedBlue => (0.47, 0.0, 0.34),
          Self::BlueBlueRed => (0.23, 0.0, 0.55),
+         Self::ZvxBackground => (255.0 / 255.0, 250.0 / 255.0, 232.0 / 255.0), // #FFFAE8.
       }
    }
 }

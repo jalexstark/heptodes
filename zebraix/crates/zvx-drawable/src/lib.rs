@@ -22,6 +22,6 @@ pub use crate::choices::{
 };
 // pub use crate::interface::ZvxTextLayout;
 pub use crate::kinds::{
-   CirclesSet, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable, QualifiedDrawable,
-   SegmentSequence, Strokeable, TextDrawable, TextSingle,
+   CirclesSet, FillChoices, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable,
+   QualifiedDrawable, SegmentSequence, Strokeable, TextDrawable, TextSingle,
 };
