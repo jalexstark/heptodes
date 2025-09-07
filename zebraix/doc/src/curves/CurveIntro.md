@@ -31,4 +31,30 @@ date: 2025
 
 # Task
 
+![Caption\label{figA}.](figs-intro/intro_cubic_controlled.svg)
+
+In between text.
+
+![Caption\label{figB}.](figs-intro/intro_cubic_slider.svg)
+
 ## General purpose
+
+<!-- mdformat off (Document metadata) -->
+
+--------------------------------------------------------------------------------
+Arc type                           Angle range                         $\beta$       $\rho$         $\alpha$
+---------------------------------  -------------                       -----------   -----------    -----------
+Parabola                           $-\epsilon^\circ,\epsilon^\circ$    $0$           $1$            $1$
+
+Arc less than semicircle                                               $(0,2)$       $(0,1)$        $(1/2,1)$
+
+Semicircle                         $-90^\circ,90^\circ$                $2$           $0$            $1/2$
+
+Arc greater than semicircle                                            $(2,\infty)$  $(-1,0)$       $(0,1/2)$
+
+Full circle / indeterminate        $-180^\circ,180^\circ$              $\infty$      $-1$           $0$
+--------------------------------------------------------------------------------
+
+Table: Caption.\label{tabH}
+
+<!-- mdformat on -->

@@ -25,7 +25,7 @@ use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment};
 #[derive(Serialize, Default, Debug, Clone, PartialEq)]
 pub enum RatQuadOoeSubclassed {
    #[default]
-   Nothing,
+   Neither,
    // TODO: Elliptical to custom OOE.
    Elliptical(Curve<RegularizedRatQuadPath>),
    Parabolic(Curve<CubicPath>),
@@ -47,7 +47,7 @@ impl RatQuadOoeSubclassed {
    #[must_use]
    pub fn convert_to_path(&self) -> OneOfSegment {
       match self {
-         Self::Nothing => OneOfSegment::Nothing,
+         Self::Neither => OneOfSegment::Neither,
          Self::Elliptical(ooe_rat_quad) => {
             let r = ooe_rat_quad.path.range_bound;
             let s = 1.0 / ooe_rat_quad.path.a_2.sqrt();

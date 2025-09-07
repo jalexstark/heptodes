@@ -32,4 +32,30 @@ required to be placed with each usage, such as in figure captions.
 
 # Task
 
+<figure>
+<img src="figs-intro/intro_cubic_controlled.svg" alt="Caption." />
+<figcaption aria-hidden="true">Caption.</figcaption>
+</figure>
+
+In between text.
+
+<figure>
+<img src="figs-intro/intro_cubic_slider.svg" alt="Caption." />
+<figcaption aria-hidden="true">Caption.</figcaption>
+</figure>
+
 ## General purpose
+
+<!-- mdformat off (Document metadata) -->
+
+| Arc type                    | Angle range                      | $\beta$      | $\rho$   | $\alpha$  |
+|:----------------------------|:---------------------------------|:-------------|:---------|:----------|
+| Parabola                    | $-\epsilon^\circ,\epsilon^\circ$ | $0$          | $1$      | $1$       |
+| Arc less than semicircle    |                                  | $(0,2)$      | $(0,1)$  | $(1/2,1)$ |
+| Semicircle                  | $-90^\circ,90^\circ$             | $2$          | $0$      | $1/2$     |
+| Arc greater than semicircle |                                  | $(2,\infty)$ | $(-1,0)$ | $(0,1/2)$ |
+| Full circle / indeterminate | $-180^\circ,180^\circ$           | $\infty$     | $-1$     | $0$       |
+
+Caption.
+
+<!-- mdformat on -->

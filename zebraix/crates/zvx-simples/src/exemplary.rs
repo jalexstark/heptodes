@@ -34,6 +34,56 @@ pub mod tests {
    }
 
    #[must_use]
+   pub const fn scale_p_4(p: &[[f64; 2]; 4], s: f64) -> [[f64; 2]; 4] {
+      [
+         [s * p[0][0], s * p[0][1]],
+         [s * p[1][0], s * p[1][1]],
+         [s * p[2][0], s * p[2][1]],
+         [s * p[3][0], s * p[3][1]],
+      ]
+   }
+
+   #[must_use]
+   pub const fn scale_p_4_2(p: &[[f64; 2]; 4], s: [f64; 2]) -> [[f64; 2]; 4] {
+      [
+         [s[0] * p[0][0], s[1] * p[0][1]],
+         [s[0] * p[1][0], s[1] * p[1][1]],
+         [s[0] * p[2][0], s[1] * p[2][1]],
+         [s[0] * p[3][0], s[1] * p[3][1]],
+      ]
+   }
+
+   #[must_use]
+   pub const fn mul_add_p_4(p: &[[f64; 2]; 4], s: [f64; 2], d: [f64; 2]) -> [[f64; 2]; 4] {
+      [
+         [d[0] + p[0][0] * s[0], d[1] + p[0][1] * s[1]],
+         [d[0] + p[1][0] * s[0], d[1] + p[1][1] * s[1]],
+         [d[0] + p[2][0] * s[0], d[1] + p[2][1] * s[1]],
+         [d[0] + p[3][0] * s[0], d[1] + p[3][1] * s[1]],
+      ]
+   }
+
+   #[must_use]
+   pub const fn add_p_4(p: &[[f64; 2]; 4], d: [f64; 2]) -> [[f64; 2]; 4] {
+      [
+         [d[0] + p[0][0], d[1] + p[0][1]],
+         [d[0] + p[1][0], d[1] + p[1][1]],
+         [d[0] + p[2][0], d[1] + p[2][1]],
+         [d[0] + p[3][0], d[1] + p[3][1]],
+      ]
+   }
+
+   #[must_use]
+   pub const fn add_p(p: &[f64; 2], d: [f64; 2]) -> [f64; 2] {
+      [d[0] + p[0], d[1] + p[1]]
+   }
+
+   #[must_use]
+   pub const fn mul_add_p(p: &[f64; 2], s: [f64; 2], d: [f64; 2]) -> [f64; 2] {
+      [d[0] + p[0] * s[0], d[1] + p[1] * s[1]]
+   }
+
+   #[must_use]
    pub const fn p_from_x_y_4(x: &[f64; 4], y: &[f64; 4]) -> [[f64; 2]; 4] {
       [[x[0], y[0]], [x[1], y[1]], [x[2], y[2]], [x[3], y[3]]]
    }
@@ -46,7 +96,7 @@ pub mod tests {
    #[derive(Default)]
    pub enum BackgroundBox {
       #[default]
-      Nothing,
+      None,
       Shrink,
    }
 
@@ -73,7 +123,7 @@ pub mod tests {
 
       // Only shrink (currently) supported in axes generation.
       spartan.background_box = match sizing.background_box {
-         BackgroundBox::Nothing => None,
+         BackgroundBox::None => None,
          BackgroundBox::Shrink => Some(PathChoices {
             line_choice: LineChoice::Ordinary,
             color: spartan.base_color_choice.clone(),

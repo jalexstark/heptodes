@@ -512,7 +512,7 @@ impl UnfixedCairoSpartanRender {
    // analyse.  For example, it could be that the center of "x" should be a centerline
    // estimate, or the center of "+", depending on user choice.
    #[inline]
-   fn figure_text_adjust<'a>(
+   fn layout_text_adjust_impl<'a>(
       boxed_text_layout: &mut Box<dyn ZvxTextLayout + 'a>,
       single_text: &TextSingle,
       drawable: &TextDrawable,
@@ -593,8 +593,12 @@ impl UnfixedCairoSpartanRender {
       let mut pango_text_layout: Box<(dyn ZvxTextLayout + 'a)> =
          ZvxPangoTextLayout::create_pango_layout(cairo_context, pango_context);
 
-      let (width_adjust, height_adjust) =
-         Self::figure_text_adjust(&mut pango_text_layout, single_text, drawable, diagram_choices);
+      let (width_adjust, height_adjust) = Self::layout_text_adjust_impl(
+         &mut pango_text_layout,
+         single_text,
+         drawable,
+         diagram_choices,
+      );
 
       (pango_text_layout, width_adjust, height_adjust)
    }
@@ -740,7 +744,7 @@ impl UnfixedCairoSpartanRender {
                   diagram_choices,
                );
             }
-            OneOfSegment::Nothing => {}
+            OneOfSegment::Neither => {}
          }
 
          line_continuation_choice = ContinuationChoice::Continues;
@@ -812,7 +816,7 @@ impl UnfixedCairoSpartanRender {
             OneOfDrawable::SegmentSequence(drawable) => {
                self.draw_segment_sequence(drawable, canvas_layout, diagram_choices);
             }
-            OneOfDrawable::Nothing => {}
+            OneOfDrawable::Neither => {}
          }
       }
    }

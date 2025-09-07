@@ -57,7 +57,7 @@ pub struct HyperbolicPath {
 #[derive(Serialize, Debug, Default, PartialEq)]
 pub enum OneOfSegment {
    #[default]
-   Nothing,
+   Neither,
    Arc(ArcPath),
    Cubic(CubicPath),
    Hyperbolic(HyperbolicPath),
