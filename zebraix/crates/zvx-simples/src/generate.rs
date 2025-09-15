@@ -21,8 +21,8 @@ use zvx_curves::{
 };
 use zvx_docagram::diagram::DrawableDiagram;
 use zvx_drawable::{
-   ColorChoice, LineChoice, LinesSetSet, OneOfDrawable, PathChoices, PathCompletion, PointChoice,
-   PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable, TextAnchorChoice,
+   ColorChoice, LineChoice, LinesSetSet, MarkupChoice, OneOfDrawable, PathChoices, PathCompletion,
+   PointChoice, PointsDrawable, QualifiedDrawable, SegmentSequence, Strokeable, TextAnchorChoice,
    TextAnchorHorizontal, TextAnchorVertical, TextDrawable, TextOffsetChoice, TextSingle,
    TextSizeChoice,
 };
@@ -450,13 +450,17 @@ pub fn add_centered_text(
       layer: curve_config.main_line_layer,
       drawable: OneOfDrawable::Text(TextDrawable {
          size_choice: TextSizeChoice::Normal,
-         color_choice: curve_config.main_color.clone().unwrap_or(ColorChoice::default()),
+         color_choice: curve_config.main_color.clone().unwrap_or_default(),
          offset_choice: TextOffsetChoice::Diagram,
          anchor_choice: TextAnchorChoice::ThreeByThree(
             TextAnchorHorizontal::Center,
             TextAnchorVertical::Middle,
          ),
-         texts: vec![TextSingle { content: text.to_string(), location }],
+         texts: vec![TextSingle {
+            content: text.to_string(),
+            location,
+            markup: MarkupChoice::Pango,
+         }],
       }),
    });
 }

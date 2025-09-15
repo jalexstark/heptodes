@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::QualifiedDrawable;
+use crate::{QualifiedDrawable, TextSingle};
 use std::error::Error;
 
 pub struct TextMetrics {
@@ -39,7 +39,8 @@ pub struct TextMetrics {
 // https://crates.io/crates/better_any
 
 pub trait ZvxTextLayout {
-   fn set_layout(&mut self, font_family: &str, font_size: f64, text_content: &str);
+   fn set_layout(&mut self, font_family: &str, font_size: f64, single_text: &TextSingle);
+   // fn set_markup_with_accel(&self, markup: &str, accel_marker: char) -> char;
    fn get_metrics(&mut self) -> &Option<TextMetrics>;
    #[allow(clippy::missing_errors_doc)]
    fn render_layout(&mut self) -> Result<(), Box<dyn Error>>;

@@ -33,8 +33,8 @@ use zvx_drawable::choices::{
 };
 use zvx_drawable::interface::{TextMetrics, ZvxRenderEngine, ZvxTextLayout};
 use zvx_drawable::kinds::{
-   CirclesSet, LinesSetSet, OneOfDrawable, PathChoices, PointsDrawable, QualifiedDrawable,
-   SegmentChoices, SegmentSequence, Strokeable, TextDrawable, TextSingle,
+   CirclesSet, LinesSetSet, MarkupChoice, OneOfDrawable, PathChoices, PointsDrawable,
+   QualifiedDrawable, SegmentChoices, SegmentSequence, Strokeable, TextDrawable, TextSingle,
 };
 
 #[derive(Debug)]
@@ -131,7 +131,7 @@ impl CairoSpartanRender {
 #[allow(clippy::needless_lifetimes)]
 impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
    // Not a great method name.
-   fn set_layout(&mut self, font_family: &str, font_size: f64, text_content: &str) {
+   fn set_layout(&mut self, font_family: &str, font_size: f64, single_text: &TextSingle) {
       let mut font_description = FontDescription::new();
 
       font_description.set_family(font_family);
@@ -152,7 +152,18 @@ impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
 
       // Text content dependence below.
 
-      self.pango_text_layout.set_text(text_content);
+      match single_text.markup {
+         MarkupChoice::Auto | MarkupChoice::Plain => {
+            self.pango_text_layout.set_text(&single_text.content);
+            // text_layout.set_layout("sans", font_size);
+         }
+         MarkupChoice::Pango => {
+            let accel_marker = '_';
+            // let (attr_list, plain_text, accel_char) =
+            //    pangocairo_parse_markup(&single_text.content, accel_marker).unwrap();
+            self.pango_text_layout.set_markup_with_accel(&single_text.content, accel_marker);
+         }
+      }
 
       let (layout_text_width, layout_text_height) = self.pango_text_layout.size();
       let text_width = f64::from(layout_text_width);
@@ -527,7 +538,8 @@ impl UnfixedCairoSpartanRender {
 
       let text_layout: &mut (dyn ZvxTextLayout + 'a) = boxed_text_layout.as_mut();
 
-      text_layout.set_layout("sans", font_size, &single_text.content);
+      text_layout.set_layout("sans", font_size, single_text);
+
       let metrics = text_layout.get_metrics().as_ref().unwrap();
 
       let (offset_x, offset_y) = match drawable.offset_choice {

@@ -31,11 +31,20 @@ date: 2025
 
 # Task
 
-![Caption\label{figA}.](figs-intro/intro_cubic_controlled.svg)
+<!-- 4.0 * 70pt =280pt for width 4.0. -->
+
+![[Figure (SVG)](figs-intro/intro_cubic_controlled.svg) Caption: A
+somewhat longer caption that spills into multiple lines to test this
+behaviour, and to test insensitivity to line
+breaking in the source file\label{figA}.](figs-intro/intro_cubic_controlled.svg){width=280pt}
 
 In between text.
 
-![Caption\label{figB}.](figs-intro/intro_cubic_slider.svg)
+<!-- 3.5 * 70pt = 245pt for width 3.5. -->
+
+![[Figure (SVG)](figs-intro/intro_cubic_slider.svg) A short caption.\label{figB}.](figs-intro/intro_cubic_slider.svg){width=245pt}
+
+In between text.
 
 ## General purpose
 

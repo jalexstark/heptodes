@@ -26,27 +26,21 @@ mod tests {
 
    const CUBIC_BASIC: [[f64; 2]; 4] =
       p_from_x_y_4(&[-2.5, -1.75, 2.5, 2.5], &[-2.0, -0.75, 0.5, -2.0]);
-   // p_from_x_y_4(&[-2.0, -1.0, 2.0, 2.0], &[-2.0, -0.5, 0.5, -2.0]);
-   // p_from_x_y_4(&[-3.0, -2.0, 3.0, 3.0], &[-2.0, -0.5, 0.5, -2.0]);
-   // p_from_x_y_4(&[-3.0, -1.5, 3.0, 3.0], &[-2.0, 0.25, 0.5, -2.0]);
-   // &p_from_x_y_4(&[-3.0, -1.5, 3.0, 3.0], &[-2.0, 0.5, 0.75, -2.0])
-   // p_from_x_y_4(&[-3.0, -1.5, 3.0, 3.0], &[-2.0, -0.0, 1.0, -2.0]),
-   // p: p_from_x_y_4(&[-3.0, -2.25, 3.0, 3.0], &[-2.0, -0.5, 2.5, -2.0]),
 
-   fn make_cubic_sizing() -> TestSizing {
+   fn make_cubic_sizing(base_size: [f64; 2]) -> TestSizing {
       TestSizing {
          sizing_scheme: SizingScheme::SquareCenter,
-         canvas_size: [350.0, 350.0],
-         axes_range: vec![-4.0, -4.0, 4.0, 4.0],
+         canvas_size: mul_add_p(&base_size, [87.5, 87.5], [0.0, 0.0]),
+         axes_range: vec![-base_size[0], -base_size[1], base_size[0], base_size[1]],
          padding: vec![0.05],
          axes_spec: AxesSpec {
             axis_numbering: AxisNumbering::None,
-            axes_style: AxesStyle::Boxed,
-            grid_interval: [1.0, 1.0],
-            // axes_style: AxesStyle::None,
-            // grid_interval: [0.0, 0.0],
+            // axes_style: AxesStyle::Boxed,
+            // grid_interval: [1.0, 1.0],
+            axes_style: AxesStyle::None,
+            grid_interval: [0.0, 0.0],
             grid_precision: vec![1],
-            ..Default::default()
+            // ..Default::default()
          },
          background_box: BackgroundBox::Shrink,
          ..Default::default()
@@ -56,7 +50,7 @@ mod tests {
    #[test]
    fn cubic_controlled_test() {
       let t_range = [-6.0, 14.0];
-      let sizing = make_cubic_sizing();
+      let sizing = make_cubic_sizing([4.0, 3.0]);
       let mut runner = build_from_sizing("curves/figs-intro/intro_cubic_controlled", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
@@ -79,18 +73,18 @@ mod tests {
          drawable_diagram,
          &SampleCurveConfig { main_color: Some(ColorChoice::BlueBlueRed), ..Default::default() },
          "Intermediate control points",
-         [0.5, 1.5],
+         [0.0, 1.75],
       );
       add_centered_text(
          drawable_diagram,
          &SampleCurveConfig { main_color: Some(ColorChoice::BlueBlueRed), ..Default::default() },
-         "p<sub>1</sub>",
+         "P<sub>1</sub>",
          mul_add_p(&main_curve[1], [1.0, 1.0], [0.0, 0.5]),
       );
       add_centered_text(
          drawable_diagram,
          &SampleCurveConfig { main_color: Some(ColorChoice::BlueBlueRed), ..Default::default() },
-         "p<sub>2</sub>",
+         "P<sub>2</sub>",
          mul_add_p(&main_curve[2], [1.0, 1.0], [0.0, 0.5]),
       );
       add_centered_text(
@@ -102,13 +96,13 @@ mod tests {
       add_centered_text(
          drawable_diagram,
          &SampleCurveConfig { main_color: Some(ColorChoice::RedRedBlue), ..Default::default() },
-         "p<sub>0</sub>",
+         "P<sub>0</sub>",
          mul_add_p(&main_curve[0], [1.0, 1.0], [0.0, -0.5]),
       );
       add_centered_text(
          drawable_diagram,
          &SampleCurveConfig { main_color: Some(ColorChoice::RedRedBlue), ..Default::default() },
-         "p<sub>3</sub>",
+         "P<sub>3</sub>",
          mul_add_p(&main_curve[3], [1.0, 1.0], [0.0, -0.5]),
       );
 
@@ -118,7 +112,7 @@ mod tests {
    #[test]
    fn cubic_slider_test() {
       let t_range = [-6.0, 14.0];
-      let sizing = make_cubic_sizing();
+      let sizing = make_cubic_sizing([4.0, 4.0]);
       let mut runner = build_from_sizing("curves/figs-intro/intro_cubic_slider", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
@@ -167,7 +161,7 @@ mod tests {
          },
       );
 
-      let norm = 1.0 / (0.75 * 0.75 + 1.25 * 1.25f64).sqrt();
+      let norm = 1.0 / 0.75_f64.hypot(1.25);
       let managed_curve_c = ManagedCubic::create_from_control_points(
          &Curve::<CubicPath> {
             path: CubicPath {
@@ -213,7 +207,7 @@ mod tests {
             + 0.5 * CUBIC_BASIC[2][1]
             + 0.5 * CUBIC_BASIC[3][1],
       ];
-      let norm = 1.0 / (mid_diff[0] * mid_diff[0] + mid_diff[1] * mid_diff[1]).sqrt();
+      let norm = 1.0 / mid_diff[0].hypot(mid_diff[1]);
 
       let managed_curve_d = ManagedCubic::create_from_control_points(
          &Curve::<CubicPath> {

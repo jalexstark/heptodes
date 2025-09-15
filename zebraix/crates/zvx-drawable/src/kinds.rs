@@ -89,13 +89,23 @@ pub struct PointsDrawable {
    pub centers: Vec<[f64; 2]>,
 }
 
-// Length of start and end must match.
+// Type of markup.  For now, Auto means Plain.
+#[derive(Serialize, Debug, Default, PartialEq, Eq)]
+pub enum MarkupChoice {
+   #[default]
+   Auto,
+   Plain,
+   Pango,
+}
+
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 pub struct TextSingle {
    #[serde(skip_serializing_if = "is_default")]
    pub content: String,
    #[serde(skip_serializing_if = "is_default")]
    pub location: [f64; 2],
+   #[serde(skip_serializing_if = "is_default")]
+   pub markup: MarkupChoice,
 }
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]

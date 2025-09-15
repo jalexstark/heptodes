@@ -364,36 +364,42 @@ impl AxesSpec {
             horizontal_numbering.texts.push(TextSingle {
                content: format!("{location:.horizontal_precision$}"),
                location: [location, vertical_for_horizontal],
+               ..Default::default()
             });
          }
          if has_vert_zero && !number_at_zero {
             horizontal_numbering.texts.push(TextSingle {
                content: format!("{:.horizontal_precision$}", 0.0),
                location: [0.0, vertical_for_horizontal],
+               ..Default::default()
             });
          }
          if let Some(location) = right_numbering_location {
             horizontal_numbering.texts.push(TextSingle {
                content: format!("{location:.horizontal_precision$}"),
                location: [location, vertical_for_horizontal],
+               ..Default::default()
             });
          }
          if let Some(location) = bottom_numbering_location {
             vertical_numbering.texts.push(TextSingle {
                content: format!("{location:.vertical_precision$}"),
                location: [horizontal_for_vertical, location],
+               ..Default::default()
             });
          }
          if has_horiz_zero && !number_at_zero {
             vertical_numbering.texts.push(TextSingle {
                content: format!("{:.vertical_precision$}", 0.0),
                location: [horizontal_for_vertical, 0.0],
+               ..Default::default()
             });
          }
          if let Some(location) = top_numbering_location {
             vertical_numbering.texts.push(TextSingle {
                content: format!("{location:.vertical_precision$}"),
                location: [horizontal_for_vertical, location],
+               ..Default::default()
             });
          }
 
