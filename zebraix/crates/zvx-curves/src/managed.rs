@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{Curve, FourPointRatQuad, RatQuadPolyPath, SpecifiedRatQuad, ThreePointAngleRepr};
+use crate::{
+   Curve, CurveTransform, FourPointRatQuad, RatQuadPolyPath, SpecifiedRatQuad, ThreePointAngleRepr,
+};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 
@@ -133,5 +135,14 @@ impl ManagedRatQuad {
       let sigma_ratio = (combo_d.abs().sqrt(), combo_s.abs().sqrt());
 
       self.poly = rat_poly.rq_apply_bilinear(sigma_ratio);
+   }
+
+   pub fn raw_change_range(&mut self, new_range: [f64; 2]) {
+      self.poly.raw_change_range(new_range);
+   }
+
+   // These should account for sigma.
+   pub fn select_range(&mut self, new_range: [f64; 2]) {
+      self.poly.select_range(new_range);
    }
 }

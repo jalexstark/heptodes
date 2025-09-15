@@ -158,7 +158,7 @@ impl AxesSpec {
       // around the edge.  This is intentional, so that the line is never clipped.
       if let Some(box_choices) = &diagram.prep.background_box {
          // Create background box.
-         let background_layer = -10;
+         let background_layer = -1000;
          let left = diagram.prep.axes_range[0]
             - (diagram.prep.axes_range[2] - diagram.prep.axes_range[0]) * diagram.prep.padding[0]
             + diagram.prep.diagram_choices.line_width / diagram.prep.canvas_layout.scale[0];
