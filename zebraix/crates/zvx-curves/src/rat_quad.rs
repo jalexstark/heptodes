@@ -102,8 +102,9 @@ impl CurveTransform for Curve<RatQuadPolyPath> {
       self.path.r = new_range;
    }
 
-   fn select_range(&mut self, _new_range: [f64; 2]) {
-      todo!();
+   // NOTE: Incomplete, not accounting for sigma.
+   fn select_range(&mut self, new_range: [f64; 2]) {
+      self.path.r = new_range;
    }
 }
 

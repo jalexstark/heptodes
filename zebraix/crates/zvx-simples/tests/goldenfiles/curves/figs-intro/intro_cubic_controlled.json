@@ -1,7 +1,7 @@
 {
   "drawables": [
     {
-      "layer": -10,
+      "layer": -1000,
       "drawable": {
         "SegmentSequence": {
           "completion": "Closed",
