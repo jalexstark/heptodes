@@ -231,6 +231,7 @@ mod tests {
             texts: vec![TextSingle {
                content: "This is a title test".to_string(),
                location: [0.0, vertical_title_anchor],
+               ..Default::default()
             }],
             ..Default::default()
          }),
@@ -248,6 +249,7 @@ mod tests {
             texts: vec![TextSingle {
                content: "This subtitle has the same anchor location".to_string(),
                location: [0.0, vertical_title_anchor],
+               ..Default::default()
             }],
             ..Default::default()
          }),
@@ -432,7 +434,11 @@ mod tests {
          drawable: OneOfDrawable::Text(TextDrawable {
             size_choice: TextSizeChoice::Normal,
             anchor_choice: TextAnchorChoice::Centered,
-            texts: vec![TextSingle { content: "o+=-x-=+o".to_string(), location: [0.0, 0.0] }],
+            texts: vec![TextSingle {
+               content: "o+=-x-=+o".to_string(),
+               location: [0.0, 0.0],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -446,7 +452,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 1.5] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [2.0, 1.5],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -459,7 +469,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 0.0] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [2.0, 0.0],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -472,7 +486,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, -1.5] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [2.0, -1.5],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -484,7 +502,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Top,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, -3.0] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [2.0, -3.0],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -497,7 +519,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: "xopqgox".to_string(), location: [4.0, 1.5] }],
+            texts: vec![TextSingle {
+               content: "xopqgox".to_string(),
+               location: [4.0, 1.5],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -510,7 +536,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [4.0, 0.0] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [4.0, 0.0],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -523,7 +553,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: "xodflox".to_string(), location: [4.0, -1.5] }],
+            texts: vec![TextSingle {
+               content: "xodflox".to_string(),
+               location: [4.0, -1.5],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -535,7 +569,11 @@ mod tests {
                TextAnchorHorizontal::Left,
                TextAnchorVertical::Bottom,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [2.0, 3.0] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [2.0, 3.0],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -549,7 +587,11 @@ mod tests {
                TextAnchorHorizontal::Center,
                TextAnchorVertical::Bottom,
             ),
-            texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 1.5] }],
+            texts: vec![TextSingle {
+               content: "Elpo x lpoE".to_string(),
+               location: [0.0, 1.5],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -562,7 +604,11 @@ mod tests {
                TextAnchorHorizontal::Center,
                TextAnchorVertical::Bottom,
             ),
-            texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 3.0] }],
+            texts: vec![TextSingle {
+               content: "Elpo x lpoE".to_string(),
+               location: [0.0, 3.0],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -574,7 +620,11 @@ mod tests {
                TextAnchorHorizontal::Center,
                TextAnchorVertical::Bottom,
             ),
-            texts: vec![TextSingle { content: "Elpo x lpoE".to_string(), location: [0.0, 4.5] }],
+            texts: vec![TextSingle {
+               content: "Elpo x lpoE".to_string(),
+               location: [0.0, 4.5],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -588,7 +638,11 @@ mod tests {
                TextAnchorHorizontal::Right,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 1.5] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [-2.0, 1.5],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -601,7 +655,11 @@ mod tests {
                TextAnchorHorizontal::Right,
                TextAnchorVertical::Middle,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 0.0] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [-2.0, 0.0],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -617,6 +675,7 @@ mod tests {
             texts: vec![TextSingle {
                content: spanning_string.to_string(),
                location: [-2.0, -1.5],
+               ..Default::default()
             }],
          }),
       });
@@ -632,6 +691,7 @@ mod tests {
             texts: vec![TextSingle {
                content: "oxacoxocaxo\nox=c-+-c=xo\noxacoxocaxo".to_string(),
                location: [-4.0, 1.5],
+               ..Default::default()
             }],
             ..Default::default()
          }),
@@ -648,6 +708,7 @@ mod tests {
             texts: vec![TextSingle {
                content: "oxacoxocaxo\nox=c-+-c=xo\noxacoxocaxo".to_string(),
                location: [-4.0, 0.0],
+               ..Default::default()
             }],
             ..Default::default()
          }),
@@ -664,6 +725,7 @@ mod tests {
             texts: vec![TextSingle {
                content: "oxacoxocaxo\nox=c-+-c=xo\noxacoxocaxo".to_string(),
                location: [-4.0, -1.5],
+               ..Default::default()
             }],
             ..Default::default()
          }),
@@ -676,7 +738,11 @@ mod tests {
                TextAnchorHorizontal::Right,
                TextAnchorVertical::Bottom,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [-2.0, 3.0] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [-2.0, 3.0],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });
@@ -692,6 +758,7 @@ mod tests {
             texts: vec![TextSingle {
                content: spanning_string.to_string(),
                location: [-2.0, -3.0],
+               ..Default::default()
             }],
             ..Default::default()
          }),
@@ -706,7 +773,11 @@ mod tests {
                TextAnchorHorizontal::Center,
                TextAnchorVertical::Top,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -1.5] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [0.0, -1.5],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -719,7 +790,11 @@ mod tests {
                TextAnchorHorizontal::Center,
                TextAnchorVertical::Top,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -3.0] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [0.0, -3.0],
+               ..Default::default()
+            }],
          }),
       });
       drawable_diagram.drawables.push(QualifiedDrawable {
@@ -731,7 +806,11 @@ mod tests {
                TextAnchorHorizontal::Center,
                TextAnchorVertical::Top,
             ),
-            texts: vec![TextSingle { content: spanning_string.to_string(), location: [0.0, -4.5] }],
+            texts: vec![TextSingle {
+               content: spanning_string.to_string(),
+               location: [0.0, -4.5],
+               ..Default::default()
+            }],
             ..Default::default()
          }),
       });

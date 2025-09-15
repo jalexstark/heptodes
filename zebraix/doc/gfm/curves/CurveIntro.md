@@ -32,17 +32,31 @@ required to be placed with each usage, such as in figure captions.
 
 # Task
 
+<!-- 4.0 * 70pt =280pt for width 4.0. -->
+
 <figure>
-<img src="figs-intro/intro_cubic_controlled.svg" alt="Caption." />
-<figcaption aria-hidden="true">Caption.</figcaption>
+<img src="figs-intro/intro_cubic_controlled.svg" style="width:3.88889in"
+alt="Figure (SVG) Caption: A somewhat longer caption that spills into multiple lines to test this behaviour, and to test insensitivity to line breaking in the source file." />
+<figcaption aria-hidden="true"><a
+href="figs-intro/intro_cubic_controlled.svg">Figure (SVG)</a> Caption: A
+somewhat longer caption that spills into multiple lines to test this
+behaviour, and to test insensitivity to line breaking in the source
+file.</figcaption>
 </figure>
 
 In between text.
 
+<!-- 3.5 * 70pt = 245pt for width 3.5. -->
+
 <figure>
-<img src="figs-intro/intro_cubic_slider.svg" alt="Caption." />
-<figcaption aria-hidden="true">Caption.</figcaption>
+<img src="figs-intro/intro_cubic_slider.svg" style="width:3.40278in"
+alt="Figure (SVG) A short caption.." />
+<figcaption aria-hidden="true"><a
+href="figs-intro/intro_cubic_slider.svg">Figure (SVG)</a> A short
+caption..</figcaption>
 </figure>
+
+In between text.
 
 ## General purpose
 

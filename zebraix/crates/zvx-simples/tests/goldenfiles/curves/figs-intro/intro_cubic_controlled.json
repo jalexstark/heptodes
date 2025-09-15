@@ -16,158 +16,23 @@
               "Polyline": [
                 [
                   -4.374857142857143,
-                  -4.374857142857143
+                  -3.2748571428571425
                 ],
                 [
                   -4.374857142857143,
-                  4.374857142857143
+                  3.2748571428571425
                 ],
                 [
                   4.374857142857143,
-                  4.374857142857143
+                  3.2748571428571425
                 ],
                 [
                   4.374857142857143,
-                  -4.374857142857143
+                  -3.2748571428571425
                 ]
               ]
             }
           ]
-        }
-      }
-    },
-    {
-      "drawable": {
-        "SegmentSequence": {
-          "completion": "Closed",
-          "segments": [
-            {
-              "Polyline": [
-                [
-                  -4.0,
-                  -4.0
-                ],
-                [
-                  -4.0,
-                  4.0
-                ],
-                [
-                  4.0,
-                  4.0
-                ],
-                [
-                  4.0,
-                  -4.0
-                ]
-              ]
-            }
-          ]
-        }
-      }
-    },
-    {
-      "drawable": {
-        "Lines": {
-          "path": {
-            "coords": [
-              [
-                [
-                  -4.0,
-                  0.0
-                ],
-                [
-                  4.0,
-                  0.0
-                ]
-              ]
-            ],
-            "offsets": [
-              [
-                0.0,
-                0.0
-              ],
-              [
-                -0.0,
-                -1.0
-              ],
-              [
-                -0.0,
-                -2.0
-              ],
-              [
-                -0.0,
-                -3.0
-              ],
-              [
-                0.0,
-                1.0
-              ],
-              [
-                0.0,
-                2.0
-              ],
-              [
-                0.0,
-                3.0
-              ]
-            ]
-          },
-          "path_choices": {
-            "line_choice": "Light"
-          }
-        }
-      }
-    },
-    {
-      "drawable": {
-        "Lines": {
-          "path": {
-            "coords": [
-              [
-                [
-                  0.0,
-                  -4.0
-                ],
-                [
-                  0.0,
-                  4.0
-                ]
-              ]
-            ],
-            "offsets": [
-              [
-                0.0,
-                0.0
-              ],
-              [
-                -1.0,
-                -0.0
-              ],
-              [
-                -2.0,
-                -0.0
-              ],
-              [
-                -3.0,
-                -0.0
-              ],
-              [
-                1.0,
-                0.0
-              ],
-              [
-                2.0,
-                0.0
-              ],
-              [
-                3.0,
-                0.0
-              ]
-            ]
-          },
-          "path_choices": {
-            "line_choice": "Light"
-          }
         }
       }
     },
@@ -293,9 +158,10 @@
             {
               "content": "Intermediate control points",
               "location": [
-                0.5,
-                1.5
-              ]
+                0.0,
+                1.75
+              ],
+              "markup": "Pango"
             }
           ]
         }
@@ -315,11 +181,12 @@
           "color_choice": "BlueBlueRed",
           "texts": [
             {
-              "content": "p<sub>1</sub>",
+              "content": "P<sub>1</sub>",
               "location": [
                 -2.1,
                 0.8500000000000001
-              ]
+              ],
+              "markup": "Pango"
             }
           ]
         }
@@ -339,11 +206,12 @@
           "color_choice": "BlueBlueRed",
           "texts": [
             {
-              "content": "p<sub>2</sub>",
+              "content": "P<sub>2</sub>",
               "location": [
                 3.0,
                 2.35
-              ]
+              ],
+              "markup": "Pango"
             }
           ]
         }
@@ -367,7 +235,8 @@
               "location": [
                 0.0,
                 -2.0
-              ]
+              ],
+              "markup": "Pango"
             }
           ]
         }
@@ -387,11 +256,12 @@
           "color_choice": "RedRedBlue",
           "texts": [
             {
-              "content": "p<sub>0</sub>",
+              "content": "P<sub>0</sub>",
               "location": [
                 -3.0,
                 -1.65
-              ]
+              ],
+              "markup": "Pango"
             }
           ]
         }
@@ -411,11 +281,12 @@
           "color_choice": "RedRedBlue",
           "texts": [
             {
-              "content": "p<sub>3</sub>",
+              "content": "P<sub>3</sub>",
               "location": [
                 3.0,
                 -1.65
-              ]
+              ],
+              "markup": "Pango"
             }
           ]
         }
