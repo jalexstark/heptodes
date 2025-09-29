@@ -15,13 +15,22 @@
 pub mod base;
 pub mod cubic;
 pub mod managed;
+pub mod matrix;
 pub mod rat_quad;
 pub mod threes;
 
 pub use crate::base::{Curve, CurveEval, CurveTransform, ZebraixAngle};
 pub use crate::cubic::ManagedCubic;
 pub use crate::managed::ManagedRatQuad;
+pub use crate::matrix::{
+   q_mat_weighted_to_power, q_reduce, rat_quad_expand_power, rat_quad_power_eval, CurveMatrix,
+   QMat, RatQuadHomogWrapped,
+};
 pub use crate::rat_quad::{
    FourPointRatQuad, RatQuadPolyPath, SpecifiedRatQuad, ThreePointAngleRepr,
 };
 pub use crate::threes::RatQuadOoeSubclassed;
+
+// #[cfg(test)]
+// #[macro_use]
+extern crate approx;

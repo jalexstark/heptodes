@@ -14,7 +14,7 @@
 
 #[cfg(test)]
 mod tests {
-   use zvx_base::{CubicPath, OneOfSegment};
+   use zvx_base::{CubicHomog, CubicPath, OneOfSegment};
    use zvx_curves::{Curve, FourPointRatQuad, ManagedCubic, ManagedRatQuad};
    use zvx_docagram::{AxesSpec, AxesStyle, AxisNumbering, SizingScheme};
    use zvx_drawable::{
@@ -23,7 +23,7 @@ mod tests {
    };
    use zvx_simples::exemplary::tests::{
       add_p_4, build_from_sizing, mul_add_p, mul_add_p_4, p_from_x_y_4, render_and_check,
-      scale_p_4, scale_p_4_2, BackgroundBox, TestSizing,
+      scale_p_4, scale_p_4_2, x_y_from_p_4, BackgroundBox, TestSizing,
    };
    use zvx_simples::generate::{
       add_centered_text, draw_sample_cubilinear, draw_sample_rat_quad, SampleCurveConfig,
@@ -61,7 +61,10 @@ mod tests {
 
       let main_curve = add_p_4(&scale_p_4(&CUBIC_BASIC, 1.2), [0.0, 1.25]);
       let managed_curve_a = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> { path: CubicPath { r: t_range, p: main_curve }, sigma: 1.0 },
+         &Curve::<CubicPath> {
+            path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&main_curve)) },
+            sigma: 1.0,
+         },
          drawable_diagram.prep.axes_range,
       );
       draw_sample_cubilinear(
@@ -125,7 +128,10 @@ mod tests {
 
       let managed_curve_a = ManagedCubic::create_from_control_points(
          &Curve::<CubicPath> {
-            path: CubicPath { r: t_range, p: add_p_4(&scale_p_4(&CUBIC_BASIC, s), [0.0, -1.2]) },
+            path: CubicPath {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&add_p_4(&scale_p_4(&CUBIC_BASIC, s), [0.0, -1.2]))),
+            },
             sigma: 1.0,
          },
          drawable_diagram.prep.axes_range,
@@ -145,13 +151,13 @@ mod tests {
          &Curve::<CubicPath> {
             path: CubicPath {
                r: t_range,
-               p: add_p_4(
+               h: CubicHomog(x_y_from_p_4(&add_p_4(
                   &scale_p_4_2(
                      &p_from_x_y_4(&[0.0, 1.0, 2.0, 3.0], &[0.0, 1.0, 2.0, 3.0]),
                      [0.0, s * 2.5],
                   ),
                   [CUBIC_BASIC[3][0] * s + s, -3.0], // -1.2 - 1.8 = -3.0.
-               ),
+               ))),
             },
             sigma: 1.0,
          },
@@ -173,13 +179,13 @@ mod tests {
          &Curve::<CubicPath> {
             path: CubicPath {
                r: t_range,
-               p: add_p_4(
+               h: CubicHomog(x_y_from_p_4(&add_p_4(
                   &scale_p_4_2(
                      &p_from_x_y_4(&[0.0, 1.0, 2.0, 3.0], &[0.0, 1.0, 2.0, 3.0]),
                      [s * 0.75, s * 1.25],
                   ),
                   [CUBIC_BASIC[0][0] * s - 1.25 * norm * s, -3.0 + 0.75 * norm * s],
-               ),
+               ))),
             },
             sigma: 1.0,
          },
@@ -220,7 +226,7 @@ mod tests {
          &Curve::<CubicPath> {
             path: CubicPath {
                r: t_range,
-               p: add_p_4(
+               h: CubicHomog(x_y_from_p_4(&add_p_4(
                   &scale_p_4_2(
                      &p_from_x_y_4(&[-1.5, -0.5, 0.5, 1.5], &[-1.5, -0.5, 0.5, 1.5]),
                      [0.5 * s * mid_diff[0], 0.5 * s * mid_diff[1]],
@@ -229,7 +235,7 @@ mod tests {
                      s * mid_point[0] - norm * mid_diff[1],
                      s * mid_point[1] + norm * mid_diff[0] - 1.2,
                   ],
-               ),
+               ))),
             },
             sigma: 1.0,
          },
@@ -250,6 +256,7 @@ mod tests {
    }
 
    #[test]
+   #[allow(clippy::needless_update)]
    fn cubic_slider_test() {
       let t_range = [-6.0, 14.0];
       let sizing = make_cubic_sizing([3.5, 3.5]);
@@ -368,7 +375,10 @@ mod tests {
          [-1.2 * s + d, 0.0],
       );
       let managed_curve_b = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> { path: CubicPath { r: t_range, p: straight_line }, sigma: 1.0 },
+         &Curve::<CubicPath> {
+            path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&straight_line)) },
+            sigma: 1.0,
+         },
          drawable_diagram.prep.axes_range,
       );
       draw_sample_cubilinear(
@@ -384,7 +394,10 @@ mod tests {
 
       let managed_curve_c = ManagedCubic::create_from_control_points(
          &Curve::<CubicPath> {
-            path: CubicPath { r: t_range, p: add_p_4(&straight_line, [-1.05 * s, 0.0]) },
+            path: CubicPath {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&add_p_4(&straight_line, [-1.05 * s, 0.0]))),
+            },
             sigma: 1.0,
          },
          drawable_diagram.prep.axes_range,
@@ -408,7 +421,10 @@ mod tests {
 
       let managed_curve_d = ManagedCubic::create_from_control_points(
          &Curve::<CubicPath> {
-            path: CubicPath { r: t_range, p: add_p_4(&wiggly_line, [-1.2 * s, 0.0]) },
+            path: CubicPath {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&add_p_4(&wiggly_line, [-1.2 * s, 0.0]))),
+            },
             sigma: 1.0,
          },
          drawable_diagram.prep.axes_range,
@@ -428,6 +444,7 @@ mod tests {
    }
 
    #[test]
+   #[allow(clippy::unreadable_literal)]
    fn cubic_multi_test() {
       let t_range = [-6.0, 14.0];
       let sizing = make_cubic_sizing([4.0, 3.0]);
@@ -445,7 +462,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: wiggly_line }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&wiggly_line)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -472,7 +492,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: wiggly_line }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&wiggly_line)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -497,7 +520,10 @@ mod tests {
          let wiggly_line = mul_add_p_4(&[[-a, -a], [a, a], [-b, b], [b, -b]], [s, s], [dx, dy]);
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: wiggly_line }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&wiggly_line)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -525,7 +551,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: wiggly_line }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&wiggly_line)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -554,7 +583,10 @@ mod tests {
          );
 
          let managed_curve_c = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: wiggly_line_c }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&wiggly_line_c)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -575,7 +607,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: wiggly_line_d }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&wiggly_line_d)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -605,7 +640,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: wiggly_line }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&wiggly_line)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -637,7 +675,10 @@ mod tests {
 
          let main_curve = add_p_4(&scale_p_4(&CUBIC_BASIC, s), [dx, dy]);
          let mut managed_curve_a = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> { path: CubicPath { r: t_range, p: main_curve }, sigma: 1.0 },
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog(x_y_from_p_4(&main_curve)) },
+               sigma: 1.0,
+            },
             drawable_diagram.prep.axes_range,
          );
 

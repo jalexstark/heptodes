@@ -15,3 +15,6 @@ categories = ["graphics", "development-tools::testing"]
 serde = { version = "1.0", features = ["derive"] }
 serde_default = "0.2"
 zvx-base =  { path = "../zvx-base", version = "0.1" }
+approx = { version = "0.5" }
+
+[dev-dependencies]

@@ -42,6 +42,12 @@ In between text.
 
 <!-- 3.5 * 70pt = 245pt for width 3.5. -->
 
+![[Figure (SVG)](figs-intro/intro_cubic_multi.svg) A short caption.\label{figB}.](figs-intro/intro_cubic_multi.svg){width=245pt}
+
+In between text.
+
+<!-- 3.5 * 70pt = 245pt for width 3.5. -->
+
 ![[Figure (SVG)](figs-intro/intro_cubic_slider.svg) A short caption.\label{figB}.](figs-intro/intro_cubic_slider.svg){width=245pt}
 
 In between text.

@@ -28,15 +28,19 @@ pub struct ArcPath {
    pub transform: [f64; 4],
 }
 
-// pub type CubicPathUnranged = [[f64; 2]; 4];
+// Homogenous representation of cubic and rational quadratic curve.
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct CubicHomog(pub [[f64; 4]; 2]); // Denominator assumed to be a power series.
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct RatQuadHomog(pub [[f64; 3]; 3]); // "Denominator" in third row.
 
-// Four-point "standard" form.
+// Four-point "standard" (weighted) form.
 //
 // r[0] is the value of t at p[0], and r[1] is value of t at p[3].
 #[derive(Debug, Serialize, Deserialize, Clone, DefaultFromSerde, PartialEq)]
 pub struct CubicPath {
    pub r: [f64; 2], // Range.
-   pub p: [[f64; 2]; 4],
+   pub h: CubicHomog,
 }
 
 pub type PolylinePath = Vec<[f64; 2]>;

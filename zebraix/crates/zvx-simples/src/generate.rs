@@ -312,8 +312,14 @@ pub fn draw_sample_cubilinear(
 ) {
    let four_point = &managed_cubic.four_point;
    if let Some(color_choice) = &curve_config.control_color {
-      let end_points_vec = vec![four_point.path.p[0], four_point.path.p[3]];
-      let control_points_vec = vec![four_point.path.p[1], four_point.path.p[2]];
+      let end_points_vec = vec![
+         [four_point.path.h.0[0][0], four_point.path.h.0[1][0]],
+         [four_point.path.h.0[0][3], four_point.path.h.0[1][3]],
+      ];
+      let control_points_vec = vec![
+         [four_point.path.h.0[0][1], four_point.path.h.0[1][1]],
+         [four_point.path.h.0[0][2], four_point.path.h.0[1][2]],
+      ];
 
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.control_layer,
