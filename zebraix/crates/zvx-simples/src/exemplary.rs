@@ -89,6 +89,11 @@ pub mod tests {
    }
 
    #[must_use]
+   pub const fn x_y_from_p_4(xy: &[[f64; 2]; 4]) -> [[f64; 4]; 2] {
+      [[xy[0][0], xy[1][0], xy[2][0], xy[3][0]], [xy[0][1], xy[1][1], xy[2][1], xy[3][1]]]
+   }
+
+   #[must_use]
    pub const fn p_from_x_y_3(x: &[f64; 3], y: &[f64; 3]) -> [[f64; 2]; 3] {
       [[x[0], y[0]], [x[1], y[1]], [x[2], y[2]]]
    }

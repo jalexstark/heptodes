@@ -418,15 +418,15 @@ impl UnfixedCairoSpartanRender {
       self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
 
       if segment_choices.continuation == ContinuationChoice::Starts {
-         self.context.move_to(path.p[0][0], path.p[0][1]);
+         self.context.move_to(path.h.0[0][0], path.h.0[1][0]);
       }
       self.context.curve_to(
-         path.p[1][0],
-         path.p[1][1],
-         path.p[2][0],
-         path.p[2][1],
-         path.p[3][0],
-         path.p[3][1],
+         path.h.0[0][1],
+         path.h.0[1][1],
+         path.h.0[0][2],
+         path.h.0[1][2],
+         path.h.0[0][3],
+         path.h.0[1][3],
       );
       match segment_choices.closure {
          LineClosureChoice::Closes => {

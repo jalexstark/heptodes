@@ -14,7 +14,9 @@
 
 pub mod pieces;
 
-pub use pieces::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
+pub use pieces::{
+   ArcPath, CubicHomog, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadHomog,
+};
 
 #[inline]
 pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {

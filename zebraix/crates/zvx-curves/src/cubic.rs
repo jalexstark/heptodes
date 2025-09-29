@@ -17,15 +17,15 @@ use serde::Serialize;
 use serde_default::DefaultFromSerde;
 use zvx_base::CubicPath;
 
-const fn displace_4(p: &mut [[f64; 2]; 4], d: [f64; 2]) {
+const fn displace_4(p: &mut [[f64; 4]; 2], d: [f64; 2]) {
    p[0][0] += d[0];
-   p[1][0] += d[0];
-   p[2][0] += d[0];
-   p[3][0] += d[0];
-   p[0][1] += d[1];
+   p[0][1] += d[0];
+   p[0][2] += d[0];
+   p[0][3] += d[0];
+   p[1][0] += d[1];
    p[1][1] += d[1];
-   p[2][1] += d[1];
-   p[3][1] += d[1];
+   p[1][2] += d[1];
+   p[1][3] += d[1];
 }
 
 // // As yet not used.
@@ -87,8 +87,10 @@ impl CurveEval for Curve<CubicPath> {
          let b = self.path.r[1] - *item;
          let f0 = 1.0 / (b + a);
          let recip_denom = f0 * f0 * f0;
-         let in_x = [self.path.p[0][0], self.path.p[1][0], self.path.p[2][0], self.path.p[3][0]];
-         let in_y = [self.path.p[0][1], self.path.p[1][1], self.path.p[2][1], self.path.p[3][1]];
+         let in_x =
+            [self.path.h.0[0][0], self.path.h.0[0][1], self.path.h.0[0][2], self.path.h.0[0][3]];
+         let in_y =
+            [self.path.h.0[1][0], self.path.h.0[1][1], self.path.h.0[1][2], self.path.h.0[1][3]];
          let x = Self::eval_part(b, a, &in_x, recip_denom);
          let y = Self::eval_part(b, a, &in_y, recip_denom);
          ret_val.push([x, y]);
@@ -103,7 +105,7 @@ impl CurveEval for Curve<CubicPath> {
 
 impl CurveTransform for Curve<CubicPath> {
    fn displace(&mut self, d: [f64; 2]) {
-      displace_4(&mut self.path.p, d);
+      displace_4(&mut self.path.h.0, d);
    }
 
    fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
@@ -128,8 +130,10 @@ impl CurveTransform for Curve<CubicPath> {
       let recip_denom_k = f0_k * f0_k * f0_k;
       let f0_l = 1.0 / (b_l + a_l);
       let recip_denom_l = f0_l * f0_l * f0_l;
-      let in_x = [self.path.p[0][0], self.path.p[1][0], self.path.p[2][0], self.path.p[3][0]];
-      let in_y = [self.path.p[0][1], self.path.p[1][1], self.path.p[2][1], self.path.p[3][1]];
+      let in_x =
+         [self.path.h.0[0][0], self.path.h.0[0][1], self.path.h.0[0][2], self.path.h.0[0][3]];
+      let in_y =
+         [self.path.h.0[1][0], self.path.h.0[1][1], self.path.h.0[1][2], self.path.h.0[1][3]];
       new_x[0] = Self::eval_part(b_k, a_k, &in_x, recip_denom_k);
       new_y[0] = Self::eval_part(b_k, a_k, &in_y, recip_denom_k);
       new_x[3] = Self::eval_part(b_l, a_l, &in_x, recip_denom_l);
@@ -173,8 +177,8 @@ impl CurveTransform for Curve<CubicPath> {
       new_y[2] = new_y[3] - dy_1;
 
       self.sigma = (a_l + b_l) / (a_k + b_k);
-      self.path.p =
-         [[new_x[0], new_y[0]], [new_x[1], new_y[1]], [new_x[2], new_y[2]], [new_x[3], new_y[3]]];
+      self.path.h.0 = [new_x, new_y];
+      // [[new_x[0], new_y[0]], [new_x[1], new_y[1]], [new_x[2], new_y[2]], [new_x[3], new_y[3]]];
       self.path.r = new_range;
    }
 }
