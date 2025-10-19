@@ -24,7 +24,7 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
 }
 
 #[must_use]
-fn is_near_float(v: f64, w: f64) -> bool {
+pub fn is_near_float(v: f64, w: f64) -> bool {
    (v - w).abs() < 0.0001
 }
 

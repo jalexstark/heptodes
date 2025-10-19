@@ -56,6 +56,7 @@ impl ManagedRatQuad {
    #[allow(clippy::many_single_char_names)]
    #[allow(clippy::similar_names)]
    #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::neg_multiply)]
    pub fn create_from_four_points(four_points: &FourPointRatQuad, canvas_range: [f64; 4]) -> Self {
       let x = extract_x_from_4(&four_points.p);
       let y = extract_y_from_4(&four_points.p);
@@ -69,12 +70,12 @@ impl ManagedRatQuad {
       let w_a = 2.0 / 3.0 * (x[0] * (y[2] - y[3]) + x[2] * (y[3] - y[0]) + x[3] * (y[0] - y[2]));
       let w_c = -2.0 / 3.0 * (y[0] * (x[2] - x[3]) + y[2] * (x[3] - x[0]) + y[3] * (x[0] - x[2]));
 
-      let b = [w_a * x[0], w_b_x_m, w_c * x[3]];
-      let c = [w_a * y[0], w_b_y_m, w_c * y[3]];
-      let a = [w_a, w_b, w_c];
+      let b = [w_a * x[0], 2.0 * w_b_x_m, w_c * x[3]];
+      let c = [w_a * y[0], 2.0 * w_b_y_m, w_c * y[3]];
+      let a = [w_a, 2.0 * w_b, w_c];
       let rat_quad = Curve::<RatQuadPolyPath> {
          path: RatQuadPolyPath { r: four_points.r, a, b, c },
-         ..Default::default()
+         sigma: four_points.sigma,
       };
       Self {
          poly: Curve::<RatQuadPolyPath>::create_from_weighted(&rat_quad).unwrap(),
@@ -95,12 +96,13 @@ impl ManagedRatQuad {
       // let x = [xs[0], f * xs[1] + (1.0 - f) * xs[0], f * xs[1] + (1.0 - f) * xs[2], xs[2]];
       // let y = [ys[0], f * ys[1] + (1.0 - f) * ys[0], f * ys[1] + (1.0 - f) * ys[2], ys[2]];
 
-      let b = [xs[0], f_mult_1p5 * xs[1], xs[2]];
-      let c = [ys[0], f_mult_1p5 * ys[1], ys[2]];
-      let a = [1.0, f_mult_1p5, 1.0];
+      let b = [xs[0], 2.0 * f_mult_1p5 * xs[1], xs[2]];
+      let c = [ys[0], 2.0 * f_mult_1p5 * ys[1], ys[2]];
+      let a = [1.0, 2.0 * f_mult_1p5, 1.0];
       let rat_quad = Curve::<RatQuadPolyPath> {
          path: RatQuadPolyPath { r: three_point_rat_quad.r, a, b, c },
-         ..Default::default()
+         // TODO: Figure out preferred sigma.
+         sigma: three_point_rat_quad.sigma,
       };
       Ok(Self {
          poly: Curve::<RatQuadPolyPath>::create_from_weighted(&rat_quad).unwrap(),

@@ -71,6 +71,6 @@ use std::path::Path;
 fn check_panic_with_path<T>(result: Result<T, io::Error>, messaging: &str, path: &Path) -> T {
    match result {
       Ok(result) => result,
-      Err(error) => panic!("Error while {messaging} for file path {path:?}: {error:?}"),
+      Err(error) => panic!("Error while {messaging} for file path {}: {error:?}", path.display()),
    }
 }

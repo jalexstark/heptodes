@@ -69,7 +69,7 @@ impl<'parent> ZvxPangoTextLayout<'parent> {
    pub fn create_pango_layout<'a>(
       parent_cairo: &'parent CairoContext,
       text_context: &'a PangoContext,
-   ) -> Box<(dyn ZvxTextLayout + 'a)>
+   ) -> Box<dyn ZvxTextLayout + 'a>
    where
       'parent: 'a,
    {
@@ -128,7 +128,7 @@ impl CairoSpartanRender {
    }
 }
 
-#[allow(clippy::needless_lifetimes)]
+#[allow(clippy::elidable_lifetime_names)]
 impl<'parent> ZvxTextLayout for ZvxPangoTextLayout<'parent> {
    // Not a great method name.
    fn set_layout(&mut self, font_family: &str, font_size: f64, single_text: &TextSingle) {
@@ -602,7 +602,7 @@ impl UnfixedCairoSpartanRender {
    where
       'parent: 'a,
    {
-      let mut pango_text_layout: Box<(dyn ZvxTextLayout + 'a)> =
+      let mut pango_text_layout: Box<dyn ZvxTextLayout + 'a> =
          ZvxPangoTextLayout::create_pango_layout(cairo_context, pango_context);
 
       let (width_adjust, height_adjust) = Self::layout_text_adjust_impl(
@@ -636,7 +636,7 @@ impl UnfixedCairoSpartanRender {
       // This call sits awkwardly here.  It maybe should be in the caller, and be a self-method.
       //
       // Or, call `ZvxPangoTextLayout::create_pango_layout` in the caller, and pass the
-      // resulting Box<(dyn ZvxTextLayout + 'a)> in as an argument here.
+      // resulting Box<dyn ZvxTextLayout + 'a> in as an argument here.
       let (mut generic_text_layout, width_adjust, height_adjust): (
          Box<dyn ZvxTextLayout + 'child>,
          f64,
@@ -835,8 +835,7 @@ impl UnfixedCairoSpartanRender {
 }
 
 impl ZvxRenderEngine for CairoSpartanRender {
-   #[must_use]
-   fn create_text_layout<'parent, 'a>(&'parent self) -> Box<(dyn ZvxTextLayout + 'a)>
+   fn create_text_layout<'parent, 'a>(&'parent self) -> Box<dyn ZvxTextLayout + 'a>
    where
       'parent: 'a,
    {

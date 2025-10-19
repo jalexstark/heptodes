@@ -17,7 +17,7 @@
 use approx::AbsDiffEq;
 // use serde::{Deserialize, Serialize};
 // use serde_default::DefaultFromSerde;
-use zvx_base::RatQuadHomog;
+use zvx_base::{CubicHomog, RatQuadHomog};
 
 // Transforms are row-major, that is each row nested.
 //
@@ -96,7 +96,7 @@ impl<'a, const N: usize> From<&'a [f64; N]> for F64SliceWrapped<'a, N> {
 }
 
 // #[cfg(test)]
-#[allow(clippy::needless_lifetimes)]
+#[allow(clippy::elidable_lifetime_names)]
 impl<'a, const N: usize> AbsDiffEq for F64SliceWrapped<'a, N> {
    type Epsilon = f64;
 
@@ -126,7 +126,7 @@ impl<'a> From<&'a RatQuadHomog> for RatQuadHomogWrapped<'a> {
 }
 
 // #[cfg(test)]
-#[allow(clippy::needless_lifetimes)]
+#[allow(clippy::elidable_lifetime_names)]
 impl<'a> AbsDiffEq for RatQuadHomogWrapped<'a> {
    type Epsilon = f64;
 
@@ -148,12 +148,46 @@ impl<'a> AbsDiffEq for RatQuadHomogWrapped<'a> {
    }
 }
 
+#[derive(PartialEq, Debug)]
+pub struct CubicHomogWrapped<'a> {
+   v: &'a CubicHomog,
+}
+
+impl<'a> From<&'a CubicHomog> for CubicHomogWrapped<'a> {
+   fn from(unwrapped: &'a CubicHomog) -> Self {
+      CubicHomogWrapped { v: unwrapped }
+   }
+}
+
+// #[cfg(test)]
+#[allow(clippy::elidable_lifetime_names)]
+impl<'a> AbsDiffEq for CubicHomogWrapped<'a> {
+   type Epsilon = f64;
+
+   fn default_epsilon() -> f64 {
+      1.0e-06
+   }
+
+   fn abs_diff_eq(&self, other: &Self, epsilon: f64) -> bool {
+      for k in 0..2 {
+         if !F64SliceWrapped::<4>::abs_diff_eq(
+            &F64SliceWrapped::<4>::from(&self.v.0[k]),
+            &F64SliceWrapped::<4>::from(&other.v.0[k]),
+            epsilon,
+         ) {
+            return false;
+         }
+      }
+      true
+   }
+}
+
 // QMat that will convert a path in weighted form into power form.
 #[must_use]
 pub fn q_mat_weighted_to_power(r: &[f64; 2]) -> QMat {
    let v = r[0];
    let w = r[1];
-   [[w * w, -w * 2.0, 1.0], [-2.0 * v * w, 2.0 * (w + v), -2.0], [v * v, -2.0 * v, 1.0]]
+   [[w * w, -w * 2.0, 1.0], [-v * w, w + v, -1.0], [v * v, -2.0 * v, 1.0]]
 }
 
 pub trait CurveMatrix {

@@ -15,7 +15,7 @@ depgraphs:	/tmp/depgraph-a.dot
 
 # Tests included, a little sloppier. (Note one can use `cargo clippy --tests` for separate.)
 run-clippy-sloppy:
-	ls -1 | grep -v Makefile | xargs -I XXX cargo clippy --manifest-path XXX/Cargo.toml --all-targets -- -Wclippy::all -Wclippy::pedantic -Wclippy::nursery -Aclippy::too_many_lines -Aclippy::suboptimal_flops -Aclippy::cast_lossless
+	ls -1 | grep -v Makefile | xargs -I XXX cargo clippy --manifest-path XXX/Cargo.toml --all-targets -- -Wclippy::all -Wclippy::pedantic -Wclippy::nursery -Aclippy::too_many_lines -Aclippy::suboptimal_flops -Aclippy::cast_lossless -Aclippy::tuple_array_conversions -Aclippy::needless_update
 
 run-clippy-no-tests:
-	ls -1 | grep -v Makefile | xargs -I XXX cargo clippy --manifest-path XXX/Cargo.toml -- -Wclippy::all -Wclippy::pedantic -Wclippy::nursery
+	ls -1 | grep -v Makefile | xargs -I XXX cargo clippy --manifest-path XXX/Cargo.toml -- -Wclippy::all -Wclippy::pedantic -Wclippy::nursery -Aclippy::tuple_array_conversions

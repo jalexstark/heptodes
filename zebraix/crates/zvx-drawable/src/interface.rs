@@ -59,7 +59,7 @@ pub trait ZvxTextLayout {
 // Move to an interface location, but note dependence on QualifiedDrawable.
 pub trait ZvxRenderEngine {
    #[must_use]
-   fn create_text_layout<'parent, 'a>(&'parent self) -> Box<(dyn ZvxTextLayout + 'a)>
+   fn create_text_layout<'parent, 'a>(&'parent self) -> Box<dyn ZvxTextLayout + 'a>
    where
       'parent: 'a;
 

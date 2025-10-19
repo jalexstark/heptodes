@@ -50,7 +50,7 @@ JaywalkConcepts-FIGS=$(addprefix background/figs-concepts/, $(addsuffix .svg, \
 	Concepts-O-1 Concepts-O-2 Concepts-P Concepts-Q Concepts-R Concepts-S \
 	Concepts-T Concepts-U Concepts-V Concepts-W Concepts-X))
 CurveIntro-FIGS=$(addprefix curves/figs-intro/, $(addsuffix .svg, \
-	intro_cubic_controlled intro_cubic_slider))
+	intro_cubic_controlled intro_cubic_slider intro_cubic_multi))
 
 AUTO_FIGS=$(CurveIntro-FIGS)
 SRC_AUTO_FIGS=$(addprefix src/,$(CurveIntro-FIGS))
