@@ -75,7 +75,6 @@ impl RatQuadOoeSubclassed {
 }
 
 impl TEval for HyperbolicPath {
-   #[must_use]
    #[allow(clippy::suboptimal_flops)]
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());

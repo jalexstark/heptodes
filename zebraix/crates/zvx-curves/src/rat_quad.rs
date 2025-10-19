@@ -10,15 +10,12 @@
 use crate::base::TEval;
 use crate::threes::RatQuadOoeSubclassed;
 use crate::{
-   q_reduce, rat_quad_expand_power, rat_quad_power_eval, Curve, CurveEval, CurveMatrix,
-   CurveTransform, QMat, ZebraixAngle,
+   default_unit_sigma, is_default_unit_sigma, q_reduce, rat_quad_expand_power, rat_quad_power_eval,
+   Curve, CurveEval, CurveMatrix, CurveTransform, QMat, ZebraixAngle,
 };
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
-use zvx_base::{
-   default_unit_f64, is_default, is_default_unit_f64, CubicHomog, CubicPath, HyperbolicPath,
-   RatQuadHomog,
-};
+use zvx_base::{is_default, CubicHomog, CubicPath, HyperbolicPath, RatQuadHomog};
 
 #[cfg(test)]
 use crate::{q_mat_weighted_to_power, RatQuadHomogWrapped};
@@ -59,8 +56,8 @@ const fn mul_add_3_1_1(p: &mut [f64; 3], v: &[f64; 3], m: f64) {
 pub struct FourPointRatQuad {
    pub r: [f64; 2], // Range.
    pub p: [[f64; 2]; 4],
-   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
-   pub sigma: f64,
+   #[serde(skip_serializing_if = "is_default_unit_sigma", default = "default_unit_sigma")]
+   pub sigma: (f64, f64),
 }
 
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
@@ -104,8 +101,8 @@ pub struct ThreePointAngleRepr {
    pub p: [[f64; 2]; 3],
    #[serde(skip_serializing_if = "is_default")]
    pub angle: ZebraixAngle,
-   #[serde(skip_serializing_if = "is_default_unit_f64", default = "default_unit_f64")]
-   pub sigma: f64,
+   #[serde(skip_serializing_if = "is_default_unit_sigma", default = "default_unit_sigma")]
+   pub sigma: (f64, f64),
 }
 
 #[derive(Serialize, Debug, Default, Clone, PartialEq)]
@@ -124,7 +121,8 @@ impl CurveTransform for Curve<RatQuadPolyPath> {
    }
 
    fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
-      self.sigma *= sigma_ratio.0 / sigma_ratio.1;
+      self.sigma.0 *= sigma_ratio.0;
+      self.sigma.1 *= sigma_ratio.1;
    }
 
    fn raw_change_range(&mut self, new_range: [f64; 2]) {
@@ -138,7 +136,6 @@ impl CurveTransform for Curve<RatQuadPolyPath> {
 }
 
 impl TEval for RatQuadPolyPath {
-   #[must_use]
    #[allow(clippy::suboptimal_flops)]
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let homog = RatQuadHomogPath::from(self);
@@ -259,7 +256,7 @@ impl Curve<RatQuadPolyPath> {
       let c;
       {
          let h0 = weighted.path.a[0];
-         let h1 = sigma * weighted.path.a[1];
+         let h1 = 0.5 * sigma * weighted.path.a[1];
          let h2 = sigma * sigma * weighted.path.a[2];
          a = [
             w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
@@ -269,7 +266,7 @@ impl Curve<RatQuadPolyPath> {
       }
       {
          let h0 = weighted.path.b[0];
-         let h1 = sigma * weighted.path.b[1];
+         let h1 = 0.5 * sigma * weighted.path.b[1];
          let h2 = sigma * sigma * weighted.path.b[2];
          b = [
             w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
@@ -279,7 +276,7 @@ impl Curve<RatQuadPolyPath> {
       }
       {
          let h0 = weighted.path.c[0];
-         let h1 = sigma * weighted.path.c[1];
+         let h1 = 0.5 * sigma * weighted.path.c[1];
          let h2 = sigma * sigma * weighted.path.c[2];
          c = [
             w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
@@ -308,11 +305,11 @@ fn create_from_weighted_test() {
    let weighted = Curve {
       path: RatQuadPolyPath {
          r: [-6.0, 14.0],
-         a: [1.9641855032959659, 1.388888888888889, 1.9641855032959659],
+         a: [1.9641855032959659, 2.0 * 1.388888888888889, 1.9641855032959659],
          b: [-2.946278254943949, 0.0, -3.9283710065919317],
-         c: [-2.946278254943949, 0.6944444444444453, 3.9283710065919317],
+         c: [-2.946278254943949, 2.0 * 0.6944444444444453, 3.9283710065919317],
       },
-      sigma: 0.0,
+      sigma: (0.0, 0.0),
    };
 
    let poly = RatQuadHomogPath::from(
@@ -340,7 +337,6 @@ fn create_from_weighted_test() {
 }
 
 impl CurveEval for Curve<HyperbolicPath> {
-   #[must_use]
    #[allow(clippy::suboptimal_flops)]
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       self.path.eval_no_bilinear(t)
@@ -357,18 +353,18 @@ impl CurveEval for Curve<HyperbolicPath> {
 
 impl CurveEval for Curve<RatQuadPolyPath> {
    // This method may lack tests.
-   #[must_use]
    #[allow(clippy::suboptimal_flops)]
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       self.path.eval_no_bilinear(t)
    }
 
-   fn eval_with_bilinear(&self, _t: &[f64]) -> Vec<[f64; 2]> {
-      unimplemented!("It takes time.");
+   fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
+      // let scratchy_rat_poly = self.rq_apply_bilinear((2.0_f64.sqrt(), 1.0));
+      let scratchy_rat_poly = self.rq_apply_bilinear(self.sigma);
+      scratchy_rat_poly.path.eval_no_bilinear(t)
    }
 
    #[inline]
-   #[must_use]
    #[allow(clippy::suboptimal_flops)]
    fn characterize_endpoints(&self) -> ([[f64; 2]; 2], [[f64; 2]; 2]) {
       let mut x = [0.0; 4];

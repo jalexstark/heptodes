@@ -49,6 +49,18 @@ In between text.
 <!-- 3.5 * 70pt = 245pt for width 3.5. -->
 
 <figure>
+<img src="figs-intro/intro_cubic_multi.svg" style="width:3.40278in"
+alt="Figure (SVG) A short caption.." />
+<figcaption aria-hidden="true"><a
+href="figs-intro/intro_cubic_multi.svg">Figure (SVG)</a> A short
+caption..</figcaption>
+</figure>
+
+In between text.
+
+<!-- 3.5 * 70pt = 245pt for width 3.5. -->
+
+<figure>
 <img src="figs-intro/intro_cubic_slider.svg" style="width:3.40278in"
 alt="Figure (SVG) A short caption.." />
 <figcaption aria-hidden="true"><a

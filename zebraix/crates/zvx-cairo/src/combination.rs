@@ -24,7 +24,7 @@ use zvx_drawable::interface::ZvxRenderEngine;
 // #[derive(Debug)]
 pub struct CairoSpartanCombo {
    pub drawable_diagram: DrawableDiagram,
-   pub render_engine: Box<(dyn ZvxRenderEngine)>,
+   pub render_engine: Box<dyn ZvxRenderEngine>,
 }
 
 impl CairoSpartanCombo {

@@ -949,6 +949,7 @@ mod tests {
             r: t_range,
             ..Default::default()
          },
+         sigma: (1.0, 1.0),
          ..Default::default()
       };
 
@@ -999,6 +1000,7 @@ mod tests {
             c: [0.0, 20.0, 0.0],
             r: t_range,
          },
+         sigma: (1.0, 1.0),
          ..Default::default()
       };
 
@@ -1051,6 +1053,7 @@ mod tests {
                c: [0.0, 20.0, 0.0],
                r: t_range,
             },
+            sigma: (1.0, 1.0),
             ..Default::default()
          },
          drawable_diagram.prep.axes_range,
@@ -1104,6 +1107,7 @@ mod tests {
                c: [0.0, 20.0, 0.0],
                r: t_range,
             },
+            sigma: (1.0, 1.0),
             ..Default::default()
          },
          drawable_diagram.prep.axes_range,
@@ -1161,6 +1165,7 @@ mod tests {
                c: [0.0, 20.0, 0.0],
                r: t_range,
             },
+            sigma: (1.0, 1.0),
             ..Default::default()
          },
          drawable_diagram.prep.axes_range,
@@ -1220,6 +1225,7 @@ mod tests {
                c: [0.0, 20.0, 0.0],
                r: t_range,
             },
+            sigma: (1.0, 1.0),
             ..Default::default()
          },
          drawable_diagram.prep.axes_range,
@@ -1274,6 +1280,7 @@ mod tests {
                c: [0.0, 20.0, 0.0],
                r: t_range,
             },
+            sigma: (1.0, 1.0),
             ..Default::default()
          },
          drawable_diagram.prep.axes_range,
@@ -1319,6 +1326,7 @@ mod tests {
             r: [r, r],
             ..Default::default()
          },
+         sigma: (1.0, 1.0),
          ..Default::default()
       };
 
@@ -1364,6 +1372,7 @@ mod tests {
             r: [r, r],
             ..Default::default()
          },
+         sigma: (1.0, 1.0),
          ..Default::default()
       };
 
@@ -1391,6 +1400,7 @@ mod tests {
             r: [r, r],
             ..Default::default()
          },
+         sigma: (1.0, 1.0),
          ..Default::default()
       };
 
@@ -1434,7 +1444,7 @@ mod tests {
                r: t_range,
                h: CubicHomog([[0.0, -0.5, 0.5, -1.0], [-1.5, -2.0, 1.5, 2.0]]),
             },
-            sigma: 1.0,
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -1834,9 +1844,9 @@ mod tests {
    }
 
    #[test]
+   #[allow(clippy::unreadable_literal)]
    fn spartan_sizing_s_test() {
-      // let t_range = [-1.0, 1.0];
-      let t_range = [-6.0, 14.0];
+      let t_range = [-1.0, 1.0];
 
       let sizing = TestSizing {
          sizing_scheme: SizingScheme::SquareCenter,
@@ -1922,37 +1932,71 @@ mod tests {
                ..Default::default()
             },
          );
+      }
 
-         {
-            let h = s * 2.0 / 3.0;
-            let shift_x = 0.5;
-            let shift_y = 0.0;
-            let managed_curve = ManagedRatQuad::create_from_four_points(
-               &FourPointRatQuad {
-                  p: p_from_x_y_4(
-                     &[0.0 + shift_x, 0.0 + h + shift_x, 0.0 + h + shift_x, 0.0 + shift_x],
-                     &[-s + shift_y, -s + shift_y, s + shift_y, s + shift_y],
-                  ),
-                  // x: [0.0, 1.0, 1.0, 0.0],
-                  // y: [-1.0, -1.0, 1.0, 1.0],
-                  r: t_range,
-                  ..Default::default()
-               },
-               drawable_diagram.prep.axes_range,
-            );
-            draw_sample_rat_quad(
-               &managed_curve,
-               drawable_diagram,
-               &SampleCurveConfig {
-                  main_color: Some(ColorChoice::Green),
-                  points_color: Some(ColorChoice::Blue),
-                  points_choice: PointChoice::Dot,
-                  points_num_segments: 12,
-                  approx_num_segments: 30,
-                  ..Default::default()
-               },
-            );
-         }
+      {
+         let h = s * 2.0 / 3.0;
+         let shift_x = -1.75;
+         let shift_y = 0.0;
+         let mut managed_curve = ManagedRatQuad::create_from_four_points(
+            &FourPointRatQuad {
+               p: p_from_x_y_4(
+                  &[0.0 + shift_x, 0.0 + h + shift_x, 0.0 + h + shift_x, 0.0 + shift_x],
+                  &[-s + shift_y, -s + shift_y, s + shift_y, s + shift_y],
+               ),
+               // x: [0.0, 1.0, 1.0, 0.0],
+               // y: [-1.0, -1.0, 1.0, 1.0],
+               r: t_range,
+               ..Default::default()
+            },
+            drawable_diagram.prep.axes_range,
+         );
+
+         managed_curve.select_range([-0.33333333, 0.5]);
+
+         draw_sample_rat_quad(
+            &managed_curve,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Green),
+               points_color: Some(ColorChoice::Blue),
+               points_choice: PointChoice::Dot,
+               points_num_segments: 10,
+               approx_num_segments: 30,
+               ..Default::default()
+            },
+         );
+      }
+
+      {
+         let h = s * 2.0 / 3.0;
+         let shift_x = 1.0;
+         let shift_y = 0.0;
+         let managed_curve = ManagedRatQuad::create_from_four_points(
+            &FourPointRatQuad {
+               p: p_from_x_y_4(
+                  &[0.0 + shift_x, 0.0 + h + shift_x, 0.0 + h + shift_x, 0.0 + shift_x],
+                  &[-s + shift_y, -s + shift_y, s + shift_y, s + shift_y],
+               ),
+               // x: [0.0, 1.0, 1.0, 0.0],
+               // y: [-1.0, -1.0, 1.0, 1.0],
+               r: t_range,
+               ..Default::default()
+            },
+            drawable_diagram.prep.axes_range,
+         );
+         draw_sample_rat_quad(
+            &managed_curve,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Green),
+               points_color: Some(ColorChoice::Blue),
+               points_choice: PointChoice::Dot,
+               points_num_segments: 12,
+               approx_num_segments: 30,
+               ..Default::default()
+            },
+         );
       }
 
       render_and_check(&mut runner);
@@ -2029,7 +2073,7 @@ mod tests {
                      [y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
                   ]),
                },
-               sigma: 1.0,
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2081,7 +2125,7 @@ mod tests {
                      [y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
                   ]),
                },
-               sigma: 1.0,
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2133,7 +2177,7 @@ mod tests {
                      [y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
                   ]),
                },
-               sigma: 1.0,
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2716,7 +2760,7 @@ mod tests {
                   r: t_range,
                   h: CubicHomog([[0.0, 1.0, -1.0, 0.0], [2.0, 0.0, 0.0, -2.0]]),
                },
-               sigma: 1.0,
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2774,7 +2818,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -2869,7 +2913,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -2898,7 +2942,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -2925,7 +2969,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -3001,7 +3045,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -3100,7 +3144,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -3179,7 +3223,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -3206,7 +3250,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -3236,7 +3280,7 @@ mod tests {
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
                   path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );
@@ -3267,10 +3311,11 @@ mod tests {
                shift,
             );
 
+            let pts: [[f64; 4]; 2] = [x, y];
             let managed_curve = ManagedCubic::create_from_control_points(
                &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
-                  sigma: 1.0,
+                  path: CubicPath { r: t_range, h: CubicHomog(pts) },
+                  sigma: (1.0, 1.0),
                },
                drawable_diagram.prep.axes_range,
             );

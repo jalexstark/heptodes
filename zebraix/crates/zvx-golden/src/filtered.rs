@@ -178,7 +178,7 @@ impl JsonGoldenTest {
       let data_old_result = fs::read(old);
       let data_old = match data_old_result {
          Ok(string_result) => string_result,
-         Err(error) => panic!("Problem opening golden-data file {old:?}: {error:?}"),
+         Err(error) => panic!("Problem opening golden-data file {}: {error:?}", old.display()),
       };
       // Parse the old-path file into serde_json::Value.
 
