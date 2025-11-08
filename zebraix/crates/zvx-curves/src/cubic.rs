@@ -73,9 +73,44 @@ impl Curve<CubicPath> {
    fn eval_part(b: f64, a: f64, coeffs: &[f64; 4], multiplier: f64) -> f64 {
       multiplier
          * (b * b * b * coeffs[0]
-            + 3.0 * b * b * a * coeffs[1]
-            + 3.0 * b * a * a * coeffs[2]
+            + b * b * a * coeffs[1]
+            + b * a * a * coeffs[2]
             + a * a * a * coeffs[3])
+   }
+
+   #[inline]
+   #[allow(clippy::many_single_char_names)]
+   #[allow(clippy::suboptimal_flops)]
+   #[must_use]
+   fn eval_part_quad(b: f64, a: f64, coeffs: &[f64; 3], multiplier: f64) -> f64 {
+      multiplier * (b * b * coeffs[0] + b * a * coeffs[1] + a * a * coeffs[2])
+   }
+
+   #[must_use]
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::many_single_char_names)]
+   pub fn eval_derivative_scaled(&self, t: &[f64], scale: f64) -> Vec<[f64; 2]> {
+      let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+      for item in t {
+         let a = self.sigma.0 * (*item - self.path.r[0]);
+         let b = self.sigma.1 * (self.path.r[1] - *item);
+         let f0 = 1.0 / (b + a);
+         let recip_denom = scale * f0 * f0;
+         let in_x = [
+            3.0 * self.path.h.0[0][1] - 3.0 * self.path.h.0[0][0],
+            3.0 * 2.0 * (self.path.h.0[0][2] - self.path.h.0[0][1]),
+            3.0 * self.path.h.0[0][3] - 3.0 * self.path.h.0[0][2],
+         ];
+         let in_y = [
+            3.0 * self.path.h.0[1][1] - 3.0 * self.path.h.0[1][0],
+            3.0 * 2.0 * (self.path.h.0[1][2] - self.path.h.0[1][1]),
+            3.0 * self.path.h.0[1][3] - 3.0 * self.path.h.0[1][2],
+         ];
+         let x = Self::eval_part_quad(b, a, &in_x, recip_denom);
+         let y = Self::eval_part_quad(b, a, &in_y, recip_denom);
+         ret_val.push([x, y]);
+      }
+      ret_val
    }
 }
 
@@ -93,10 +128,18 @@ impl CurveEval for Curve<CubicPath> {
          let b = self.sigma.1 * (self.path.r[1] - *item);
          let f0 = 1.0 / (b + a);
          let recip_denom = f0 * f0 * f0;
-         let in_x =
-            [self.path.h.0[0][0], self.path.h.0[0][1], self.path.h.0[0][2], self.path.h.0[0][3]];
-         let in_y =
-            [self.path.h.0[1][0], self.path.h.0[1][1], self.path.h.0[1][2], self.path.h.0[1][3]];
+         let in_x = [
+            self.path.h.0[0][0],
+            3.0 * self.path.h.0[0][1],
+            3.0 * self.path.h.0[0][2],
+            self.path.h.0[0][3],
+         ];
+         let in_y = [
+            self.path.h.0[1][0],
+            3.0 * self.path.h.0[1][1],
+            3.0 * self.path.h.0[1][2],
+            self.path.h.0[1][3],
+         ];
          let x = Self::eval_part(b, a, &in_x, recip_denom);
          let y = Self::eval_part(b, a, &in_y, recip_denom);
          ret_val.push([x, y]);
@@ -138,10 +181,18 @@ impl CurveTransform for Curve<CubicPath> {
       let recip_denom_k = f0_k * f0_k * f0_k;
       let f0_l = 1.0 / (b_l + a_l);
       let recip_denom_l = f0_l * f0_l * f0_l;
-      let in_x =
-         [self.path.h.0[0][0], self.path.h.0[0][1], self.path.h.0[0][2], self.path.h.0[0][3]];
-      let in_y =
-         [self.path.h.0[1][0], self.path.h.0[1][1], self.path.h.0[1][2], self.path.h.0[1][3]];
+      let in_x = [
+         self.path.h.0[0][0],
+         3.0 * self.path.h.0[0][1],
+         3.0 * self.path.h.0[0][2],
+         self.path.h.0[0][3],
+      ];
+      let in_y = [
+         self.path.h.0[1][0],
+         3.0 * self.path.h.0[1][1],
+         3.0 * self.path.h.0[1][2],
+         self.path.h.0[1][3],
+      ];
       new_x[0] = Self::eval_part(b_k, a_k, &in_x, recip_denom_k);
       new_y[0] = Self::eval_part(b_k, a_k, &in_y, recip_denom_k);
       new_x[3] = Self::eval_part(b_l, a_l, &in_x, recip_denom_l);
@@ -158,30 +209,30 @@ impl CurveTransform for Curve<CubicPath> {
       let dx_1 = fudge_k
          * f0_k
          * f0_k
-         * (b_k * b_k * (in_x[1] - in_x[0])
-            + 2.0 * b_k * a_k * (in_x[2] - in_x[1])
-            + a_k * a_k * (in_x[3] - in_x[2]));
+         * (b_k * b_k * (in_x[1] / 3.0 - in_x[0])
+            + 2.0 * b_k * a_k * (in_x[2] / 3.0 - in_x[1] / 3.0)
+            + a_k * a_k * (in_x[3] - in_x[2] / 3.0));
       new_x[1] = new_x[0] + dx_1;
       let dy_1 = fudge_k
          * f0_k
          * f0_k
-         * (b_k * b_k * (in_y[1] - in_y[0])
-            + 2.0 * b_k * a_k * (in_y[2] - in_y[1])
-            + a_k * a_k * (in_y[3] - in_y[2]));
+         * (b_k * b_k * (in_y[1] / 3.0 - in_y[0])
+            + 2.0 * b_k * a_k * (in_y[2] / 3.0 - in_y[1] / 3.0)
+            + a_k * a_k * (in_y[3] - in_y[2] / 3.0));
       new_y[1] = new_y[0] + dy_1;
       let dx_1 = fudge_l
          * f0_l
          * f0_l
-         * (b_l * b_l * (in_x[1] - in_x[0])
-            + 2.0 * b_l * a_l * (in_x[2] - in_x[1])
-            + a_l * a_l * (in_x[3] - in_x[2]));
+         * (b_l * b_l * (in_x[1] / 3.0 - in_x[0])
+            + 2.0 * b_l * a_l * (in_x[2] / 3.0 - in_x[1] / 3.0)
+            + a_l * a_l * (in_x[3] - in_x[2] / 3.0));
       new_x[2] = new_x[3] - dx_1;
       let dy_1 = fudge_l
          * f0_l
          * f0_l
-         * (b_l * b_l * (in_y[1] - in_y[0])
-            + 2.0 * b_l * a_l * (in_y[2] - in_y[1])
-            + a_l * a_l * (in_y[3] - in_y[2]));
+         * (b_l * b_l * (in_y[1] / 3.0 - in_y[0])
+            + 2.0 * b_l * a_l * (in_y[2] / 3.0 - in_y[1] / 3.0)
+            + a_l * a_l * (in_y[3] - in_y[2] / 3.0));
       new_y[2] = new_y[3] - dy_1;
 
       self.sigma.0 = a_l + b_l;
@@ -208,18 +259,10 @@ fn select_range_reference(curve: &mut Curve<CubicPath>, new_range: [f64; 2]) {
    let recip_denom_k = f0_k * f0_k * f0_k;
    let f0_l = 1.0 / (b_l + a_l);
    let recip_denom_l = f0_l * f0_l * f0_l;
-   let in_x = [
-      curve.path.h.0[0][0],
-      curve.path.h.0[0][1] / 3.0,
-      curve.path.h.0[0][2] / 3.0,
-      curve.path.h.0[0][3],
-   ];
-   let in_y = [
-      curve.path.h.0[1][0],
-      curve.path.h.0[1][1] / 3.0,
-      curve.path.h.0[1][2] / 3.0,
-      curve.path.h.0[1][3],
-   ];
+   let in_x =
+      [curve.path.h.0[0][0], curve.path.h.0[0][1], curve.path.h.0[0][2], curve.path.h.0[0][3]];
+   let in_y =
+      [curve.path.h.0[1][0], curve.path.h.0[1][1], curve.path.h.0[1][2], curve.path.h.0[1][3]];
    new_x[0] = Curve::eval_part(b_k, a_k, &in_x, recip_denom_k);
    new_y[0] = Curve::eval_part(b_k, a_k, &in_y, recip_denom_k);
    new_x[3] = Curve::eval_part(b_l, a_l, &in_x, recip_denom_l);
@@ -235,30 +278,30 @@ fn select_range_reference(curve: &mut Curve<CubicPath>, new_range: [f64; 2]) {
    let dx_1 = fudge_k
       * f0_k
       * f0_k
-      * (b_k * b_k * (in_x[1] - in_x[0])
-         + 2.0 * b_k * a_k * (in_x[2] - in_x[1])
-         + a_k * a_k * (in_x[3] - in_x[2]));
+      * (b_k * b_k * (in_x[1] / 3.0 - in_x[0])
+         + 2.0 * b_k * a_k * (in_x[2] / 3.0 - in_x[1] / 3.0)
+         + a_k * a_k * (in_x[3] - in_x[2] / 3.0));
    new_x[1] = 3.0 * (new_x[0] + dx_1);
    let dy_1 = fudge_k
       * f0_k
       * f0_k
-      * (b_k * b_k * (in_y[1] - in_y[0])
-         + 2.0 * b_k * a_k * (in_y[2] - in_y[1])
-         + a_k * a_k * (in_y[3] - in_y[2]));
+      * (b_k * b_k * (in_y[1] / 3.0 - in_y[0])
+         + 2.0 * b_k * a_k * (in_y[2] / 3.0 - in_y[1] / 3.0)
+         + a_k * a_k * (in_y[3] - in_y[2] / 3.0));
    new_y[1] = 3.0 * (new_y[0] + dy_1);
    let dx_1 = fudge_l
       * f0_l
       * f0_l
-      * (b_l * b_l * (in_x[1] - in_x[0])
-         + 2.0 * b_l * a_l * (in_x[2] - in_x[1])
-         + a_l * a_l * (in_x[3] - in_x[2]));
+      * (b_l * b_l * (in_x[1] / 3.0 - in_x[0])
+         + 2.0 * b_l * a_l * (in_x[2] / 3.0 - in_x[1] / 3.0)
+         + a_l * a_l * (in_x[3] - in_x[2] / 3.0));
    new_x[2] = 3.0 * (new_x[3] - dx_1);
    let dy_1 = fudge_l
       * f0_l
       * f0_l
-      * (b_l * b_l * (in_y[1] - in_y[0])
-         + 2.0 * b_l * a_l * (in_y[2] - in_y[1])
-         + a_l * a_l * (in_y[3] - in_y[2]));
+      * (b_l * b_l * (in_y[1] / 3.0 - in_y[0])
+         + 2.0 * b_l * a_l * (in_y[2] / 3.0 - in_y[1] / 3.0)
+         + a_l * a_l * (in_y[3] - in_y[2] / 3.0));
    new_y[2] = 3.0 * (new_y[3] - dy_1);
 
    curve.sigma.0 = a_l + b_l;

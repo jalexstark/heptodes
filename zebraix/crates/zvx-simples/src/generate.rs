@@ -304,6 +304,64 @@ pub fn draw_sample_rat_quad(
 }
 
 #[allow(clippy::missing_panics_doc)]
+pub fn draw_derivatives_rat_quad(
+   managed_rat_quad: &ManagedRatQuad,
+   spartan: &mut DrawableDiagram,
+   curve_config: &SampleCurveConfig,
+) {
+   let deprecated_rat_quad: Curve<RatQuadPolyPath> =
+      managed_rat_quad.get_poly_rat_quad_repr().expect("Never should be missing");
+
+   let t_int: Vec<i32> = (0..=curve_config.points_num_segments).collect();
+   let mut t = Vec::<f64>::with_capacity(t_int.len());
+   let scale = (deprecated_rat_quad.path.r[1] - deprecated_rat_quad.path.r[0])
+      / f64::from(curve_config.points_num_segments);
+   let offset = deprecated_rat_quad.path.r[0];
+   for item in &t_int {
+      t.push(f64::from(*item).mul_add(scale, offset));
+   }
+
+   // let start_vec = managed_rat_quad.poly.eval_with_bilinear(&t);
+   let start_vec = managed_rat_quad.poly.eval_homog(&t);
+   let mut end_vec = managed_rat_quad
+      .poly
+      .eval_derivative_scaled(&t, 1.0 / f64::from(curve_config.points_num_segments));
+   let mut delta_lines = Vec::<([f64; 2], [f64; 2])>::with_capacity(t_int.len());
+   assert_eq!(start_vec.len(), t_int.len());
+   assert_eq!(end_vec.len(), t_int.len());
+   for i in 0..start_vec.len() {
+      end_vec[i][0] += start_vec[i][0];
+      end_vec[i][1] += start_vec[i][1];
+      delta_lines.push((start_vec[i], end_vec[i]));
+   }
+
+   if let Some(color_choice) = &curve_config.main_color {
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.main_line_layer + 1,
+         drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
+            path_choices: PathChoices {
+               color: color_choice.clone(),
+               line_choice: curve_config.main_line_choice,
+               ..Default::default()
+            },
+            path: LinesSetSet { coords: delta_lines, ..Default::default() },
+         }),
+      });
+   }
+
+   if let Some(color_choice) = &curve_config.points_color {
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.main_line_layer + 2,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.points_choice,
+            color_choice: color_choice.clone(),
+            centers: end_vec,
+         }),
+      });
+   }
+}
+
+#[allow(clippy::missing_panics_doc)]
 #[allow(clippy::suboptimal_flops)]
 pub fn draw_sample_cubilinear(
    managed_cubic: &ManagedCubic,
@@ -396,6 +454,62 @@ pub fn draw_sample_cubilinear(
                ..Default::default()
             },
             path: four_point.path.clone(),
+         }),
+      });
+   }
+}
+
+#[allow(clippy::missing_panics_doc)]
+pub fn draw_derivatives_cubilinear(
+   managed_cubic: &ManagedCubic,
+   spartan: &mut DrawableDiagram,
+   curve_config: &SampleCurveConfig,
+) {
+   let four_point = &managed_cubic.four_point;
+
+   let t_int: Vec<i32> = (0..=curve_config.points_num_segments).collect();
+   let mut t = Vec::<f64>::with_capacity(t_int.len());
+   let scale =
+      (four_point.path.r[1] - four_point.path.r[0]) / f64::from(curve_config.points_num_segments);
+
+   let offset = four_point.path.r[0];
+   for item in &t_int {
+      t.push(f64::from(*item).mul_add(scale, offset));
+   }
+
+   let start_vec = four_point.eval_with_bilinear(&t);
+   let mut end_vec =
+      four_point.eval_derivative_scaled(&t, 1.0 / f64::from(curve_config.points_num_segments));
+   let mut delta_lines = Vec::<([f64; 2], [f64; 2])>::with_capacity(t_int.len());
+   assert_eq!(start_vec.len(), t_int.len());
+   assert_eq!(end_vec.len(), t_int.len());
+   for i in 0..start_vec.len() {
+      end_vec[i][0] += start_vec[i][0];
+      end_vec[i][1] += start_vec[i][1];
+      delta_lines.push((start_vec[i], end_vec[i]));
+   }
+
+   if let Some(color_choice) = &curve_config.main_color {
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.main_line_layer + 1,
+         drawable: OneOfDrawable::Lines(Strokeable::<LinesSetSet> {
+            path_choices: PathChoices {
+               color: color_choice.clone(),
+               line_choice: curve_config.main_line_choice,
+               ..Default::default()
+            },
+            path: LinesSetSet { coords: delta_lines, ..Default::default() },
+         }),
+      });
+   }
+
+   if let Some(color_choice) = &curve_config.points_color {
+      spartan.drawables.push(QualifiedDrawable {
+         layer: curve_config.main_line_layer + 2,
+         drawable: OneOfDrawable::Points(PointsDrawable {
+            point_choice: curve_config.points_choice,
+            color_choice: color_choice.clone(),
+            centers: end_vec,
          }),
       });
    }

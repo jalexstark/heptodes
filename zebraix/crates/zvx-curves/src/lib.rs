@@ -25,8 +25,8 @@ pub use crate::base::{
 pub use crate::cubic::ManagedCubic;
 pub use crate::managed::ManagedRatQuad;
 pub use crate::matrix::{
-   q_mat_weighted_to_power, q_reduce, rat_quad_expand_power, rat_quad_power_eval,
-   CubicHomogWrapped, CurveMatrix, F64SliceWrapped, QMat, RatQuadHomogWrapped,
+   q_mat_power_to_weighted, q_mat_weighted_to_power, q_reduce, rat_quad_expand_power,
+   rat_quad_power_eval, CubicHomogWrapped, CurveMatrix, F64SliceWrapped, QMat, RatQuadHomogWrapped,
 };
 pub use crate::rat_quad::{
    FourPointRatQuad, RatQuadPolyPath, SpecifiedRatQuad, ThreePointAngleRepr,

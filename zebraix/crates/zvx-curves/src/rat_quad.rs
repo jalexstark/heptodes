@@ -10,15 +10,16 @@
 use crate::base::TEval;
 use crate::threes::RatQuadOoeSubclassed;
 use crate::{
-   default_unit_sigma, is_default_unit_sigma, q_reduce, rat_quad_expand_power, rat_quad_power_eval,
-   Curve, CurveEval, CurveMatrix, CurveTransform, QMat, ZebraixAngle,
+   default_unit_sigma, is_default_unit_sigma, q_mat_power_to_weighted, q_mat_weighted_to_power,
+   q_reduce, rat_quad_expand_power, rat_quad_power_eval, Curve, CurveEval, CurveMatrix,
+   CurveTransform, QMat, ZebraixAngle,
 };
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 use zvx_base::{is_default, CubicHomog, CubicPath, HyperbolicPath, RatQuadHomog};
 
 #[cfg(test)]
-use crate::{q_mat_weighted_to_power, RatQuadHomogWrapped};
+use crate::RatQuadHomogWrapped;
 #[cfg(test)]
 use approx::assert_abs_diff_eq;
 
@@ -69,19 +70,59 @@ pub struct RatQuadPolyPath {
 }
 
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
-pub struct RatQuadHomogPath {
+pub struct RatQuadHomogPower {
    pub r: [f64; 2], // Range.
    pub h: RatQuadHomog,
 }
 
-impl From<&RatQuadPolyPath> for RatQuadHomogPath {
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct RatQuadHomogWeighted {
+   pub r: [f64; 2], // Range.
+   pub h: RatQuadHomog,
+}
+
+impl From<&RatQuadHomogWeighted> for RatQuadHomogPower {
+   fn from(weighted: &RatQuadHomogWeighted) -> Self {
+      let r = &weighted.r;
+
+      let tran_q_mat = q_mat_weighted_to_power(r);
+      let out_quad_homog = weighted.h.apply_q_mat(&tran_q_mat);
+
+      Self { r: *r, h: out_quad_homog }
+   }
+}
+
+impl From<&RatQuadHomogPower> for RatQuadHomogWeighted {
+   fn from(power: &RatQuadHomogPower) -> Self {
+      let r = &power.r;
+
+      let tran_q_mat = q_mat_power_to_weighted(r);
+      let out_quad_homog = power.h.apply_q_mat(&tran_q_mat);
+
+      Self { r: *r, h: out_quad_homog }
+   }
+}
+
+impl From<&RatQuadPolyPath> for RatQuadHomogPower {
    fn from(poly: &RatQuadPolyPath) -> Self {
       Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]) }
    }
 }
 
-impl From<&RatQuadHomogPath> for RatQuadPolyPath {
-   fn from(homog: &RatQuadHomogPath) -> Self {
+impl From<&RatQuadHomogPower> for RatQuadPolyPath {
+   fn from(homog: &RatQuadHomogPower) -> Self {
+      Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1] }
+   }
+}
+
+impl From<&RatQuadPolyPath> for RatQuadHomogWeighted {
+   fn from(poly: &RatQuadPolyPath) -> Self {
+      Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]) }
+   }
+}
+
+impl From<&RatQuadHomogWeighted> for RatQuadPolyPath {
+   fn from(homog: &RatQuadHomogWeighted) -> Self {
       Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1] }
    }
 }
@@ -138,7 +179,7 @@ impl CurveTransform for Curve<RatQuadPolyPath> {
 impl TEval for RatQuadPolyPath {
    #[allow(clippy::suboptimal_flops)]
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
-      let homog = RatQuadHomogPath::from(self);
+      let homog = RatQuadHomogPower::from(self);
       q_reduce(&rat_quad_power_eval(&homog.h.0, &rat_quad_expand_power(t)))
    }
 }
@@ -152,9 +193,9 @@ fn poly_eval_no_bilinear_test() {
       b: [-865.8010653946342, -49.720819268365744, -6.061056987054066],
       c: [760.1100286299702, 114.48112065443453, -2.033980686204532],
    };
-   let homog = RatQuadHomogPath::from(&poly);
+   let homog = RatQuadHomogPower::from(&poly);
 
-   let homog_expect = RatQuadHomogPath {
+   let homog_expect = RatQuadHomogPower {
       r: [-6.0, 14.0],
       h: RatQuadHomog([
          [-865.8010653946342, -49.720819268365744, -6.061056987054066],
@@ -171,6 +212,14 @@ fn poly_eval_no_bilinear_test() {
 }
 
 impl Curve<RatQuadPolyPath> {
+   #[inline]
+   #[allow(clippy::many_single_char_names)]
+   #[allow(clippy::suboptimal_flops)]
+   #[must_use]
+   fn eval_part_quad(b: f64, a: f64, coeffs: &[f64; 3]) -> f64 {
+      b * b * coeffs[0] + b * a * coeffs[1] + a * a * coeffs[2]
+   }
+
    // Internal bilinear transform.
    #[must_use]
    #[allow(clippy::suboptimal_flops)]
@@ -182,13 +231,13 @@ impl Curve<RatQuadPolyPath> {
       // y *= norm;
       // z *= norm;
 
-      let input_path = RatQuadHomogPath::from(&self.path);
+      let input_path = RatQuadHomogPower::from(&self.path);
 
       let tran_q_mat: QMat =
          [[z * z, 2.0 * y * z, y * y], [x * z, x * y + w * z, w * y], [x * x, 2.0 * w * x, w * w]];
       let output_homog = input_path.h.apply_q_mat(&tran_q_mat);
 
-      let mut homog_path = RatQuadHomogPath { h: output_homog, r: self.path.r };
+      let mut homog_path = RatQuadHomogPower { h: output_homog, r: self.path.r };
       homog_path.h.normalize();
 
       Self { path: RatQuadPolyPath::from(&homog_path), sigma: self.sigma }
@@ -287,16 +336,66 @@ impl Curve<RatQuadPolyPath> {
 
       Ok(Self { path: RatQuadPolyPath { r: weighted.path.r, a, b, c }, sigma: weighted.sigma })
    }
-}
 
-#[cfg(test)]
-fn create_from_weighted_reference(weighted: &RatQuadHomogPath) -> RatQuadHomogPath {
-   let r = &weighted.r;
+   #[must_use]
+   #[allow(clippy::many_single_char_names)]
+   pub fn eval_homog(&self, t: &[f64]) -> Vec<[f64; 2]> {
+      let homog_path = RatQuadHomogWeighted::from(&RatQuadHomogPower::from(&self.path));
+      // let homog_path = RatQuadHomogPower::from(&self.path);
+      let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+      for item in t {
+         let p = self.sigma.0 * (*item - self.path.r[0]);
+         let q = self.sigma.1 * (self.path.r[1] - *item);
+         let b = &homog_path.h.0[0];
+         let c = &homog_path.h.0[1];
+         let a = &homog_path.h.0[2];
+         let rb = Self::eval_part_quad(q, p, b);
+         let rc = Self::eval_part_quad(q, p, c);
+         let ra = Self::eval_part_quad(q, p, a);
+         let div_factor = 1.0 / ra;
+         ret_val.push([rb * div_factor, rc * div_factor]);
+      }
+      ret_val
+   }
 
-   let tran_q_mat = q_mat_weighted_to_power(r);
-   let out_quad_homog = weighted.h.apply_q_mat(&tran_q_mat);
-
-   RatQuadHomogPath { r: *r, h: out_quad_homog }
+   #[must_use]
+   #[allow(clippy::suboptimal_flops)]
+   #[allow(clippy::many_single_char_names)]
+   pub fn eval_derivative_scaled(&self, t: &[f64], scale: f64) -> Vec<[f64; 2]> {
+      let homog_path = RatQuadHomogWeighted::from(&RatQuadHomogPower::from(&self.path));
+      // let homog_path = RatQuadHomogPower::from(&self.path);
+      let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
+      // dbg!(self.sigma);
+      for item in t {
+         let p = self.sigma.0 * (*item - self.path.r[0]);
+         let q = self.sigma.1 * (self.path.r[1] - *item);
+         let b = &homog_path.h.0[0];
+         let c = &homog_path.h.0[1];
+         let a = &homog_path.h.0[2];
+         let expansion_b = [
+            a[0] * b[1] - a[1] * b[0],
+            2.0 * (a[0] * b[2] - a[2] * b[0]),
+            a[1] * b[2] - a[2] * b[1],
+         ];
+         let expansion_c = [
+            a[0] * c[1] - a[1] * c[0],
+            2.0 * (a[0] * c[2] - a[2] * c[0]),
+            a[1] * c[2] - a[2] * c[1],
+         ];
+         let rb = Self::eval_part_quad(q, p, &expansion_b);
+         let rc = Self::eval_part_quad(q, p, &expansion_c);
+         let ra = Self::eval_part_quad(q, p, a);
+         let div_factor = self.sigma.0
+            * self.sigma.1
+            * (self.path.r[1] - self.path.r[0])
+            * (self.path.r[1] - self.path.r[0])
+            * scale
+            / ra
+            / ra;
+         ret_val.push([rb * div_factor, rc * div_factor]);
+      }
+      ret_val
+   }
 }
 
 #[test]
@@ -311,26 +410,27 @@ fn create_from_weighted_test() {
       },
       sigma: (0.0, 0.0),
    };
+   let weighted_really = RatQuadHomogWeighted::from(&weighted.path);
 
-   let poly = RatQuadHomogPath::from(
+   let powered = RatQuadHomogPower::from(
       &Curve::<RatQuadPolyPath>::create_from_weighted(&weighted).unwrap().path,
    );
-   let expected_path = RatQuadHomogPath::from(&RatQuadPolyPath {
+   let expected_path = RatQuadHomogPower::from(&RatQuadPolyPath {
       r: [-6.0, 14.0],
       a: [689.0243700979975, -9.204745830513225, 1.1505932288141536],
       b: [-718.8918942063235, 35.35533905932739, -6.874649261535881],
       c: [-319.38251506503764, 140.7473543286449, -0.40679613724090746],
    });
    assert_abs_diff_eq!(
-      &RatQuadHomogWrapped::from(&poly.h),
+      &RatQuadHomogWrapped::from(&powered.h),
       &RatQuadHomogWrapped::from(&expected_path.h),
       epsilon = 1.0e-5
    );
 
    // Also test against reference version.
-   let reference_power = &create_from_weighted_reference(&RatQuadHomogPath::from(&weighted.path));
+   let reference_power = RatQuadHomogPower::from(&weighted_really);
    assert_abs_diff_eq!(
-      &RatQuadHomogWrapped::from(&poly.h),
+      &RatQuadHomogWrapped::from(&powered.h),
       &RatQuadHomogWrapped::from(&reference_power.h),
       epsilon = 1.0e-5
    );

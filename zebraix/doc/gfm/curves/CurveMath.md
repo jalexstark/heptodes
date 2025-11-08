@@ -16,7 +16,8 @@ title: A Compendium of Curve Mathematics in Zebraix
       rat-quad](#homogeneous-form-rat-quad)
 - [<span class="toc-section-number">2</span> Bilinear](#bilinear)
 - [<span class="toc-section-number">3</span> Conversions](#conversions)
-  - [<span class="toc-section-number">3.1</span> RatQuad](#ratquad)
+  - [<span class="toc-section-number">3.1</span> Power](#power)
+  - [<span class="toc-section-number">3.2</span> Weighted](#weighted)
 - [<span class="toc-section-number">4</span> Conversion](#conversion)
   - [<span class="toc-section-number">4.1</span> Convert weighted to
     power](#convert-weighted-to-power)
@@ -329,7 +330,7 @@ $$
 
 # Conversions
 
-## RatQuad
+## Power
 
 $$
   \begin{bmatrix}
@@ -387,6 +388,8 @@ v^2w & -v(v+2w) & (2v+w) & -1\\
   t^3
   \end{bmatrix}
 $$
+
+## Weighted
 
 $$
   \begin{bmatrix}
@@ -456,22 +459,10 @@ RatQuad as example.
 
 Weighted path on left, multiply on right by this.
 
-**Old**
-
 $$
 \begin{bmatrix}
 w^2 & -2w & 1\\
--2vw & 2(v+w) & -2\\
-v^2 & -2v & 1
-\end{bmatrix}
-$$
-
-**New**
-
-$$
-\begin{bmatrix}
-w^2 & -2w & 1\\
--vw & (v+w) & -1\\
+-vw & v+w & -1\\
 v^2 & -2v & 1
 \end{bmatrix}
 $$
@@ -480,18 +471,6 @@ $$
 
 Power path on left, multiply on right by this. Scaled inverse of
 weighted-to-power. Scaling factor is $(v-w)^2$.
-
-**Old** (weighted was 1-3-3-1).
-
-$$
-\begin{bmatrix}
-1 & 1 & 1 \\
-v & \frac12 (v+w) & w \\
-v^2 & vw & w^2
-\end{bmatrix}
-$$
-
-**New**
 
 $$
   \frac{1}{(w-v)^2}
@@ -609,7 +588,9 @@ $$
 RQ numerator
 
 $$
-b'(t) =
+\begin{aligned}
+b'(t) &=
+(w-v)
 \begin{bmatrix}
 b_0 & b_1 & b_2
 \end{bmatrix}
@@ -621,6 +602,19 @@ b_0 & b_1 & b_2
 \begin{bmatrix}
   a_0 \\ a_1 \\ a_2
 \end{bmatrix}
+\\ &=
+(w-v)
+\begin{bmatrix}
+    a_0b_1-a_1b_0 &
+    2(a_0b_2-a_2b_0) &
+    a_1b_2-a_2b_1
+\end{bmatrix}
+  \begin{bmatrix}
+  (w-t)^2 \\
+  (w-t)(t-v) \\
+  (t-v)^2
+  \end{bmatrix}
+\end{aligned}
 $$
 
 Conversion from power to weighted.
@@ -654,6 +648,23 @@ w^2 & -vw & v^2\\
 \end{aligned}
 $$
 
+So power form is very similar to weighted in this aspect.
+
+$$
+b'(t) =
+(w-v)
+\begin{bmatrix}
+    a_0b_1-a_1b_0 &
+    2(a_0b_2-a_2b_0) &
+    a_1b_2-a_2b_1
+\end{bmatrix}
+  \begin{bmatrix}
+  1 \\
+  t \\
+  t^2
+  \end{bmatrix}
+$$
+
 Denominator is square of the non-differentiated denominator. In essence
 this is the same for power and weighted.
 
@@ -677,9 +688,9 @@ $$
 $$
 \begin{aligned}
 b'(v) &=
-(w-v)^2\sigma(b_1-3b_0) \\
+(w-v)^3\sigma(b_1-3b_0) \\
 b'(w) &=
-(w-v)^2\sigma^2(3b_3-b_2) \\
+(w-v)^3\sigma^2(3b_3-b_2) \\
 a'(v) &=
 (w-v)^2 \\
 a'(w) &=
