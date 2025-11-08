@@ -187,7 +187,15 @@ impl<'a> AbsDiffEq for CubicHomogWrapped<'a> {
 pub fn q_mat_weighted_to_power(r: &[f64; 2]) -> QMat {
    let v = r[0];
    let w = r[1];
-   [[w * w, -w * 2.0, 1.0], [-v * w, w + v, -1.0], [v * v, -2.0 * v, 1.0]]
+   [[w * w, -w * 2.0, 1.0], [-v * w, v + w, -1.0], [v * v, -2.0 * v, 1.0]]
+}
+
+// QMat that will convert a path in weighted form into power form.
+#[must_use]
+pub fn q_mat_power_to_weighted(r: &[f64; 2]) -> QMat {
+   let v = r[0];
+   let w = r[1];
+   [[1.0, 2.0, 1.0], [v, v + w, w], [v * v, 2.0 * v * w, w * w]]
 }
 
 pub trait CurveMatrix {

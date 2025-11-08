@@ -33,8 +33,9 @@ mod tests {
       scale_coord_vec, BackgroundBox, JsonSvgRunner, TestSizing,
    };
    use zvx_simples::generate::{
-      draw_sample_cubilinear, draw_sample_rat_quad, draw_sample_segment_sequence,
-      OneOfManagedSegment, SampleCurveConfig, SampleOption,
+      draw_derivatives_cubilinear, draw_derivatives_rat_quad, draw_sample_cubilinear,
+      draw_sample_rat_quad, draw_sample_segment_sequence, OneOfManagedSegment, SampleCurveConfig,
+      SampleOption,
    };
 
    fn add_debug_box(drawable_diagram: &mut DrawableDiagram, sizing: &TestSizing) {
@@ -3182,6 +3183,96 @@ mod tests {
             };
             drawable_diagram.drawables.push(qualified_drawable);
          }
+      }
+
+      render_and_check(&mut runner);
+   }
+
+   // Mid-range tangent.
+   #[test]
+   fn spartan_sizing_z_test() {
+      let t_range = [5.0, 37.0];
+
+      let sizing = TestSizing {
+         sizing_scheme: SizingScheme::Fill,
+         canvas_size: [400.0, 300.0],
+         axes_range: vec![-1.5, -2.5, 4.5, 2.5],
+         padding: vec![0.05],
+         axes_spec: AxesSpec {
+            axes_style: AxesStyle::Boxed,
+            grid_interval: [1.0, 1.0],
+            grid_precision: vec![1],
+            axis_numbering: AxisNumbering::None,
+         },
+         ..Default::default()
+      };
+
+      let mut runner = build_from_sizing("spartan_sizing_z", &sizing);
+      let drawable_diagram = &mut runner.combo.drawable_diagram;
+
+      {
+         let managed_curve_a = ManagedCubic::create_from_control_points(
+            &Curve::<CubicPath> {
+               path: CubicPath {
+                  r: t_range,
+                  h: CubicHomog([[-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -2.0, -1.5]]),
+               },
+               sigma: (1.0, 1.0),
+            },
+            drawable_diagram.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve_a,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::LightBlue),
+               control_color: Some(ColorChoice::YellowBrown),
+               points_color: Some(ColorChoice::LightGreen),
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
+         draw_derivatives_cubilinear(
+            &managed_curve_a,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Red),
+               points_color: Some(ColorChoice::BlueRed),
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
+      }
+
+      {
+         let shift = [3.0, 0.0];
+         let (x, y) = translate_4_simply(([0.0, 0.5, 0.5, -1.0], [-1.5, -2.0, 1.5, 2.0]), shift);
+         let managed_curve = ManagedRatQuad::create_from_four_points(
+            &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
+            drawable_diagram.prep.axes_range,
+         );
+         draw_sample_rat_quad(
+            &managed_curve,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::LightBlue),
+               control_color: Some(ColorChoice::YellowBrown),
+               points_color: Some(ColorChoice::LightGreen),
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
+         draw_derivatives_rat_quad(
+            &managed_curve,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Red),
+               // points_color: Some(ColorChoice::BlueRed),
+               points_color: None,
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
       }
 
       render_and_check(&mut runner);
