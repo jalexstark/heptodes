@@ -15,7 +15,6 @@
 // Rust does not apply cfg(test) during cargo test.
 // #[cfg(test)]
 pub mod tests {
-   use serde_json::to_writer_pretty;
    use std::io::Write;
    use zvx_cairo::CairoSpartanCombo;
    use zvx_docagram::diagram::{SpartanDiagram, SpartanPreparation};
@@ -23,6 +22,7 @@ pub mod tests {
    use zvx_drawable::{ColorChoice, FillChoices, LineChoice, PathChoices};
    use zvx_golden::filtered::JsonGoldenTest;
    use zvx_golden::filtered::SvgGoldenTest;
+   use zvx_golden::reduced::to_writer_pretty_reduced;
 
    #[must_use]
    pub fn scale_coord_vec(v: &[[f64; 2]], s: f64) -> Vec<[f64; 2]> {
@@ -172,7 +172,7 @@ pub mod tests {
          // This only really fails if keys cannot be rendered.
          //
          // Consider moving into golden test crate. This is only trigger for serde_json dependency.
-         to_writer_pretty(&json_golden.out_stream, &self.combo.drawable_diagram).unwrap();
+         to_writer_pretty_reduced(&json_golden.out_stream, &self.combo.drawable_diagram).unwrap();
          let bytes_amount_nl = json_golden.out_stream.write(b"\n").unwrap();
          assert!(bytes_amount_nl == 1);
       }

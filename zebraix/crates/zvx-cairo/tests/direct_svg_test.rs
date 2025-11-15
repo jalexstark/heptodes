@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde_json::to_writer_pretty;
 use std::f64::consts::PI;
 use std::io::Write;
 use zvx_cairo::CairoSpartanRender;
 use zvx_docagram::diagram::{DrawableDiagram, SizingScheme, SpartanDiagram, SpartanPreparation};
 use zvx_golden::filtered::JsonGoldenTest;
 use zvx_golden::filtered::SvgGoldenTest;
+use zvx_golden::reduced::to_writer_pretty_reduced;
 
 // This may seem odd, but is Rust-inspired. The diagram and the renderer can be separately
 // borrowed with different mutability.
@@ -232,7 +232,7 @@ fn simple_full_spartan_test() {
       // This only really fails if keys cannot be rendered.
       //
       // Consider moving into golden test crate. This is only trigger for serde_json dependency.
-      to_writer_pretty(&json_golden.out_stream, &spartan).unwrap();
+      to_writer_pretty_reduced(&json_golden.out_stream, &spartan).unwrap();
       // let serialized = to_string_pretty::<SpartanDiagram>(&cairo_spartan.spartan).unwrap();
       // json_golden.writeln_as_bytes(&serialized);
       let bytes_amount_nl = json_golden.out_stream.write(b"\n").unwrap();
