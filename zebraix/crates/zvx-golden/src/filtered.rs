@@ -13,8 +13,10 @@
 // limitations under the License.
 
 use crate::check_panic_with_path;
+use crate::reduced::to_writer_pretty_reduced;
 use goldenfile::Mint;
-use serde_json::to_string_pretty;
+use serde_core::Serialize;
+use serde_json::Error as JsonError;
 use serde_json::Value;
 use std::fs;
 use std::io;
@@ -23,6 +25,41 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 use testdir::testdir;
+
+/// Serialize the given data structure as a pretty-printed JSON byte vector.
+///
+/// # Errors
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, or if `T` contains a map with non-string keys.
+#[inline]
+fn to_vec_pretty_reduced<T>(value: &T) -> Result<Vec<u8>, JsonError>
+where
+   T: ?Sized + Serialize,
+{
+   let mut writer = Vec::with_capacity(128);
+   to_writer_pretty_reduced(&mut writer, value)?;
+   Ok(writer)
+}
+
+/// Serialize the given data structure as a pretty-printed String of JSON.
+///
+/// # Errors
+///
+/// Serialization can fail if `T`'s implementation of `Serialize` decides to
+/// fail, or if `T` contains a map with non-string keys.
+#[inline]
+fn to_string_pretty_reduced<T>(value: &T) -> Result<String, JsonError>
+where
+   T: ?Sized + Serialize,
+{
+   let vec = to_vec_pretty_reduced(value)?;
+   let string = unsafe {
+      // We do not emit invalid UTF-8.
+      String::from_utf8_unchecked(vec)
+   };
+   Ok(string)
+}
 
 // Helper that handles a golden (Mint) test for SVG output.
 //
@@ -71,8 +108,6 @@ impl SvgGoldenTest {
 
    #[allow(clippy::missing_panics_doc)]
    pub fn writeln_as_bytes(&mut self, result: &str) {
-      // let bytes_amount = self.out_stream.write(result.as_bytes()).unwrap();
-      // assert!(bytes_amount == result.as_bytes().len());
       Self::filter_result(Box::new(result.as_bytes()), &self.out_stream);
       let bytes_amount_nl = self.out_stream.write(b"\n").unwrap();
       assert!(bytes_amount_nl == 1);
@@ -184,7 +219,7 @@ impl JsonGoldenTest {
 
       let value_old: Value = serde_json::from_slice(&data_old).unwrap();
       // Write old-path JSON into pretty-print.
-      let serialized_old = to_string_pretty::<Value>(&value_old).unwrap();
+      let serialized_old = to_string_pretty_reduced::<Value>(&value_old).unwrap();
       fs::write(&reformatted_old, serialized_old).unwrap();
       assert!(reformatted_old.exists());
 
@@ -194,7 +229,7 @@ impl JsonGoldenTest {
       // Parse the new-path file into serde_json::Value.
       let value_new: Value = serde_json::from_slice(&data_new).unwrap();
       // Write new-path JSON into pretty-print.
-      let serialized_new = to_string_pretty::<Value>(&value_new).unwrap();
+      let serialized_new = to_string_pretty_reduced::<Value>(&value_new).unwrap();
       fs::write(&reformatted_new, serialized_new).unwrap();
       assert!(reformatted_new.exists());
 

@@ -63,6 +63,7 @@
 //!     ```
 
 pub mod filtered;
+pub mod reduced;
 
 use std::io;
 use std::path::Path;
