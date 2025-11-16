@@ -3192,6 +3192,7 @@ mod tests {
    #[test]
    fn spartan_sizing_z_test() {
       let t_range = [5.0, 37.0];
+      let sigma = (2.0, 2.0);
 
       let sizing = TestSizing {
          sizing_scheme: SizingScheme::Fill,
@@ -3215,9 +3216,9 @@ mod tests {
             &Curve::<CubicPath> {
                path: CubicPath {
                   r: t_range,
-                  h: CubicHomog([[-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -2.0, -1.5]]),
+                  h: CubicHomog([[-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -1.75, -1.5]]),
                },
-               sigma: (1.0, 1.0),
+               sigma,
             },
             drawable_diagram.prep.axes_range,
          );
@@ -3245,10 +3246,44 @@ mod tests {
       }
 
       {
-         let shift = [3.0, 0.0];
-         let (x, y) = translate_4_simply(([0.0, 0.5, 0.5, -1.0], [-1.5, -2.0, 1.5, 2.0]), shift);
+         let shift = [1.0, 0.0];
+         let (x, y) = translate_4_simply(([-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -1.75, -1.5]), shift);
+         let managed_curve_a = ManagedCubic::create_from_control_points(
+            &Curve::<CubicPath> {
+               path: CubicPath { r: t_range, h: CubicHomog([x, y]) },
+               sigma: (sigma.0 * 0.5, sigma.1),
+            },
+            drawable_diagram.prep.axes_range,
+         );
+         draw_sample_cubilinear(
+            &managed_curve_a,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::LightBlue),
+               control_color: Some(ColorChoice::YellowBrown),
+               points_color: Some(ColorChoice::LightGreen),
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
+         draw_derivatives_cubilinear(
+            &managed_curve_a,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Red),
+               points_color: Some(ColorChoice::BlueRed),
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
+      }
+
+      {
+         let shift = [2.0, 0.0];
+         let (x, y) = translate_4_simply(([-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -1.75, -1.5]), shift);
+         // let (x, y) = translate_4_simply(([0.0, 0.5, 0.5, -1.0], [-1.5, -2.0, 1.5, 2.0]), shift);
          let managed_curve = ManagedRatQuad::create_from_four_points(
-            &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, ..Default::default() },
+            &FourPointRatQuad { p: p_from_x_y_4(&x, &y), r: t_range, sigma },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_rat_quad(
@@ -3267,8 +3302,44 @@ mod tests {
             drawable_diagram,
             &SampleCurveConfig {
                main_color: Some(ColorChoice::Red),
-               // points_color: Some(ColorChoice::BlueRed),
-               points_color: None,
+               points_color: Some(ColorChoice::BlueRed),
+               // points_color: None,
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
+      }
+
+      {
+         let shift = [3.0, 0.0];
+         let (x, y) = translate_4_simply(([-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -1.75, -1.5]), shift);
+         // let (x, y) = translate_4_simply(([0.0, 0.5, 0.5, -1.0], [-1.5, -2.0, 1.5, 2.0]), shift);
+         let managed_curve = ManagedRatQuad::create_from_four_points(
+            &FourPointRatQuad {
+               p: p_from_x_y_4(&x, &y),
+               r: t_range,
+               sigma: (sigma.0 * 0.5, sigma.1),
+            },
+            drawable_diagram.prep.axes_range,
+         );
+         draw_sample_rat_quad(
+            &managed_curve,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::LightBlue),
+               control_color: Some(ColorChoice::YellowBrown),
+               points_color: Some(ColorChoice::LightGreen),
+               points_num_segments: 12,
+               ..Default::default()
+            },
+         );
+         draw_derivatives_rat_quad(
+            &managed_curve,
+            drawable_diagram,
+            &SampleCurveConfig {
+               main_color: Some(ColorChoice::Red),
+               points_color: Some(ColorChoice::BlueRed),
+               // points_color: None,
                points_num_segments: 12,
                ..Default::default()
             },
