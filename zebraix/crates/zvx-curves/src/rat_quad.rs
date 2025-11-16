@@ -363,7 +363,6 @@ impl Curve<RatQuadPolyPath> {
    #[allow(clippy::many_single_char_names)]
    pub fn eval_derivative_scaled(&self, t: &[f64], scale: f64) -> Vec<[f64; 2]> {
       let homog_path = RatQuadHomogWeighted::from(&RatQuadHomogPower::from(&self.path));
-      // let homog_path = RatQuadHomogPower::from(&self.path);
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
       // dbg!(self.sigma);
       for item in t {
@@ -385,13 +384,12 @@ impl Curve<RatQuadPolyPath> {
          let rb = Self::eval_part_quad(q, p, &expansion_b);
          let rc = Self::eval_part_quad(q, p, &expansion_c);
          let ra = Self::eval_part_quad(q, p, a);
-         let div_factor = self.sigma.0
-            * self.sigma.1
-            * (self.path.r[1] - self.path.r[0])
-            * (self.path.r[1] - self.path.r[0])
-            * scale
-            / ra
-            / ra;
+         let w_minus_v = self.path.r[1] - self.path.r[0];
+         let div_factor = self.sigma.0 * self.sigma.1 * w_minus_v * scale / ra / ra;
+         // Note that deriv of sigma tran converted cubic's
+         // let recip_denom = scale * f0 * f0 / w_minus_v;
+         // to
+         // let recip_denom = scale * f0 * f0 * f0 * f0 * w_minus_v * self.sigma.0 * self.sigma.1;
          ret_val.push([rb * div_factor, rc * div_factor]);
       }
       ret_val

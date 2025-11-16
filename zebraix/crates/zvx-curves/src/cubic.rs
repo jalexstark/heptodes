@@ -95,7 +95,9 @@ impl Curve<CubicPath> {
          let a = self.sigma.0 * (*item - self.path.r[0]);
          let b = self.sigma.1 * (self.path.r[1] - *item);
          let f0 = 1.0 / (b + a);
-         let recip_denom = scale * f0 * f0;
+         let w_minus_v = self.path.r[1] - self.path.r[0];
+         let recip_denom = scale * f0 * f0 * f0 * f0 * w_minus_v * self.sigma.0 * self.sigma.1;
+         // let recip_denom = scale * f0 * f0 / w_minus_v;
          let in_x = [
             3.0 * self.path.h.0[0][1] - 3.0 * self.path.h.0[0][0],
             3.0 * 2.0 * (self.path.h.0[0][2] - self.path.h.0[0][1]),

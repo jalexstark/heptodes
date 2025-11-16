@@ -323,9 +323,7 @@ pub fn draw_derivatives_rat_quad(
 
    // let start_vec = managed_rat_quad.poly.eval_with_bilinear(&t);
    let start_vec = managed_rat_quad.poly.eval_homog(&t);
-   let mut end_vec = managed_rat_quad
-      .poly
-      .eval_derivative_scaled(&t, 1.0 / f64::from(curve_config.points_num_segments));
+   let mut end_vec = managed_rat_quad.poly.eval_derivative_scaled(&t, scale);
    let mut delta_lines = Vec::<([f64; 2], [f64; 2])>::with_capacity(t_int.len());
    assert_eq!(start_vec.len(), t_int.len());
    assert_eq!(end_vec.len(), t_int.len());
@@ -478,8 +476,7 @@ pub fn draw_derivatives_cubilinear(
    }
 
    let start_vec = four_point.eval_with_bilinear(&t);
-   let mut end_vec =
-      four_point.eval_derivative_scaled(&t, 1.0 / f64::from(curve_config.points_num_segments));
+   let mut end_vec = four_point.eval_derivative_scaled(&t, scale);
    let mut delta_lines = Vec::<([f64; 2], [f64; 2])>::with_capacity(t_int.len());
    assert_eq!(start_vec.len(), t_int.len());
    assert_eq!(end_vec.len(), t_int.len());
