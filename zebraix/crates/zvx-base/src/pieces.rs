@@ -13,6 +13,10 @@
 // limitations under the License.
 
 use crate::is_default;
+use crate::matrix::CurveMatrix;
+use crate::{
+   default_unit_ratio, is_default_unit_ratio, q_mat_power_to_weighted, q_mat_weighted_to_power,
+};
 use serde::{Deserialize, Serialize};
 use serde_default::DefaultFromSerde;
 
@@ -41,6 +45,80 @@ pub struct RatQuadHomog(pub [[f64; 3]; 3]); // "Denominator" in third row.
 pub struct CubicPath {
    pub r: [f64; 2], // Range.
    pub h: CubicHomog,
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
+}
+
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct RatQuadPolyPath {
+   pub r: [f64; 2], // Range.
+   pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
+   pub b: [f64; 3], // Numerator for x component.
+   pub c: [f64; 3], // Numerator for y component.
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
+}
+
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct RatQuadHomogPower {
+   pub r: [f64; 2], // Range.
+   pub h: RatQuadHomog,
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
+}
+
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct RatQuadHomogWeighted {
+   pub r: [f64; 2], // Range.
+   pub h: RatQuadHomog,
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
+}
+
+impl From<&RatQuadHomogWeighted> for RatQuadHomogPower {
+   fn from(weighted: &RatQuadHomogWeighted) -> Self {
+      let r = &weighted.r;
+
+      let tran_q_mat = q_mat_weighted_to_power(r);
+      let out_quad_homog = weighted.h.apply_q_mat(&tran_q_mat);
+
+      Self { r: *r, h: out_quad_homog, sigma: weighted.sigma }
+   }
+}
+
+impl From<&RatQuadHomogPower> for RatQuadHomogWeighted {
+   fn from(power: &RatQuadHomogPower) -> Self {
+      let r = &power.r;
+
+      let tran_q_mat = q_mat_power_to_weighted(r);
+      let out_quad_homog = power.h.apply_q_mat(&tran_q_mat);
+
+      Self { r: *r, h: out_quad_homog, sigma: power.sigma }
+   }
+}
+
+impl From<&RatQuadPolyPath> for RatQuadHomogPower {
+   fn from(poly: &RatQuadPolyPath) -> Self {
+      Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]), sigma: poly.sigma }
+   }
+}
+
+impl From<&RatQuadHomogPower> for RatQuadPolyPath {
+   fn from(homog: &RatQuadHomogPower) -> Self {
+      Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1], sigma: homog.sigma }
+   }
+}
+
+impl From<&RatQuadPolyPath> for RatQuadHomogWeighted {
+   fn from(poly: &RatQuadPolyPath) -> Self {
+      Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]), sigma: poly.sigma }
+   }
+}
+
+impl From<&RatQuadHomogWeighted> for RatQuadPolyPath {
+   fn from(homog: &RatQuadHomogWeighted) -> Self {
+      Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1], sigma: homog.sigma }
+   }
 }
 
 pub type PolylinePath = Vec<[f64; 2]>;
@@ -56,6 +134,8 @@ pub struct HyperbolicPath {
    pub offset: [f64; 2],
    pub minus_partial: [f64; 2],
    pub plus_partial: [f64; 2],
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
 }
 
 #[derive(Serialize, Debug, Default, PartialEq)]

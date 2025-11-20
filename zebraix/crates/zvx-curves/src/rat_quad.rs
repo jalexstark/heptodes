@@ -9,42 +9,20 @@
 
 use crate::base::TEval;
 use crate::threes::RatQuadOoeSubclassed;
-use crate::{
-   default_unit_sigma, is_default_unit_sigma, q_mat_power_to_weighted, q_mat_weighted_to_power,
-   q_reduce, rat_quad_expand_power, rat_quad_power_eval, Curve, CurveEval, CurveMatrix,
-   CurveTransform, QMat, ZebraixAngle,
-};
-use serde::{Deserialize, Serialize};
-use serde_default::DefaultFromSerde;
-use zvx_base::{is_default, CubicHomog, CubicPath, HyperbolicPath, RatQuadHomog};
-
-#[cfg(test)]
-use crate::RatQuadHomogWrapped;
+use crate::{Curve, CurveEval, CurveTransform, ZebraixAngle};
 #[cfg(test)]
 use approx::assert_abs_diff_eq;
-
-// const fn scale_3(x: &[f64; 3], s: f64) -> [f64; 3] {
-//    [s * x[0], s * x[1], s * x[2]]
-// }
-
-// const fn displace_3(p: &mut [[f64; 2]; 3], d: [f64; 2]) {
-//    p[0][0] += d[0];
-//    p[1][0] += d[0];
-//    p[2][0] += d[0];
-//    p[0][1] += d[1];
-//    p[1][1] += d[1];
-//    p[2][1] += d[1];
-//}
-
-// // Update by adding 3x1 vector multiplied by 2-D point.
-// const fn mul_add_3_1_2(p: &mut [[f64; 2]; 3], v: &[f64; 3], m: [f64; 2]) {
-//    p[0][0] += v[0] * m[0];
-//    p[1][0] += v[1] * m[0];
-//    p[2][0] += v[2] * m[0];
-//    p[0][1] += v[0] * m[1];
-//    p[1][1] += v[1] * m[1];
-//    p[2][1] += v[2] * m[1];
-// }
+use serde::{Deserialize, Serialize};
+use serde_default::DefaultFromSerde;
+#[cfg(test)]
+use zvx_base::utils::PathWrapped;
+#[cfg(test)]
+use zvx_base::RatQuadHomog;
+use zvx_base::{
+   default_unit_ratio, is_default, is_default_unit_ratio, q_reduce, rat_quad_expand_power,
+   rat_quad_power_eval, CubicHomog, CubicPath, CurveMatrix, HyperbolicPath, QMat,
+   RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath,
+};
 
 // Update by adding 3x1 vector multiplied by scalar.
 const fn mul_add_3_1_1(p: &mut [f64; 3], v: &[f64; 3], m: f64) {
@@ -57,74 +35,8 @@ const fn mul_add_3_1_1(p: &mut [f64; 3], v: &[f64; 3], m: f64) {
 pub struct FourPointRatQuad {
    pub r: [f64; 2], // Range.
    pub p: [[f64; 2]; 4],
-   #[serde(skip_serializing_if = "is_default_unit_sigma", default = "default_unit_sigma")]
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
    pub sigma: (f64, f64),
-}
-
-#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
-pub struct RatQuadPolyPath {
-   pub r: [f64; 2], // Range.
-   pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
-   pub b: [f64; 3], // Numerator for x component.
-   pub c: [f64; 3], // Numerator for y component.
-}
-
-#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
-pub struct RatQuadHomogPower {
-   pub r: [f64; 2], // Range.
-   pub h: RatQuadHomog,
-}
-
-#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
-pub struct RatQuadHomogWeighted {
-   pub r: [f64; 2], // Range.
-   pub h: RatQuadHomog,
-}
-
-impl From<&RatQuadHomogWeighted> for RatQuadHomogPower {
-   fn from(weighted: &RatQuadHomogWeighted) -> Self {
-      let r = &weighted.r;
-
-      let tran_q_mat = q_mat_weighted_to_power(r);
-      let out_quad_homog = weighted.h.apply_q_mat(&tran_q_mat);
-
-      Self { r: *r, h: out_quad_homog }
-   }
-}
-
-impl From<&RatQuadHomogPower> for RatQuadHomogWeighted {
-   fn from(power: &RatQuadHomogPower) -> Self {
-      let r = &power.r;
-
-      let tran_q_mat = q_mat_power_to_weighted(r);
-      let out_quad_homog = power.h.apply_q_mat(&tran_q_mat);
-
-      Self { r: *r, h: out_quad_homog }
-   }
-}
-
-impl From<&RatQuadPolyPath> for RatQuadHomogPower {
-   fn from(poly: &RatQuadPolyPath) -> Self {
-      Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]) }
-   }
-}
-
-impl From<&RatQuadHomogPower> for RatQuadPolyPath {
-   fn from(homog: &RatQuadHomogPower) -> Self {
-      Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1] }
-   }
-}
-
-impl From<&RatQuadPolyPath> for RatQuadHomogWeighted {
-   fn from(poly: &RatQuadPolyPath) -> Self {
-      Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]) }
-   }
-}
-
-impl From<&RatQuadHomogWeighted> for RatQuadPolyPath {
-   fn from(homog: &RatQuadHomogWeighted) -> Self {
-      Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1] }
-   }
 }
 
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Copy, Clone)]
@@ -134,6 +46,8 @@ pub struct RegularizedRatQuadPath {
    pub a_2: f64,
    pub b: [f64; 3], // Numerator for x component.
    pub c: [f64; 3], // Numerator for y component.
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
 }
 
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
@@ -142,7 +56,7 @@ pub struct ThreePointAngleRepr {
    pub p: [[f64; 2]; 3],
    #[serde(skip_serializing_if = "is_default")]
    pub angle: ZebraixAngle,
-   #[serde(skip_serializing_if = "is_default_unit_sigma", default = "default_unit_sigma")]
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
    pub sigma: (f64, f64),
 }
 
@@ -162,8 +76,8 @@ impl CurveTransform for Curve<RatQuadPolyPath> {
    }
 
    fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
-      self.sigma.0 *= sigma_ratio.0;
-      self.sigma.1 *= sigma_ratio.1;
+      self.path.sigma.0 *= sigma_ratio.0;
+      self.path.sigma.1 *= sigma_ratio.1;
    }
 
    fn raw_change_range(&mut self, new_range: [f64; 2]) {
@@ -192,6 +106,7 @@ fn poly_eval_no_bilinear_test() {
       a: [689.0243700979973, -9.204745830513218, 1.1505932288141527],
       b: [-865.8010653946342, -49.720819268365744, -6.061056987054066],
       c: [760.1100286299702, 114.48112065443453, -2.033980686204532],
+      sigma: (0.0, 0.0),
    };
    let homog = RatQuadHomogPower::from(&poly);
 
@@ -202,11 +117,12 @@ fn poly_eval_no_bilinear_test() {
          [760.1100286299702, 114.48112065443453, -2.033980686204532],
          [689.0243700979973, -9.204745830513218, 1.1505932288141527],
       ]),
+      sigma: (0.0, 0.0),
    };
 
    assert_abs_diff_eq!(
-      &RatQuadHomogWrapped::from(&homog.h),
-      &RatQuadHomogWrapped::from(&homog_expect.h),
+      &PathWrapped::from(&homog),
+      &PathWrapped::from(&homog_expect),
       epsilon = 1.0e-5
    );
 }
@@ -237,10 +153,11 @@ impl Curve<RatQuadPolyPath> {
          [[z * z, 2.0 * y * z, y * y], [x * z, x * y + w * z, w * y], [x * x, 2.0 * w * x, w * w]];
       let output_homog = input_path.h.apply_q_mat(&tran_q_mat);
 
-      let mut homog_path = RatQuadHomogPower { h: output_homog, r: self.path.r };
+      let mut homog_path =
+         RatQuadHomogPower { h: output_homog, r: self.path.r, sigma: self.path.sigma };
       homog_path.h.normalize();
 
-      Self { path: RatQuadPolyPath::from(&homog_path), sigma: self.sigma }
+      Self { path: RatQuadPolyPath::from(&homog_path) }
    }
 
    // Internal bilinear transform.
@@ -287,7 +204,7 @@ impl Curve<RatQuadPolyPath> {
       ];
 
       let r = [-r_half, r_half];
-      Self { path: RatQuadPolyPath { r, a, b, c }, sigma: self.sigma }
+      Self { path: RatQuadPolyPath { r, a, b, c, sigma: self.path.sigma } }
    }
 
    #[allow(clippy::suboptimal_flops)]
@@ -334,7 +251,7 @@ impl Curve<RatQuadPolyPath> {
          ];
       }
 
-      Ok(Self { path: RatQuadPolyPath { r: weighted.path.r, a, b, c }, sigma: weighted.sigma })
+      Ok(Self { path: RatQuadPolyPath { r: weighted.path.r, a, b, c, sigma: weighted.path.sigma } })
    }
 
    #[must_use]
@@ -344,8 +261,8 @@ impl Curve<RatQuadPolyPath> {
       // let homog_path = RatQuadHomogPower::from(&self.path);
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
       for item in t {
-         let p = self.sigma.0 * (*item - self.path.r[0]);
-         let q = self.sigma.1 * (self.path.r[1] - *item);
+         let p = self.path.sigma.0 * (*item - self.path.r[0]);
+         let q = self.path.sigma.1 * (self.path.r[1] - *item);
          let b = &homog_path.h.0[0];
          let c = &homog_path.h.0[1];
          let a = &homog_path.h.0[2];
@@ -366,8 +283,8 @@ impl Curve<RatQuadPolyPath> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
       // dbg!(self.sigma);
       for item in t {
-         let p = self.sigma.0 * (*item - self.path.r[0]);
-         let q = self.sigma.1 * (self.path.r[1] - *item);
+         let p = self.path.sigma.0 * (*item - self.path.r[0]);
+         let q = self.path.sigma.1 * (self.path.r[1] - *item);
          let b = &homog_path.h.0[0];
          let c = &homog_path.h.0[1];
          let a = &homog_path.h.0[2];
@@ -385,11 +302,12 @@ impl Curve<RatQuadPolyPath> {
          let rc = Self::eval_part_quad(q, p, &expansion_c);
          let ra = Self::eval_part_quad(q, p, a);
          let w_minus_v = self.path.r[1] - self.path.r[0];
-         let div_factor = self.sigma.0 * self.sigma.1 * w_minus_v * scale / ra / ra;
+         let div_factor = self.path.sigma.0 * self.path.sigma.1 * w_minus_v * scale / ra / ra;
          // Note that deriv of sigma tran converted cubic's
          // let recip_denom = scale * f0 * f0 / w_minus_v;
          // to
-         // let recip_denom = scale * f0 * f0 * f0 * f0 * w_minus_v * self.sigma.0 * self.sigma.1;
+         // let recip_denom = scale * f0 * f0 * f0 * f0 * w_minus_v *
+         //           self.path.sigma.0 * self.path.sigma.1;
          ret_val.push([rb * div_factor, rc * div_factor]);
       }
       ret_val
@@ -405,8 +323,8 @@ fn create_from_weighted_test() {
          a: [1.9641855032959659, 2.0 * 1.388888888888889, 1.9641855032959659],
          b: [-2.946278254943949, 0.0, -3.9283710065919317],
          c: [-2.946278254943949, 2.0 * 0.6944444444444453, 3.9283710065919317],
+         sigma: (0.0, 0.0),
       },
-      sigma: (0.0, 0.0),
    };
    let weighted_really = RatQuadHomogWeighted::from(&weighted.path);
 
@@ -418,18 +336,19 @@ fn create_from_weighted_test() {
       a: [689.0243700979975, -9.204745830513225, 1.1505932288141536],
       b: [-718.8918942063235, 35.35533905932739, -6.874649261535881],
       c: [-319.38251506503764, 140.7473543286449, -0.40679613724090746],
+      sigma: (0.0, 0.0),
    });
    assert_abs_diff_eq!(
-      &RatQuadHomogWrapped::from(&powered.h),
-      &RatQuadHomogWrapped::from(&expected_path.h),
+      &PathWrapped::from(&powered),
+      &PathWrapped::from(&expected_path),
       epsilon = 1.0e-5
    );
 
    // Also test against reference version.
    let reference_power = RatQuadHomogPower::from(&weighted_really);
    assert_abs_diff_eq!(
-      &RatQuadHomogWrapped::from(&powered.h),
-      &RatQuadHomogWrapped::from(&reference_power.h),
+      &PathWrapped::from(&powered),
+      &PathWrapped::from(&reference_power),
       epsilon = 1.0e-5
    );
 }
@@ -458,7 +377,7 @@ impl CurveEval for Curve<RatQuadPolyPath> {
 
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       // let scratchy_rat_poly = self.rq_apply_bilinear((2.0_f64.sqrt(), 1.0));
-      let scratchy_rat_poly = self.rq_apply_bilinear(self.sigma);
+      let scratchy_rat_poly = self.rq_apply_bilinear(self.path.sigma);
       scratchy_rat_poly.path.eval_no_bilinear(t)
    }
 
@@ -493,13 +412,14 @@ impl From<&RegularizedRatQuadPath> for RatQuadPolyPath {
          a: [regular.a_0, 0.0, regular.a_2],
          b: regular.b,
          c: regular.c,
+         sigma: regular.sigma,
       }
    }
 }
 
 impl From<&Curve<RegularizedRatQuadPath>> for Curve<RatQuadPolyPath> {
    fn from(curve: &Curve<RegularizedRatQuadPath>) -> Self {
-      Self { path: RatQuadPolyPath::from(&curve.path), sigma: curve.sigma }
+      Self { path: RatQuadPolyPath::from(&curve.path) }
    }
 }
 
@@ -525,8 +445,8 @@ impl Curve<RegularizedRatQuadPath> {
          path: CubicPath {
             r: [-self.path.range_bound, self.path.range_bound],
             h: CubicHomog(four_c),
+            sigma: self.path.sigma,
          },
-         sigma: self.sigma,
       }
    }
 
@@ -567,8 +487,8 @@ impl Curve<RegularizedRatQuadPath> {
             offset,
             plus_partial,
             minus_partial,
+            sigma: self.path.sigma,
          },
-         sigma: self.sigma,
       }
    }
 
@@ -600,8 +520,8 @@ impl Curve<RegularizedRatQuadPath> {
             a_2: check_poly.path.a[2],
             b: check_poly.path.b,
             c: check_poly.path.c,
+            sigma: check_poly.path.sigma,
          },
-         sigma: check_poly.sigma,
       })
    }
 }

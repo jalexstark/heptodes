@@ -15,23 +15,13 @@
 pub mod base;
 pub mod cubic;
 pub mod managed;
-pub mod matrix;
 pub mod rat_quad;
 pub mod threes;
 
-pub use crate::base::{
-   default_unit_sigma, is_default_unit_sigma, Curve, CurveEval, CurveTransform, ZebraixAngle,
-};
+pub use crate::base::{Curve, CurveEval, CurveTransform, ZebraixAngle};
 pub use crate::cubic::ManagedCubic;
 pub use crate::managed::ManagedRatQuad;
-pub use crate::matrix::{
-   q_mat_power_to_weighted, q_mat_weighted_to_power, q_reduce, rat_quad_expand_power,
-   rat_quad_power_eval, CubicHomogWrapped, CurveMatrix, F64SliceWrapped, QMat, RatQuadHomogWrapped,
-};
-pub use crate::rat_quad::{
-   FourPointRatQuad, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath, SpecifiedRatQuad,
-   ThreePointAngleRepr,
-};
+pub use crate::rat_quad::{FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
 pub use crate::threes::RatQuadOoeSubclassed;
 
 // #[cfg(test)]

@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Rust does not apply cfg(test) during cargo test.
-// #[cfg(test)]
+// Rust does not apply cfg(test) during cargo test
 pub mod tests {
    use std::io::Write;
    use zvx_cairo::CairoSpartanCombo;

@@ -8,32 +8,19 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
-use zvx_base::{default_unit_f64, is_default, is_near_float};
+use zvx_base::is_default;
 
 // Intended for use directly on paths, rather than those wrapped into Curves.
 pub trait TEval {
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
 }
 
-#[must_use]
-pub const fn default_unit_sigma() -> (f64, f64) {
-   (1.0, 1.0)
-}
-
-#[allow(clippy::trivially_copy_pass_by_ref)]
-#[must_use]
-pub fn is_default_unit_sigma(v: &(f64, f64)) -> bool {
-   is_near_float(v.0, default_unit_f64()) && is_near_float(v.1, default_unit_f64())
-}
-
 // Sigma is a bilinear transformation of `t` that does not change the end-points of the
 // curve. Thus conversion to a path does not generally need to involve sigma.
-#[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq, Eq, Clone)]
 pub struct Curve<T: Default + PartialEq> {
    #[serde(skip_serializing_if = "is_default")]
    pub path: T,
-   #[serde(skip_serializing_if = "is_default_unit_sigma", default = "default_unit_sigma")]
-   pub sigma: (f64, f64),
 }
 
 pub trait CurveEval {

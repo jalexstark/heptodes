@@ -14,5 +14,6 @@ categories = ["graphics", "development-tools::testing"]
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_default = "0.2"
+approx = { version = "0.5" }
 
 [dev-dependencies]
