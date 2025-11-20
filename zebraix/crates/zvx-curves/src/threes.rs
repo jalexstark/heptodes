@@ -18,9 +18,9 @@
 
 use crate::base::TEval;
 use crate::rat_quad::RegularizedRatQuadPath;
-use crate::{Curve, RatQuadPolyPath};
+use crate::Curve;
 use serde::Serialize;
-use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment};
+use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, RatQuadPolyPath};
 
 #[derive(Serialize, Default, Debug, Clone, PartialEq)]
 pub enum RatQuadOoeSubclassed {

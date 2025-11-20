@@ -14,10 +14,9 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath};
+use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadPolyPath};
 use zvx_curves::{
-   Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, RatQuadPolyPath,
-   SpecifiedRatQuad,
+   Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, SpecifiedRatQuad,
 };
 use zvx_docagram::diagram::DrawableDiagram;
 use zvx_drawable::{

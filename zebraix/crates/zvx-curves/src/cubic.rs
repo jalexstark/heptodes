@@ -13,16 +13,15 @@
 // limitations under the License.
 
 use crate::{Curve, CurveEval, CurveTransform};
-use serde::Serialize;
-use serde_default::DefaultFromSerde;
-use zvx_base::CubicPath;
-
-#[cfg(test)]
-use crate::{CubicHomogWrapped, F64SliceWrapped};
 #[cfg(test)]
 use approx::assert_abs_diff_eq;
+use serde::Serialize;
+use serde_default::DefaultFromSerde;
+#[cfg(test)]
+use zvx_base::utils::PathWrapped;
 #[cfg(test)]
 use zvx_base::CubicHomog;
+use zvx_base::CubicPath;
 
 const fn displace_4(p: &mut [[f64; 4]; 2], d: [f64; 2]) {
    p[0][0] += d[0];
@@ -92,11 +91,12 @@ impl Curve<CubicPath> {
    pub fn eval_derivative_scaled(&self, t: &[f64], scale: f64) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
       for item in t {
-         let a = self.sigma.0 * (*item - self.path.r[0]);
-         let b = self.sigma.1 * (self.path.r[1] - *item);
+         let a = self.path.sigma.0 * (*item - self.path.r[0]);
+         let b = self.path.sigma.1 * (self.path.r[1] - *item);
          let f0 = 1.0 / (b + a);
          let w_minus_v = self.path.r[1] - self.path.r[0];
-         let recip_denom = scale * f0 * f0 * f0 * f0 * w_minus_v * self.sigma.0 * self.sigma.1;
+         let recip_denom =
+            scale * f0 * f0 * f0 * f0 * w_minus_v * self.path.sigma.0 * self.path.sigma.1;
          // let recip_denom = scale * f0 * f0 / w_minus_v;
          let in_x = [
             3.0 * self.path.h.0[0][1] - 3.0 * self.path.h.0[0][0],
@@ -126,8 +126,8 @@ impl CurveEval for Curve<CubicPath> {
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
       for item in t {
-         let a = self.sigma.0 * (*item - self.path.r[0]);
-         let b = self.sigma.1 * (self.path.r[1] - *item);
+         let a = self.path.sigma.0 * (*item - self.path.r[0]);
+         let b = self.path.sigma.1 * (self.path.r[1] - *item);
          let f0 = 1.0 / (b + a);
          let recip_denom = f0 * f0 * f0;
          let in_x = [
@@ -160,8 +160,8 @@ impl CurveTransform for Curve<CubicPath> {
    }
 
    fn bilinear_transform(&mut self, sigma_ratio: (f64, f64)) {
-      self.sigma.0 *= sigma_ratio.0;
-      self.sigma.1 *= sigma_ratio.1;
+      self.path.sigma.0 *= sigma_ratio.0;
+      self.path.sigma.1 *= sigma_ratio.1;
    }
 
    fn raw_change_range(&mut self, new_range: [f64; 2]) {
@@ -175,10 +175,10 @@ impl CurveTransform for Curve<CubicPath> {
       let mut new_y = [0.0; 4];
 
       // TODO: Test consistency when sigma.1 neq 1.0.
-      let a_k = self.sigma.0 * (new_range[0] - self.path.r[0]);
-      let b_k = self.sigma.1 * (self.path.r[1] - new_range[0]);
-      let a_l = self.sigma.0 * (new_range[1] - self.path.r[0]);
-      let b_l = self.sigma.1 * (self.path.r[1] - new_range[1]);
+      let a_k = self.path.sigma.0 * (new_range[0] - self.path.r[0]);
+      let b_k = self.path.sigma.1 * (self.path.r[1] - new_range[0]);
+      let a_l = self.path.sigma.0 * (new_range[1] - self.path.r[0]);
+      let b_l = self.path.sigma.1 * (self.path.r[1] - new_range[1]);
       let f0_k = 1.0 / (b_k + a_k);
       let recip_denom_k = f0_k * f0_k * f0_k;
       let f0_l = 1.0 / (b_l + a_l);
@@ -199,10 +199,10 @@ impl CurveTransform for Curve<CubicPath> {
       new_y[0] = Self::eval_part(b_k, a_k, &in_y, recip_denom_k);
       new_x[3] = Self::eval_part(b_l, a_l, &in_x, recip_denom_l);
       new_y[3] = Self::eval_part(b_l, a_l, &in_y, recip_denom_l);
-      let kl_numerator_k = self.sigma.0 * self.path.r[1] * (new_range[0] - self.path.r[0])
-         + self.sigma.1 * self.path.r[0] * (self.path.r[1] - new_range[0]);
-      let kl_numerator_l = self.sigma.0 * self.path.r[1] * (new_range[1] - self.path.r[0])
-         + self.sigma.1 * self.path.r[0] * (self.path.r[1] - new_range[1]);
+      let kl_numerator_k = self.path.sigma.0 * self.path.r[1] * (new_range[0] - self.path.r[0])
+         + self.path.sigma.1 * self.path.r[0] * (self.path.r[1] - new_range[0]);
+      let kl_numerator_l = self.path.sigma.0 * self.path.r[1] * (new_range[1] - self.path.r[0])
+         + self.path.sigma.1 * self.path.r[0] * (self.path.r[1] - new_range[1]);
       // This is [k, l] bilinearly transformed.
       let selected_range_bilineared = kl_numerator_l / (a_l + b_l) - kl_numerator_k / (a_k + b_k);
       let fudge_k = selected_range_bilineared / (self.path.r[1] - self.path.r[0]);
@@ -237,8 +237,8 @@ impl CurveTransform for Curve<CubicPath> {
             + a_l * a_l * (in_y[3] - in_y[2] / 3.0));
       new_y[2] = new_y[3] - dy_1;
 
-      self.sigma.0 = a_l + b_l;
-      self.sigma.1 = a_k + b_k;
+      self.path.sigma.0 = a_l + b_l;
+      self.path.sigma.1 = a_k + b_k;
       self.path.h.0 = [new_x, new_y];
       // [[new_x[0], new_y[0]], [new_x[1], new_y[1]], [new_x[2], new_y[2]], [new_x[3], new_y[3]]];
       self.path.r = new_range;
@@ -253,10 +253,10 @@ fn select_range_reference(curve: &mut Curve<CubicPath>, new_range: [f64; 2]) {
    let mut new_x = [0.0; 4];
    let mut new_y = [0.0; 4];
 
-   let a_k = curve.sigma.0 * (new_range[0] - curve.path.r[0]);
-   let b_k = curve.sigma.1 * (curve.path.r[1] - new_range[0]);
-   let a_l = curve.sigma.0 * (new_range[1] - curve.path.r[0]);
-   let b_l = curve.sigma.1 * (curve.path.r[1] - new_range[1]);
+   let a_k = curve.path.sigma.0 * (new_range[0] - curve.path.r[0]);
+   let b_k = curve.path.sigma.1 * (curve.path.r[1] - new_range[0]);
+   let a_l = curve.path.sigma.0 * (new_range[1] - curve.path.r[0]);
+   let b_l = curve.path.sigma.1 * (curve.path.r[1] - new_range[1]);
    let f0_k = 1.0 / (b_k + a_k);
    let recip_denom_k = f0_k * f0_k * f0_k;
    let f0_l = 1.0 / (b_l + a_l);
@@ -269,10 +269,10 @@ fn select_range_reference(curve: &mut Curve<CubicPath>, new_range: [f64; 2]) {
    new_y[0] = Curve::eval_part(b_k, a_k, &in_y, recip_denom_k);
    new_x[3] = Curve::eval_part(b_l, a_l, &in_x, recip_denom_l);
    new_y[3] = Curve::eval_part(b_l, a_l, &in_y, recip_denom_l);
-   let kl_numerator_k = curve.sigma.0 * curve.path.r[1] * (new_range[0] - curve.path.r[0])
-      + curve.sigma.1 * curve.path.r[0] * (curve.path.r[1] - new_range[0]);
-   let kl_numerator_l = curve.sigma.0 * curve.path.r[1] * (new_range[1] - curve.path.r[0])
-      + curve.sigma.1 * curve.path.r[0] * (curve.path.r[1] - new_range[1]);
+   let kl_numerator_k = curve.path.sigma.0 * curve.path.r[1] * (new_range[0] - curve.path.r[0])
+      + curve.path.sigma.1 * curve.path.r[0] * (curve.path.r[1] - new_range[0]);
+   let kl_numerator_l = curve.path.sigma.0 * curve.path.r[1] * (new_range[1] - curve.path.r[0])
+      + curve.path.sigma.1 * curve.path.r[0] * (curve.path.r[1] - new_range[1]);
    // This is [k, l] bilinearly transformed.
    let selected_range_bilineared = kl_numerator_l / (a_l + b_l) - kl_numerator_k / (a_k + b_k);
    let fudge_k = selected_range_bilineared / (curve.path.r[1] - curve.path.r[0]);
@@ -306,8 +306,8 @@ fn select_range_reference(curve: &mut Curve<CubicPath>, new_range: [f64; 2]) {
          + a_l * a_l * (in_y[3] - in_y[2] / 3.0));
    new_y[2] = 3.0 * (new_y[3] - dy_1);
 
-   curve.sigma.0 = a_l + b_l;
-   curve.sigma.1 = a_k + b_k;
+   curve.path.sigma.0 = a_l + b_l;
+   curve.path.sigma.1 = a_k + b_k;
    curve.path.h.0 = [new_x, new_y];
    curve.path.r = new_range;
 }
@@ -319,8 +319,8 @@ fn create_from_weighted_test() {
       path: CubicPath {
          r: [-4.5, 13.5],
          h: CubicHomog([[4.0, 3.0 * 3.5, 3.0 * 4.5, 3.0], [-1.5, 3.0 * -2.0, 3.0 * 1.5, 2.0]]),
+         sigma: (3.0, 1.0),
       },
-      sigma: (3.0, 1.0),
    };
 
    let new_range = [1.5, 10.5];
@@ -334,22 +334,15 @@ fn create_from_weighted_test() {
             [3.856, 3.0 * 3.80875, 3.0 * 3.658984375, 3.2529296875],
             [0.408, 3.0 * 1.00875, 3.0 * 1.58671875, 1.872802734375],
          ]),
+         sigma: (48.0, 30.0),
       },
-      sigma: (48.0, 30.0),
    };
 
    assert_abs_diff_eq!(
-      &CubicHomogWrapped::from(&weighted.path.h),
-      &CubicHomogWrapped::from(&reference_weighted.path.h),
+      &PathWrapped::from(&weighted.path),
+      &PathWrapped::from(&reference_weighted.path),
       epsilon = 1.0e-5
    );
-   assert_abs_diff_eq!(
-      &F64SliceWrapped::from(&weighted.path.r),
-      &F64SliceWrapped::from(&reference_weighted.path.r),
-      epsilon = 1.0e-5
-   );
-   assert_abs_diff_eq!(&weighted.sigma.0, &reference_weighted.sigma.0, epsilon = 1.0e-5);
-   assert_abs_diff_eq!(&weighted.sigma.1, &reference_weighted.sigma.1, epsilon = 1.0e-5);
 }
 
 #[allow(clippy::missing_panics_doc)]

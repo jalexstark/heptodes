@@ -12,13 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{
-   Curve, CurveTransform, FourPointRatQuad, RatQuadHomogPower, RatQuadHomogWeighted,
-   RatQuadPolyPath, SpecifiedRatQuad, ThreePointAngleRepr,
-};
+use crate::{Curve, CurveTransform, FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
-use zvx_base::RatQuadHomog;
+use zvx_base::{RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath};
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
@@ -124,8 +121,8 @@ impl ManagedRatQuad {
          path: RatQuadPolyPath::from(&RatQuadHomogPower::from(&RatQuadHomogWeighted {
             r: four_points.r,
             h: RatQuadHomog([b, c, a]),
+            sigma: four_points.sigma,
          })),
-         sigma: four_points.sigma,
       };
 
       Self {
@@ -151,9 +148,13 @@ impl ManagedRatQuad {
       let c = [ys[0], 2.0 * f_mult_1p5 * ys[1], ys[2]];
       let a = [1.0, 2.0 * f_mult_1p5, 1.0];
       let rat_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath { r: three_point_rat_quad.r, a, b, c },
-         // TODO: Figure out preferred sigma.
-         sigma: three_point_rat_quad.sigma,
+         path: RatQuadPolyPath {
+            r: three_point_rat_quad.r,
+            a,
+            b,
+            c,
+            sigma: three_point_rat_quad.sigma,
+         },
       };
       Ok(Self {
          poly: Curve::<RatQuadPolyPath>::create_from_weighted(&rat_quad).unwrap(),

@@ -12,11 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+pub mod matrix;
 pub mod pieces;
+pub mod utils;
+
+pub use crate::matrix::{
+   q_mat_power_to_weighted, q_mat_weighted_to_power, q_reduce, rat_quad_expand_power,
+   rat_quad_power_eval, CurveMatrix, QMat,
+};
 
 pub use pieces::{
    ArcPath, CubicHomog, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadHomog,
+   RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath,
 };
+
+// #[cfg(test)]
+// pub use pieces::{CubicHomogWrapped, F64SliceWrapped};
+
+const BASIC_ABS_TOLERANCE: f64 = 0.0001;
 
 #[inline]
 pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
@@ -25,7 +38,7 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
 
 #[must_use]
 pub fn is_near_float(v: f64, w: f64) -> bool {
-   (v - w).abs() < 0.0001
+   (v - w).abs() < BASIC_ABS_TOLERANCE
 }
 
 #[must_use]
@@ -38,3 +51,18 @@ pub const fn default_unit_f64() -> f64 {
 pub fn is_default_unit_f64(v: &f64) -> bool {
    is_near_float(*v, default_unit_f64())
 }
+
+#[must_use]
+pub const fn default_unit_ratio() -> (f64, f64) {
+   (1.0, 1.0)
+}
+
+#[allow(clippy::trivially_copy_pass_by_ref)]
+#[must_use]
+pub fn is_default_unit_ratio(v: &(f64, f64)) -> bool {
+   is_near_float(v.0, default_unit_f64()) && is_near_float(v.1, default_unit_f64())
+}
+
+#[cfg(test)]
+// #[macro_use]
+extern crate approx;
