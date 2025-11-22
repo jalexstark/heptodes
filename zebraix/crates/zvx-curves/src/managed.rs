@@ -15,12 +15,15 @@
 use crate::{Curve, CurveTransform, FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
-use zvx_base::{RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath};
+use zvx_base::{
+   RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPathPower,
+   RatQuadPolyPathWeighted,
+};
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
 pub struct ManagedRatQuad {
-   pub poly: Curve<RatQuadPolyPath>,
+   pub poly: Curve<RatQuadPolyPathPower>,
    // How originally specified, FourPoint or ThreePointAngle, for plotting and diagnostics only.
    pub specified: SpecifiedRatQuad,
    pub canvas_range: [f64; 4],
@@ -47,7 +50,10 @@ const fn extract_y_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
 #[allow(clippy::missing_panics_doc)]
 impl ManagedRatQuad {
    #[must_use]
-   pub fn create_from_polynomial(poly: &Curve<RatQuadPolyPath>, canvas_range: [f64; 4]) -> Self {
+   pub fn create_from_polynomial(
+      poly: &Curve<RatQuadPolyPathPower>,
+      canvas_range: [f64; 4],
+   ) -> Self {
       Self { poly: poly.clone(), canvas_range, ..Default::default() }
    }
 
@@ -75,12 +81,12 @@ impl ManagedRatQuad {
    //    let b = [w_a * x[0], 2.0 * w_b_x_m, w_c * x[3]];
    //    let c = [w_a * y[0], 2.0 * w_b_y_m, w_c * y[3]];
    //    let a = [w_a, 2.0 * w_b, w_c];
-   //    let rat_quad = Curve::<RatQuadPolyPath> {
-   //       path: RatQuadPolyPath { r: four_points.r, a, b, c },
+   //    let rat_quad = Curve::<RatQuadPolyPathPower> {
+   //       path: RatQuadPolyPathPower { r: four_points.r, a, b, c },
    //       sigma: four_points.sigma,
    //    };
    //    Self {
-   //       poly: Curve::<RatQuadPolyPath>::create_from_weighted(&rat_quad).unwrap(),
+   //       poly: Curve::<RatQuadPolyPathPower>::create_from_weighted(&rat_quad).unwrap(),
    //       specified: SpecifiedRatQuad::FourPoint(four_points.clone()),
    //       canvas_range,
    //    }
@@ -117,8 +123,8 @@ impl ManagedRatQuad {
       let b = [b_0, b_1, b_2];
       let c = [c_0, c_1, c_2];
       let a = [a_0, a_1, a_2];
-      let rat_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath::from(&RatQuadHomogPower::from(&RatQuadHomogWeighted {
+      let rat_quad = Curve::<RatQuadPolyPathPower> {
+         path: RatQuadPolyPathPower::from(&RatQuadHomogPower::from(&RatQuadHomogWeighted {
             r: four_points.r,
             h: RatQuadHomog([b, c, a]),
             sigma: four_points.sigma,
@@ -147,8 +153,8 @@ impl ManagedRatQuad {
       let b = [xs[0], 2.0 * f_mult_1p5 * xs[1], xs[2]];
       let c = [ys[0], 2.0 * f_mult_1p5 * ys[1], ys[2]];
       let a = [1.0, 2.0 * f_mult_1p5, 1.0];
-      let rat_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath {
+      let rat_quad = Curve::<RatQuadPolyPathWeighted> {
+         path: RatQuadPolyPathWeighted {
             r: three_point_rat_quad.r,
             a,
             b,
@@ -157,14 +163,14 @@ impl ManagedRatQuad {
          },
       };
       Ok(Self {
-         poly: Curve::<RatQuadPolyPath>::create_from_weighted(&rat_quad).unwrap(),
+         poly: Curve::<RatQuadPolyPathPower>::create_from_weighted(&rat_quad).unwrap(),
          specified: SpecifiedRatQuad::ThreePointAngle(three_point_rat_quad.clone()),
          canvas_range,
       })
    }
 
    #[allow(clippy::missing_errors_doc)]
-   pub fn get_poly_rat_quad_repr(&self) -> Result<Curve<RatQuadPolyPath>, &'static str> {
+   pub fn get_poly_rat_quad_repr(&self) -> Result<Curve<RatQuadPolyPathPower>, &'static str> {
       Ok(self.poly.clone())
    }
 

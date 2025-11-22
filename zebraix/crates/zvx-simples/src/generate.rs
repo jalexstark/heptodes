@@ -14,7 +14,9 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadPolyPath};
+use zvx_base::{
+   ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadPolyPathPower,
+};
 use zvx_curves::{
    Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, SpecifiedRatQuad,
 };
@@ -52,7 +54,7 @@ pub enum SampleOption {
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
-fn create_rat_quad_path(poly_curve: &Curve<RatQuadPolyPath>) -> OneOfSegment {
+fn create_rat_quad_path(poly_curve: &Curve<RatQuadPolyPathPower>) -> OneOfSegment {
    RatQuadOoeSubclassed::segment_from_ordinary(poly_curve, 0.01).unwrap()
 }
 
@@ -60,7 +62,7 @@ fn create_rat_quad_path(poly_curve: &Curve<RatQuadPolyPath>) -> OneOfSegment {
 #[allow(clippy::missing_panics_doc)]
 fn push_rat_quad_drawable(
    spartan: &mut DrawableDiagram,
-   poly_curve: &Curve<RatQuadPolyPath>,
+   poly_curve: &Curve<RatQuadPolyPathPower>,
    path_choices: PathChoices,
    layer: i32,
 ) {
@@ -150,7 +152,7 @@ pub fn draw_sample_rat_quad(
    spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let deprecated_rat_quad: Curve<RatQuadPolyPath> =
+   let deprecated_rat_quad: Curve<RatQuadPolyPathPower> =
       managed_rat_quad.get_poly_rat_quad_repr().expect("Never should be missing");
 
    if let Some(color_choice) = &curve_config.control_color {
@@ -287,7 +289,7 @@ pub fn draw_sample_rat_quad(
             }),
          });
       } else {
-         let ordinary_rat_quad: &Curve<RatQuadPolyPath> = &managed_rat_quad.poly;
+         let ordinary_rat_quad: &Curve<RatQuadPolyPathPower> = &managed_rat_quad.poly;
          push_rat_quad_drawable(
             spartan,
             ordinary_rat_quad,
@@ -308,7 +310,7 @@ pub fn draw_derivatives_rat_quad(
    spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let deprecated_rat_quad: Curve<RatQuadPolyPath> =
+   let deprecated_rat_quad: Curve<RatQuadPolyPathPower> =
       managed_rat_quad.get_poly_rat_quad_repr().expect("Never should be missing");
 
    let t_int: Vec<i32> = (0..=curve_config.points_num_segments).collect();
@@ -537,7 +539,7 @@ pub fn draw_sample_segment_sequence(
          }
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
-            let ordinary_rat_quad: &Curve<RatQuadPolyPath> = &managed_rat_quad.poly;
+            let ordinary_rat_quad: &Curve<RatQuadPolyPathPower> = &managed_rat_quad.poly;
             segments_paths.push(create_rat_quad_path(ordinary_rat_quad));
          }
          OneOfManagedSegment::Polyline(locations) => {

@@ -20,7 +20,7 @@ use crate::base::TEval;
 use crate::rat_quad::RegularizedRatQuadPath;
 use crate::Curve;
 use serde::Serialize;
-use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, RatQuadPolyPath};
+use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, RatQuadPolyPathPower};
 
 #[derive(Serialize, Default, Debug, Clone, PartialEq)]
 pub enum RatQuadOoeSubclassed {
@@ -36,7 +36,7 @@ impl RatQuadOoeSubclassed {
    #[allow(clippy::missing_panics_doc)]
    #[allow(clippy::missing_errors_doc)]
    pub fn segment_from_ordinary(
-      poly_curve: &Curve<RatQuadPolyPath>,
+      poly_curve: &Curve<RatQuadPolyPathPower>,
       tolerance: f64,
    ) -> Result<OneOfSegment, &'static str> {
       let ooe_rat_quad_extracted: Self = Self::create_from_ordinary(poly_curve, tolerance).unwrap();
