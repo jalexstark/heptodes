@@ -19,18 +19,17 @@ use serde::Serialize;
 use serde_default::DefaultFromSerde;
 #[cfg(test)]
 use zvx_base::utils::PathWrapped;
-#[cfg(test)]
 use zvx_base::CubicHomog;
-use zvx_base::CubicPath;
+use zvx_base::{CubicFourPoint, CubicPath};
 
 const fn displace_4(p: &mut [[f64; 4]; 2], d: [f64; 2]) {
    p[0][0] += d[0];
-   p[0][1] += d[0];
-   p[0][2] += d[0];
+   p[0][1] += 3.0 * d[0];
+   p[0][2] += 3.0 * d[0];
    p[0][3] += d[0];
    p[1][0] += d[1];
-   p[1][1] += d[1];
-   p[1][2] += d[1];
+   p[1][1] += 3.0 * d[1];
+   p[1][2] += 3.0 * d[1];
    p[1][3] += d[1];
 }
 
@@ -99,14 +98,14 @@ impl Curve<CubicPath> {
             scale * f0 * f0 * f0 * f0 * w_minus_v * self.path.sigma.0 * self.path.sigma.1;
          // let recip_denom = scale * f0 * f0 / w_minus_v;
          let in_x = [
-            3.0 * self.path.h.0[0][1] - 3.0 * self.path.h.0[0][0],
-            3.0 * 2.0 * (self.path.h.0[0][2] - self.path.h.0[0][1]),
-            3.0 * self.path.h.0[0][3] - 3.0 * self.path.h.0[0][2],
+            self.path.h.0[0][1] - 3.0 * self.path.h.0[0][0],
+            2.0 * (self.path.h.0[0][2] - self.path.h.0[0][1]),
+            3.0 * self.path.h.0[0][3] - self.path.h.0[0][2],
          ];
          let in_y = [
-            3.0 * self.path.h.0[1][1] - 3.0 * self.path.h.0[1][0],
-            3.0 * 2.0 * (self.path.h.0[1][2] - self.path.h.0[1][1]),
-            3.0 * self.path.h.0[1][3] - 3.0 * self.path.h.0[1][2],
+            self.path.h.0[1][1] - 3.0 * self.path.h.0[1][0],
+            2.0 * (self.path.h.0[1][2] - self.path.h.0[1][1]),
+            3.0 * self.path.h.0[1][3] - self.path.h.0[1][2],
          ];
          let x = Self::eval_part_quad(b, a, &in_x, recip_denom);
          let y = Self::eval_part_quad(b, a, &in_y, recip_denom);
@@ -130,18 +129,10 @@ impl CurveEval for Curve<CubicPath> {
          let b = self.path.sigma.1 * (self.path.r[1] - *item);
          let f0 = 1.0 / (b + a);
          let recip_denom = f0 * f0 * f0;
-         let in_x = [
-            self.path.h.0[0][0],
-            3.0 * self.path.h.0[0][1],
-            3.0 * self.path.h.0[0][2],
-            self.path.h.0[0][3],
-         ];
-         let in_y = [
-            self.path.h.0[1][0],
-            3.0 * self.path.h.0[1][1],
-            3.0 * self.path.h.0[1][2],
-            self.path.h.0[1][3],
-         ];
+         let in_x =
+            [self.path.h.0[0][0], self.path.h.0[0][1], self.path.h.0[0][2], self.path.h.0[0][3]];
+         let in_y =
+            [self.path.h.0[1][0], self.path.h.0[1][1], self.path.h.0[1][2], self.path.h.0[1][3]];
          let x = Self::eval_part(b, a, &in_x, recip_denom);
          let y = Self::eval_part(b, a, &in_y, recip_denom);
          ret_val.push([x, y]);
@@ -183,18 +174,10 @@ impl CurveTransform for Curve<CubicPath> {
       let recip_denom_k = f0_k * f0_k * f0_k;
       let f0_l = 1.0 / (b_l + a_l);
       let recip_denom_l = f0_l * f0_l * f0_l;
-      let in_x = [
-         self.path.h.0[0][0],
-         3.0 * self.path.h.0[0][1],
-         3.0 * self.path.h.0[0][2],
-         self.path.h.0[0][3],
-      ];
-      let in_y = [
-         self.path.h.0[1][0],
-         3.0 * self.path.h.0[1][1],
-         3.0 * self.path.h.0[1][2],
-         self.path.h.0[1][3],
-      ];
+      let in_x =
+         [self.path.h.0[0][0], self.path.h.0[0][1], self.path.h.0[0][2], self.path.h.0[0][3]];
+      let in_y =
+         [self.path.h.0[1][0], self.path.h.0[1][1], self.path.h.0[1][2], self.path.h.0[1][3]];
       new_x[0] = Self::eval_part(b_k, a_k, &in_x, recip_denom_k);
       new_y[0] = Self::eval_part(b_k, a_k, &in_y, recip_denom_k);
       new_x[3] = Self::eval_part(b_l, a_l, &in_x, recip_denom_l);
@@ -214,28 +197,28 @@ impl CurveTransform for Curve<CubicPath> {
          * (b_k * b_k * (in_x[1] / 3.0 - in_x[0])
             + 2.0 * b_k * a_k * (in_x[2] / 3.0 - in_x[1] / 3.0)
             + a_k * a_k * (in_x[3] - in_x[2] / 3.0));
-      new_x[1] = new_x[0] + dx_1;
+      new_x[1] = 3.0 * (new_x[0] + dx_1);
       let dy_1 = fudge_k
          * f0_k
          * f0_k
          * (b_k * b_k * (in_y[1] / 3.0 - in_y[0])
             + 2.0 * b_k * a_k * (in_y[2] / 3.0 - in_y[1] / 3.0)
             + a_k * a_k * (in_y[3] - in_y[2] / 3.0));
-      new_y[1] = new_y[0] + dy_1;
+      new_y[1] = 3.0 * (new_y[0] + dy_1);
       let dx_1 = fudge_l
          * f0_l
          * f0_l
          * (b_l * b_l * (in_x[1] / 3.0 - in_x[0])
             + 2.0 * b_l * a_l * (in_x[2] / 3.0 - in_x[1] / 3.0)
             + a_l * a_l * (in_x[3] - in_x[2] / 3.0));
-      new_x[2] = new_x[3] - dx_1;
+      new_x[2] = 3.0 * (new_x[3] - dx_1);
       let dy_1 = fudge_l
          * f0_l
          * f0_l
          * (b_l * b_l * (in_y[1] / 3.0 - in_y[0])
             + 2.0 * b_l * a_l * (in_y[2] / 3.0 - in_y[1] / 3.0)
             + a_l * a_l * (in_y[3] - in_y[2] / 3.0));
-      new_y[2] = new_y[3] - dy_1;
+      new_y[2] = 3.0 * (new_y[3] - dy_1);
 
       self.path.sigma.0 = a_l + b_l;
       self.path.sigma.1 = a_k + b_k;
@@ -349,16 +332,50 @@ fn create_from_weighted_test() {
 impl ManagedCubic {
    #[must_use]
    pub fn create_from_control_points(
-      control_points: &Curve<CubicPath>,
+      control_points: &CubicFourPoint,
       canvas_range: [f64; 4],
    ) -> Self {
-      Self { four_point: control_points.clone(), canvas_range }
+      Self {
+         four_point: Curve {
+            path: CubicPath {
+               r: control_points.r,
+               h: CubicHomog([
+                  // [
+                  //    control_points.h.0[0][0],
+                  //    control_points.h.0[0][1],
+                  //    control_points.h.0[0][2],
+                  //    control_points.h.0[0][3],
+                  // ],
+                  // [
+                  //    control_points.h.0[1][0],
+                  //    control_points.h.0[1][1],
+                  //    control_points.h.0[1][2],
+                  //    control_points.h.0[1][3],
+                  // ],
+                  [
+                     control_points.h.0[0][0],
+                     3.0 * control_points.h.0[0][1],
+                     3.0 * control_points.h.0[0][2],
+                     control_points.h.0[0][3],
+                  ],
+                  [
+                     control_points.h.0[1][0],
+                     3.0 * control_points.h.0[1][1],
+                     3.0 * control_points.h.0[1][2],
+                     control_points.h.0[1][3],
+                  ],
+               ]),
+               sigma: control_points.sigma,
+            },
+         },
+         canvas_range,
+      }
    }
 
-   #[allow(clippy::missing_errors_doc)]
-   pub fn get_four_point(&self) -> Result<Curve<CubicPath>, &'static str> {
-      Ok(self.four_point.clone())
-   }
+   // #[allow(clippy::missing_errors_doc)]
+   // pub fn get_four_point(&self) -> Result<Curve<CubicPath>, &'static str> {
+   //    Ok(self.four_point.clone())
+   // }
 
    pub fn displace(&mut self, d: [f64; 2]) {
       self.four_point.displace(d);

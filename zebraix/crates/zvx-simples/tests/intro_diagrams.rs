@@ -14,8 +14,8 @@
 
 #[cfg(test)]
 mod tests {
-   use zvx_base::{CubicHomog, CubicPath, OneOfSegment};
-   use zvx_curves::{Curve, FourPointRatQuad, ManagedCubic, ManagedRatQuad};
+   use zvx_base::{CubicFourPoint, CubicHomog, OneOfSegment};
+   use zvx_curves::{FourPointRatQuad, ManagedCubic, ManagedRatQuad};
    use zvx_docagram::{AxesSpec, AxesStyle, AxisNumbering, SizingScheme};
    use zvx_drawable::{
       ColorChoice, FillChoices, LineChoice, LinesSetSet, OneOfDrawable, PathChoices,
@@ -61,12 +61,10 @@ mod tests {
 
       let main_curve = add_p_4(&scale_p_4(&CUBIC_BASIC, 1.2), [0.0, 1.25]);
       let managed_curve_a = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&main_curve)),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&main_curve)),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -130,12 +128,10 @@ mod tests {
       let s = 0.85;
 
       let managed_curve_a = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&add_p_4(&scale_p_4(&CUBIC_BASIC, s), [0.0, -1.2]))),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&add_p_4(&scale_p_4(&CUBIC_BASIC, s), [0.0, -1.2]))),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -151,18 +147,16 @@ mod tests {
       );
 
       let managed_curve_b = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&add_p_4(
-                  &scale_p_4_2(
-                     &p_from_x_y_4(&[0.0, 1.0, 2.0, 3.0], &[0.0, 1.0, 2.0, 3.0]),
-                     [0.0, s * 2.5],
-                  ),
-                  [CUBIC_BASIC[3][0] * s + s, -3.0], // -1.2 - 1.8 = -3.0.
-               ))),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&add_p_4(
+               &scale_p_4_2(
+                  &p_from_x_y_4(&[0.0, 1.0, 2.0, 3.0], &[0.0, 1.0, 2.0, 3.0]),
+                  [0.0, s * 2.5],
+               ),
+               [CUBIC_BASIC[3][0] * s + s, -3.0], // -1.2 - 1.8 = -3.0.
+            ))),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -179,18 +173,16 @@ mod tests {
 
       let norm = 1.0 / 0.75_f64.hypot(1.25);
       let managed_curve_c = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&add_p_4(
-                  &scale_p_4_2(
-                     &p_from_x_y_4(&[0.0, 1.0, 2.0, 3.0], &[0.0, 1.0, 2.0, 3.0]),
-                     [s * 0.75, s * 1.25],
-                  ),
-                  [CUBIC_BASIC[0][0] * s - 1.25 * norm * s, -3.0 + 0.75 * norm * s],
-               ))),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&add_p_4(
+               &scale_p_4_2(
+                  &p_from_x_y_4(&[0.0, 1.0, 2.0, 3.0], &[0.0, 1.0, 2.0, 3.0]),
+                  [s * 0.75, s * 1.25],
+               ),
+               [CUBIC_BASIC[0][0] * s - 1.25 * norm * s, -3.0 + 0.75 * norm * s],
+            ))),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -226,21 +218,16 @@ mod tests {
       let norm = 1.0 / mid_diff[0].hypot(mid_diff[1]);
 
       let managed_curve_d = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&add_p_4(
-                  &scale_p_4_2(
-                     &p_from_x_y_4(&[-1.5, -0.5, 0.5, 1.5], &[-1.5, -0.5, 0.5, 1.5]),
-                     [0.5 * s * mid_diff[0], 0.5 * s * mid_diff[1]],
-                  ),
-                  [
-                     s * mid_point[0] - norm * mid_diff[1],
-                     s * mid_point[1] + norm * mid_diff[0] - 1.2,
-                  ],
-               ))),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&add_p_4(
+               &scale_p_4_2(
+                  &p_from_x_y_4(&[-1.5, -0.5, 0.5, 1.5], &[-1.5, -0.5, 0.5, 1.5]),
+                  [0.5 * s * mid_diff[0], 0.5 * s * mid_diff[1]],
+               ),
+               [s * mid_point[0] - norm * mid_diff[1], s * mid_point[1] + norm * mid_diff[0] - 1.2],
+            ))),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -378,12 +365,10 @@ mod tests {
          [-1.2 * s + d, 0.0],
       );
       let managed_curve_b = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&straight_line)),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&straight_line)),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -399,12 +384,10 @@ mod tests {
       );
 
       let managed_curve_c = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&add_p_4(&straight_line, [-1.05 * s, 0.0]))),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&add_p_4(&straight_line, [-1.05 * s, 0.0]))),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -426,12 +409,10 @@ mod tests {
       );
 
       let managed_curve_d = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog(x_y_from_p_4(&add_p_4(&wiggly_line, [-1.2 * s, 0.0]))),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog(x_y_from_p_4(&add_p_4(&wiggly_line, [-1.2 * s, 0.0]))),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -468,12 +449,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&wiggly_line)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&wiggly_line)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -501,12 +480,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&wiggly_line)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&wiggly_line)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -532,12 +509,10 @@ mod tests {
          let wiggly_line = mul_add_p_4(&[[-a, -a], [a, a], [-b, b], [b, -b]], [s, s], [dx, dy]);
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&wiggly_line)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&wiggly_line)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -566,12 +541,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&wiggly_line)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&wiggly_line)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -601,12 +574,10 @@ mod tests {
          );
 
          let managed_curve_c = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&wiggly_line_c)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&wiggly_line_c)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -628,12 +599,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&wiggly_line_d)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&wiggly_line_d)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -664,12 +633,10 @@ mod tests {
          );
 
          let managed_curve_d = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&wiggly_line)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&wiggly_line)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -702,12 +669,10 @@ mod tests {
 
          let main_curve = add_p_4(&scale_p_4(&CUBIC_BASIC, s), [dx, dy]);
          let mut managed_curve_a = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog(x_y_from_p_4(&main_curve)),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog(x_y_from_p_4(&main_curve)),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );

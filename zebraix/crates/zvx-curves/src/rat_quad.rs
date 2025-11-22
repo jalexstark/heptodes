@@ -428,19 +428,17 @@ impl Curve<RegularizedRatQuadPath> {
    #[must_use]
    pub fn convert_to_parabolic(&self) -> Curve<CubicPath> {
       let (ends, deltas) = Into::<Curve<RatQuadPolyPath>>::into(self).characterize_endpoints();
-      let f = 1.0 / 3.0;
+      let f = 3.0;
       let four_c = [
-         [ends[0][0], ends[0][0] + f * deltas[0][0], ends[1][0] - f * deltas[1][0], ends[1][0]],
-         [ends[0][1], ends[0][1] + f * deltas[0][1], ends[1][1] - f * deltas[1][1], ends[1][1]],
+         [ends[0][0], f * ends[0][0] + deltas[0][0], f * ends[1][0] - deltas[1][0], ends[1][0]],
+         [ends[0][1], f * ends[0][1] + deltas[0][1], f * ends[1][1] - deltas[1][1], ends[1][1]],
       ];
+      // let f = 1.0 / 3.0;
       // let four_c = [
-      //    [ends[0][0],ends[0][1]],
-      //    [ends[0][0] + f * deltas[0][0], ends[0][1] + f * deltas[0][1]],
-      //    [ends[1][0] - f * deltas[1][0], ends[1][1] - f * deltas[1][1]],
-      //    [ends[1][0],ends[1][1]],
+      //    [ends[0][0], ends[0][0] + f * deltas[0][0], ends[1][0] - f * deltas[1][0], ends[1][0]],
+      //    [ends[0][1], ends[0][1] + f * deltas[0][1], ends[1][1] - f * deltas[1][1], ends[1][1]],
       // ];
 
-      // assert_eq!(self.range_bound, 0.0);
       Curve::<CubicPath> {
          path: CubicPath {
             r: [-self.path.range_bound, self.path.range_bound],

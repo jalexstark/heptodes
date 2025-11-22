@@ -15,19 +15,14 @@
 pub mod matrix;
 pub mod pieces;
 pub mod utils;
-
 pub use crate::matrix::{
    q_mat_power_to_weighted, q_mat_weighted_to_power, q_reduce, rat_quad_expand_power,
    rat_quad_power_eval, CurveMatrix, QMat,
 };
-
 pub use pieces::{
-   ArcPath, CubicHomog, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadHomog,
-   RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath,
+   ArcPath, CubicFourPoint, CubicHomog, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath,
+   RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath,
 };
-
-// #[cfg(test)]
-// pub use pieces::{CubicHomogWrapped, F64SliceWrapped};
 
 const BASIC_ABS_TOLERANCE: f64 = 0.0001;
 
