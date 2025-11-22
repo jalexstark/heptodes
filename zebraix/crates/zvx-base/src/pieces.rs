@@ -38,9 +38,16 @@ pub struct CubicHomog(pub [[f64; 4]; 2]); // Denominator assumed to be a power s
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
 pub struct RatQuadHomog(pub [[f64; 3]; 3]); // "Denominator" in third row.
 
-// Four-point "standard" (weighted) form.
-//
 // r[0] is the value of t at p[0], and r[1] is value of t at p[3].
+#[derive(Debug, Serialize, Deserialize, Clone, DefaultFromSerde, PartialEq)]
+pub struct CubicFourPoint {
+   pub r: [f64; 2], // Range.
+   pub h: CubicHomog,
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
+}
+
+// Standard (weighted) form.
 #[derive(Debug, Serialize, Deserialize, Clone, DefaultFromSerde, PartialEq)]
 pub struct CubicPath {
    pub r: [f64; 2], // Range.
@@ -49,6 +56,9 @@ pub struct CubicPath {
    pub sigma: (f64, f64),
 }
 
+// TODO: This is used for both weighted and power. First step, create RatQuadPolyPathWeighted
+// and RatQuadPolyPathPower, and split uses correctly. Second step, remove and replace with
+// Homog versions.
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
 pub struct RatQuadPolyPath {
    pub r: [f64; 2], // Range.

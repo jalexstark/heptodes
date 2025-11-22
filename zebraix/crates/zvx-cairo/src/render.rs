@@ -420,11 +420,12 @@ impl UnfixedCairoSpartanRender {
       if segment_choices.continuation == ContinuationChoice::Starts {
          self.context.move_to(path.h.0[0][0], path.h.0[1][0]);
       }
+      let third = 1.0 / 3.0;
       self.context.curve_to(
-         path.h.0[0][1],
-         path.h.0[1][1],
-         path.h.0[0][2],
-         path.h.0[1][2],
+         third * path.h.0[0][1],
+         third * path.h.0[1][1],
+         third * path.h.0[0][2],
+         third * path.h.0[1][2],
          path.h.0[0][3],
          path.h.0[1][3],
       );

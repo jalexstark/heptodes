@@ -15,7 +15,7 @@
 #[cfg(test)]
 mod tests {
    use std::collections::VecDeque;
-   use zvx_base::{CubicHomog, CubicPath, OneOfSegment, PolylinePath, RatQuadPolyPath};
+   use zvx_base::{CubicFourPoint, CubicHomog, OneOfSegment, PolylinePath, RatQuadPolyPath};
    use zvx_curves::{
       Curve, CurveEval, FourPointRatQuad, ManagedCubic, ManagedRatQuad, ThreePointAngleRepr,
       ZebraixAngle,
@@ -1440,12 +1440,10 @@ mod tests {
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
       let managed_curve_a = ManagedCubic::create_from_control_points(
-         &Curve::<CubicPath> {
-            path: CubicPath {
-               r: t_range,
-               h: CubicHomog([[0.0, -0.5, 0.5, -1.0], [-1.5, -2.0, 1.5, 2.0]]),
-               sigma: (1.0, 1.0),
-            },
+         &CubicFourPoint {
+            r: t_range,
+            h: CubicHomog([[0.0, -0.5, 0.5, -1.0], [-1.5, -2.0, 1.5, 2.0]]),
+            sigma: (1.0, 1.0),
          },
          drawable_diagram.prep.axes_range,
       );
@@ -2066,15 +2064,13 @@ mod tests {
       }
       {
          let managed_curve = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog([
-                     [x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
-                     [y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
-                  ]),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog([
+                  [x_a[0], (x_a[0] + 2.0 * x_a[1]) / 3.0, (2.0 * x_a[2] + x_a[3]) / 3.0, x_a[3]],
+                  [y_a[0], (y_a[0] + 2.0 * y_a[1]) / 3.0, (2.0 * y_a[2] + y_a[3]) / 3.0, y_a[3]],
+               ]),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2118,15 +2114,13 @@ mod tests {
       }
       {
          let managed_curve = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog([
-                     [x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
-                     [y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
-                  ]),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog([
+                  [x_b[0], (x_b[0] + 2.0 * x_b[1]) / 3.0, (2.0 * x_b[2] + x_b[3]) / 3.0, x_b[3]],
+                  [y_b[0], (y_b[0] + 2.0 * y_b[1]) / 3.0, (2.0 * y_b[2] + y_b[3]) / 3.0, y_b[3]],
+               ]),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2170,15 +2164,13 @@ mod tests {
       }
       {
          let managed_curve = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog([
-                     [x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
-                     [y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
-                  ]),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog([
+                  [x_c[0], (x_c[0] + 2.0 * x_c[1]) / 3.0, (2.0 * x_c[2] + x_c[3]) / 3.0, x_c[3]],
+                  [y_c[0], (y_c[0] + 2.0 * y_c[1]) / 3.0, (2.0 * y_c[2] + y_c[3]) / 3.0, y_c[3]],
+               ]),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2756,12 +2748,10 @@ mod tests {
 
       {
          let managed_curve = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog([[0.0, 1.0, -1.0, 0.0], [2.0, 0.0, 0.0, -2.0]]),
-                  sigma: (1.0, 1.0),
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog([[0.0, 1.0, -1.0, 0.0], [2.0, 0.0, 0.0, -2.0]]),
+               sigma: (1.0, 1.0),
             },
             drawable_diagram.prep.axes_range,
          );
@@ -2817,9 +2807,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
             draw_sample_cubilinear(
@@ -2911,9 +2899,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
             draw_sample_cubilinear(
@@ -2939,9 +2925,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
             draw_sample_cubilinear(
@@ -2965,9 +2949,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
             draw_sample_cubilinear(
@@ -3040,9 +3022,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
             draw_sample_cubilinear(
@@ -3138,9 +3118,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
             draw_sample_cubilinear(
@@ -3207,12 +3185,10 @@ mod tests {
 
       {
          let managed_curve_a = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog([[-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -1.75, -1.5]]),
-                  sigma,
-               },
+            &CubicFourPoint {
+               r: t_range,
+               h: CubicHomog([[-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -1.75, -1.5]]),
+               sigma,
             },
             drawable_diagram.prep.axes_range,
          );
@@ -3243,13 +3219,7 @@ mod tests {
          let shift = [1.0, 0.0];
          let (x, y) = translate_4_simply(([-1.0, 0.5, 0.5, 0.0], [2.0, 1.5, -1.75, -1.5]), shift);
          let managed_curve_a = ManagedCubic::create_from_control_points(
-            &Curve::<CubicPath> {
-               path: CubicPath {
-                  r: t_range,
-                  h: CubicHomog([x, y]),
-                  sigma: (sigma.0 * 0.5, sigma.1),
-               },
-            },
+            &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (sigma.0 * 0.5, sigma.1) },
             drawable_diagram.prep.axes_range,
          );
          draw_sample_cubilinear(
@@ -3380,9 +3350,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
 
@@ -3406,9 +3374,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
             managed_segments.push_back(OneOfManagedSegment::ManagedCubic(managed_curve));
@@ -3435,9 +3401,7 @@ mod tests {
             );
 
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog([x, y]), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
 
@@ -3469,9 +3433,7 @@ mod tests {
 
             let pts: [[f64; 4]; 2] = [x, y];
             let managed_curve = ManagedCubic::create_from_control_points(
-               &Curve::<CubicPath> {
-                  path: CubicPath { r: t_range, h: CubicHomog(pts), sigma: (1.0, 1.0) },
-               },
+               &CubicFourPoint { r: t_range, h: CubicHomog(pts), sigma: (1.0, 1.0) },
                drawable_diagram.prep.axes_range,
             );
 

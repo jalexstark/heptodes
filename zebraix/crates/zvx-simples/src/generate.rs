@@ -372,8 +372,8 @@ pub fn draw_sample_cubilinear(
          [four_point.path.h.0[0][3], four_point.path.h.0[1][3]],
       ];
       let control_points_vec = vec![
-         [four_point.path.h.0[0][1], four_point.path.h.0[1][1]],
-         [four_point.path.h.0[0][2], four_point.path.h.0[1][2]],
+         [four_point.path.h.0[0][1] / 3.0, four_point.path.h.0[1][1] / 3.0],
+         [four_point.path.h.0[0][2] / 3.0, four_point.path.h.0[1][2] / 3.0],
       ];
 
       spartan.drawables.push(QualifiedDrawable {
