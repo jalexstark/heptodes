@@ -21,7 +21,7 @@ use zvx_base::RatQuadHomog;
 use zvx_base::{
    default_unit_ratio, is_default, is_default_unit_ratio, q_reduce, rat_quad_expand_power,
    rat_quad_power_eval, CubicHomog, CubicPath, CurveMatrix, HyperbolicPath, QMat,
-   RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath,
+   RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPathPower, RatQuadPolyPathWeighted,
 };
 
 // Update by adding 3x1 vector multiplied by scalar.
@@ -68,7 +68,7 @@ pub enum SpecifiedRatQuad {
    ThreePointAngle(ThreePointAngleRepr), // Form p, angle, sigma.
 }
 
-impl CurveTransform for Curve<RatQuadPolyPath> {
+impl CurveTransform for Curve<RatQuadPolyPathPower> {
    // Not yet tested.
    fn displace(&mut self, d: [f64; 2]) {
       mul_add_3_1_1(&mut self.path.b, &self.path.a, d[0]);
@@ -90,7 +90,7 @@ impl CurveTransform for Curve<RatQuadPolyPath> {
    }
 }
 
-impl TEval for RatQuadPolyPath {
+impl TEval for RatQuadPolyPathPower {
    #[allow(clippy::suboptimal_flops)]
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let homog = RatQuadHomogPower::from(self);
@@ -101,7 +101,7 @@ impl TEval for RatQuadPolyPath {
 #[test]
 #[allow(clippy::unreadable_literal)]
 fn poly_eval_no_bilinear_test() {
-   let poly = RatQuadPolyPath {
+   let poly = RatQuadPolyPathPower {
       r: [-6.0, 14.0],
       a: [689.0243700979973, -9.204745830513218, 1.1505932288141527],
       b: [-865.8010653946342, -49.720819268365744, -6.061056987054066],
@@ -127,7 +127,7 @@ fn poly_eval_no_bilinear_test() {
    );
 }
 
-impl Curve<RatQuadPolyPath> {
+impl Curve<RatQuadPolyPathPower> {
    #[inline]
    #[allow(clippy::many_single_char_names)]
    #[allow(clippy::suboptimal_flops)]
@@ -157,7 +157,7 @@ impl Curve<RatQuadPolyPath> {
          RatQuadHomogPower { h: output_homog, r: self.path.r, sigma: self.path.sigma };
       homog_path.h.normalize();
 
-      Self { path: RatQuadPolyPath::from(&homog_path) }
+      Self { path: RatQuadPolyPathPower::from(&homog_path) }
    }
 
    // Internal bilinear transform.
@@ -204,15 +204,17 @@ impl Curve<RatQuadPolyPath> {
       ];
 
       let r = [-r_half, r_half];
-      Self { path: RatQuadPolyPath { r, a, b, c, sigma: self.path.sigma } }
+      Self { path: RatQuadPolyPathPower { r, a, b, c, sigma: self.path.sigma } }
    }
 
    #[allow(clippy::suboptimal_flops)]
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::many_single_char_names)]
-   // Weighted is stored in same struct as `Curve<RatQuadPolyPath>`, but is really a different
-   // representation of a rational quadratic.
-   pub fn create_from_weighted(weighted: &Self) -> Result<Self, &'static str> {
+   // Weighted is stored in same struct as `Curve<RatQuadPolyPathPower>`, but is really a
+   // different representation of a rational quadratic.
+   pub fn create_from_weighted(
+      weighted: &Curve<RatQuadPolyPathWeighted>,
+   ) -> Result<Self, &'static str> {
       // Get from rat_poly.sigma once confirmed working.
       let sigma = 1.0;
       let v = weighted.path.r[0];
@@ -251,7 +253,9 @@ impl Curve<RatQuadPolyPath> {
          ];
       }
 
-      Ok(Self { path: RatQuadPolyPath { r: weighted.path.r, a, b, c, sigma: weighted.path.sigma } })
+      Ok(Self {
+         path: RatQuadPolyPathPower { r: weighted.path.r, a, b, c, sigma: weighted.path.sigma },
+      })
    }
 
    #[must_use]
@@ -318,7 +322,7 @@ impl Curve<RatQuadPolyPath> {
 #[allow(clippy::unreadable_literal)]
 fn create_from_weighted_test() {
    let weighted = Curve {
-      path: RatQuadPolyPath {
+      path: RatQuadPolyPathWeighted {
          r: [-6.0, 14.0],
          a: [1.9641855032959659, 2.0 * 1.388888888888889, 1.9641855032959659],
          b: [-2.946278254943949, 0.0, -3.9283710065919317],
@@ -329,9 +333,9 @@ fn create_from_weighted_test() {
    let weighted_really = RatQuadHomogWeighted::from(&weighted.path);
 
    let powered = RatQuadHomogPower::from(
-      &Curve::<RatQuadPolyPath>::create_from_weighted(&weighted).unwrap().path,
+      &Curve::<RatQuadPolyPathPower>::create_from_weighted(&weighted).unwrap().path,
    );
-   let expected_path = RatQuadHomogPower::from(&RatQuadPolyPath {
+   let expected_path = RatQuadHomogPower::from(&RatQuadPolyPathPower {
       r: [-6.0, 14.0],
       a: [689.0243700979975, -9.204745830513225, 1.1505932288141536],
       b: [-718.8918942063235, 35.35533905932739, -6.874649261535881],
@@ -368,7 +372,7 @@ impl CurveEval for Curve<HyperbolicPath> {
    }
 }
 
-impl CurveEval for Curve<RatQuadPolyPath> {
+impl CurveEval for Curve<RatQuadPolyPathPower> {
    // This method may lack tests.
    #[allow(clippy::suboptimal_flops)]
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
@@ -405,7 +409,7 @@ impl CurveEval for Curve<RatQuadPolyPath> {
 }
 
 #[allow(clippy::suboptimal_flops)]
-impl From<&RegularizedRatQuadPath> for RatQuadPolyPath {
+impl From<&RegularizedRatQuadPath> for RatQuadPolyPathPower {
    fn from(regular: &RegularizedRatQuadPath) -> Self {
       Self {
          r: [-regular.range_bound, regular.range_bound],
@@ -417,9 +421,9 @@ impl From<&RegularizedRatQuadPath> for RatQuadPolyPath {
    }
 }
 
-impl From<&Curve<RegularizedRatQuadPath>> for Curve<RatQuadPolyPath> {
+impl From<&Curve<RegularizedRatQuadPath>> for Curve<RatQuadPolyPathPower> {
    fn from(curve: &Curve<RegularizedRatQuadPath>) -> Self {
-      Self { path: RatQuadPolyPath::from(&curve.path) }
+      Self { path: RatQuadPolyPathPower::from(&curve.path) }
    }
 }
 
@@ -427,7 +431,7 @@ impl Curve<RegularizedRatQuadPath> {
    #[allow(clippy::suboptimal_flops)]
    #[must_use]
    pub fn convert_to_parabolic(&self) -> Curve<CubicPath> {
-      let (ends, deltas) = Into::<Curve<RatQuadPolyPath>>::into(self).characterize_endpoints();
+      let (ends, deltas) = Into::<Curve<RatQuadPolyPathPower>>::into(self).characterize_endpoints();
       let f = 3.0;
       let four_c = [
          [ends[0][0], f * ends[0][0] + deltas[0][0], f * ends[1][0] - deltas[1][0], ends[1][0]],
@@ -495,7 +499,7 @@ impl Curve<RegularizedRatQuadPath> {
    #[allow(clippy::unnecessary_wraps)]
    #[allow(clippy::missing_errors_doc)]
    fn create_by_raising_to_regularized_symmetric(
-      rat_poly_extracted: &Curve<RatQuadPolyPath>,
+      rat_poly_extracted: &Curve<RatQuadPolyPathPower>,
    ) -> Result<Self, &'static str> {
       let rat_poly = rat_poly_extracted.figure_symmetric_range_rat_quad();
 
@@ -527,7 +531,7 @@ impl Curve<RegularizedRatQuadPath> {
 #[allow(clippy::suboptimal_flops)]
 impl RatQuadOoeSubclassed {
    fn create_elliptical_or_parabolic(
-      poly_curve: &Curve<RatQuadPolyPath>,
+      poly_curve: &Curve<RatQuadPolyPathPower>,
       tolerance: f64,
    ) -> Result<Self, &'static str> {
       let reg_curve =
@@ -586,7 +590,7 @@ impl RatQuadOoeSubclassed {
    }
 
    fn create_hyperbolic_or_parabolic(
-      poly_curve: &Curve<RatQuadPolyPath>,
+      poly_curve: &Curve<RatQuadPolyPathPower>,
       tolerance: f64,
    ) -> Result<Self, &'static str> {
       let reg_curve =
@@ -612,7 +616,7 @@ impl RatQuadOoeSubclassed {
    #[allow(clippy::missing_errors_doc)]
    #[allow(clippy::missing_panics_doc)]
    pub fn create_from_ordinary(
-      poly_curve: &Curve<RatQuadPolyPath>,
+      poly_curve: &Curve<RatQuadPolyPathPower>,
       tolerance: f64,
    ) -> Result<Self, &'static str> {
       // First test "b^2-4ac" to see if denominator has real roots. If it does, create either

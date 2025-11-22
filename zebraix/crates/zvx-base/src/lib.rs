@@ -21,7 +21,8 @@ pub use crate::matrix::{
 };
 pub use pieces::{
    ArcPath, CubicFourPoint, CubicHomog, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath,
-   RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPath,
+   RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPathPower,
+   RatQuadPolyPathWeighted,
 };
 
 const BASIC_ABS_TOLERANCE: f64 = 0.0001;

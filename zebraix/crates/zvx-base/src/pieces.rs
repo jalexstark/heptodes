@@ -60,7 +60,20 @@ pub struct CubicPath {
 // and RatQuadPolyPathPower, and split uses correctly. Second step, remove and replace with
 // Homog versions.
 #[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
-pub struct RatQuadPolyPath {
+pub struct RatQuadPolyPathPower {
+   pub r: [f64; 2], // Range.
+   pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
+   pub b: [f64; 3], // Numerator for x component.
+   pub c: [f64; 3], // Numerator for y component.
+   #[serde(skip_serializing_if = "is_default_unit_ratio", default = "default_unit_ratio")]
+   pub sigma: (f64, f64),
+}
+
+// TODO: This is used for both weighted and power. First step, create RatQuadPolyPathWeighted
+// and RatQuadPolyPathPower, and split uses correctly. Second step, remove and replace with
+// Homog versions.
+#[derive(Debug, Serialize, Deserialize, DefaultFromSerde, PartialEq, Clone)]
+pub struct RatQuadPolyPathWeighted {
    pub r: [f64; 2], // Range.
    pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
    pub b: [f64; 3], // Numerator for x component.
@@ -107,25 +120,25 @@ impl From<&RatQuadHomogPower> for RatQuadHomogWeighted {
    }
 }
 
-impl From<&RatQuadPolyPath> for RatQuadHomogPower {
-   fn from(poly: &RatQuadPolyPath) -> Self {
+impl From<&RatQuadPolyPathPower> for RatQuadHomogPower {
+   fn from(poly: &RatQuadPolyPathPower) -> Self {
       Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]), sigma: poly.sigma }
    }
 }
 
-impl From<&RatQuadHomogPower> for RatQuadPolyPath {
+impl From<&RatQuadHomogPower> for RatQuadPolyPathPower {
    fn from(homog: &RatQuadHomogPower) -> Self {
       Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1], sigma: homog.sigma }
    }
 }
 
-impl From<&RatQuadPolyPath> for RatQuadHomogWeighted {
-   fn from(poly: &RatQuadPolyPath) -> Self {
+impl From<&RatQuadPolyPathWeighted> for RatQuadHomogWeighted {
+   fn from(poly: &RatQuadPolyPathWeighted) -> Self {
       Self { r: poly.r, h: RatQuadHomog([poly.b, poly.c, poly.a]), sigma: poly.sigma }
    }
 }
 
-impl From<&RatQuadHomogWeighted> for RatQuadPolyPath {
+impl From<&RatQuadHomogWeighted> for RatQuadPolyPathWeighted {
    fn from(homog: &RatQuadHomogWeighted) -> Self {
       Self { r: homog.r, a: homog.h.0[2], b: homog.h.0[0], c: homog.h.0[1], sigma: homog.sigma }
    }

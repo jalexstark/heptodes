@@ -15,7 +15,7 @@
 #[cfg(test)]
 mod tests {
    use std::collections::VecDeque;
-   use zvx_base::{CubicFourPoint, CubicHomog, OneOfSegment, PolylinePath, RatQuadPolyPath};
+   use zvx_base::{CubicFourPoint, CubicHomog, OneOfSegment, PolylinePath, RatQuadPolyPathPower};
    use zvx_curves::{
       Curve, CurveEval, FourPointRatQuad, ManagedCubic, ManagedRatQuad, ThreePointAngleRepr,
       ZebraixAngle,
@@ -943,8 +943,8 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_m", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let rat_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath {
+      let rat_quad = Curve::<RatQuadPolyPathPower> {
+         path: RatQuadPolyPathPower {
             a: [-21.0, 1.0, -2.0],
             b: [-3.1414, 4.7811, 6.5534],
             r: t_range,
@@ -994,8 +994,8 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_n", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let rat_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath {
+      let rat_quad = Curve::<RatQuadPolyPathPower> {
+         path: RatQuadPolyPathPower {
             a: [-21.0, 1.0, -2.0],
             b: [-3.1414, 4.7811, 6.5534],
             c: [0.0, 20.0, 0.0],
@@ -1047,8 +1047,8 @@ mod tests {
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
       let managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPath> {
-            path: RatQuadPolyPath {
+         &Curve::<RatQuadPolyPathPower> {
+            path: RatQuadPolyPathPower {
                a: [-21.0, 1.0, -2.0],
                b: [-3.1414, 4.7811, 6.5534],
                c: [0.0, 20.0, 0.0],
@@ -1101,8 +1101,8 @@ mod tests {
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
       let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPath> {
-            path: RatQuadPolyPath {
+         &Curve::<RatQuadPolyPathPower> {
+            path: RatQuadPolyPathPower {
                a: [-21.0, 1.0, -2.0],
                b: [-3.1414, 4.7811, 6.5534],
                c: [0.0, 20.0, 0.0],
@@ -1159,8 +1159,8 @@ mod tests {
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
       let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPath> {
-            path: RatQuadPolyPath {
+         &Curve::<RatQuadPolyPathPower> {
+            path: RatQuadPolyPathPower {
                a: [-21.0, 1.0, -2.0],
                b: [-3.1414, 4.7811, 6.5534],
                c: [0.0, 20.0, 0.0],
@@ -1219,8 +1219,8 @@ mod tests {
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
       let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPath> {
-            path: RatQuadPolyPath {
+         &Curve::<RatQuadPolyPathPower> {
+            path: RatQuadPolyPathPower {
                a: [-21.0, 1.0, -2.0],
                b: [-3.1414, 4.7811, 6.5534],
                c: [0.0, 20.0, 0.0],
@@ -1274,8 +1274,8 @@ mod tests {
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
       let managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPath> {
-            path: RatQuadPolyPath {
+         &Curve::<RatQuadPolyPathPower> {
+            path: RatQuadPolyPathPower {
                a: [-21.0, 1.0, -2.0],
                b: [-3.1414, 4.7811, 6.5534],
                c: [0.0, 20.0, 0.0],
@@ -1320,8 +1320,8 @@ mod tests {
    #[test]
    fn rat_quad_test() {
       let r: f64 = 1.5;
-      let orig_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath {
+      let orig_quad = Curve::<RatQuadPolyPathPower> {
+         path: RatQuadPolyPathPower {
             a: [-21.0, 1.0, -2.0],
             b: [-3.1414, 4.7811, 6.5534],
             r: [r, r],
@@ -1354,8 +1354,8 @@ mod tests {
       let b_s = r * r * orig_quad.path.b[2] + orig_quad.path.b[0];
       let b_d = r * r * orig_quad.path.b[2] - orig_quad.path.b[0];
 
-      let inter_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath {
+      let inter_quad = Curve::<RatQuadPolyPathPower> {
+         path: RatQuadPolyPathPower {
             a: [
                r * r
                   * ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r
@@ -1390,8 +1390,8 @@ mod tests {
       let lambda = (a_s * a_s - a_1 * a_1 * r * r).sqrt() * (a_s + a_1 * r).signum();
       assert!((lambda - sigma * (a_s + a_1 * r)).abs() < 0.0001);
 
-      let final_quad = Curve::<RatQuadPolyPath> {
-         path: RatQuadPolyPath {
+      let final_quad = Curve::<RatQuadPolyPathPower> {
+         path: RatQuadPolyPathPower {
             a: [r * r * lambda * (lambda - a_d), 0.0, lambda * (lambda + a_d)],
             b: [
                r * r * (a_s * b_s - a_1 * b_1 * r * r - lambda * b_d),
