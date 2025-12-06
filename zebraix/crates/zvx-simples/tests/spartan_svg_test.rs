@@ -15,7 +15,10 @@
 #[cfg(test)]
 mod tests {
    use std::collections::VecDeque;
-   use zvx_base::{CubicFourPoint, CubicHomog, OneOfSegment, PolylinePath, RatQuadPolyPathPower};
+   use zvx_base::{
+      CubicFourPoint, CubicHomog, OneOfSegment, PolylinePath, RatQuadHomog, RatQuadHomogPower,
+      RatQuadHomogWeighted,
+   };
    use zvx_curves::{
       Curve, CurveEval, FourPointRatQuad, ManagedCubic, ManagedRatQuad, ThreePointAngleRepr,
       ZebraixAngle,
@@ -37,6 +40,25 @@ mod tests {
       draw_sample_rat_quad, draw_sample_segment_sequence, OneOfManagedSegment, SampleCurveConfig,
       SampleOption,
    };
+
+   #[derive(Default)]
+   struct LegacyRatQuadPolyPathPower {
+      pub r: [f64; 2], // Range.
+      pub a: [f64; 3], // Denominator, as a[2] * t^2 + a[1] * t... .
+      pub b: [f64; 3], // Numerator for x component.
+      pub c: [f64; 3], // Numerator for y component.
+      pub sigma: (f64, f64),
+   }
+
+   fn create_from_legacy_power(power: &LegacyRatQuadPolyPathPower) -> Curve<RatQuadHomogWeighted> {
+      Curve::<RatQuadHomogWeighted> {
+         path: RatQuadHomogWeighted::from(&RatQuadHomogPower {
+            h: RatQuadHomog([power.b, power.c, power.a]),
+            r: power.r,
+            sigma: power.sigma,
+         }),
+      }
+   }
 
    fn add_debug_box(drawable_diagram: &mut DrawableDiagram, sizing: &TestSizing) {
       {
@@ -943,19 +965,17 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_m", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let rat_quad = Curve::<RatQuadPolyPathPower> {
-         path: RatQuadPolyPathPower {
-            a: [-21.0, 1.0, -2.0],
-            b: [-3.1414, 4.7811, 6.5534],
-            r: t_range,
-            sigma: (1.0, 1.0),
-            ..Default::default()
-         },
+      let rat_quad = create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+         a: [-21.0, 1.0, -2.0],
+         b: [-3.1414, 4.7811, 6.5534],
+         c: [0.0, 0.0, 0.0],
+         r: t_range,
+         sigma: (1.0, 1.0),
          ..Default::default()
-      };
+      });
 
       let managed_curve =
-         ManagedRatQuad::create_from_polynomial(&rat_quad, drawable_diagram.prep.axes_range);
+         ManagedRatQuad::create_from_weighted(&rat_quad, drawable_diagram.prep.axes_range);
       draw_sample_rat_quad(
          &managed_curve,
          drawable_diagram,
@@ -994,19 +1014,16 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_n", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let rat_quad = Curve::<RatQuadPolyPathPower> {
-         path: RatQuadPolyPathPower {
-            a: [-21.0, 1.0, -2.0],
-            b: [-3.1414, 4.7811, 6.5534],
-            c: [0.0, 20.0, 0.0],
-            r: t_range,
-            sigma: (1.0, 1.0),
-         },
-         ..Default::default()
-      };
+      let rat_quad = create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+         a: [-21.0, 1.0, -2.0],
+         b: [-3.1414, 4.7811, 6.5534],
+         c: [0.0, 20.0, 0.0],
+         r: t_range,
+         sigma: (1.0, 1.0),
+      });
 
       let managed_curve =
-         ManagedRatQuad::create_from_polynomial(&rat_quad, drawable_diagram.prep.axes_range);
+         ManagedRatQuad::create_from_weighted(&rat_quad, drawable_diagram.prep.axes_range);
       draw_sample_rat_quad(
          &managed_curve,
          drawable_diagram,
@@ -1046,17 +1063,14 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_n1", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPathPower> {
-            path: RatQuadPolyPathPower {
-               a: [-21.0, 1.0, -2.0],
-               b: [-3.1414, 4.7811, 6.5534],
-               c: [0.0, 20.0, 0.0],
-               r: t_range,
-               sigma: (1.0, 1.0),
-            },
-            ..Default::default()
-         },
+      let managed_curve = ManagedRatQuad::create_from_weighted(
+         &create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+            sigma: (1.0, 1.0),
+         }),
          drawable_diagram.prep.axes_range,
       );
       // TODO: Consider removing or reworking this test, likely redundant.
@@ -1100,17 +1114,14 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_o", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPathPower> {
-            path: RatQuadPolyPathPower {
-               a: [-21.0, 1.0, -2.0],
-               b: [-3.1414, 4.7811, 6.5534],
-               c: [0.0, 20.0, 0.0],
-               r: t_range,
-               sigma: (1.0, 1.0),
-            },
-            ..Default::default()
-         },
+      let mut managed_curve = ManagedRatQuad::create_from_weighted(
+         &create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+            sigma: (1.0, 1.0),
+         }),
          drawable_diagram.prep.axes_range,
       );
 
@@ -1158,17 +1169,14 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_o1", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPathPower> {
-            path: RatQuadPolyPathPower {
-               a: [-21.0, 1.0, -2.0],
-               b: [-3.1414, 4.7811, 6.5534],
-               c: [0.0, 20.0, 0.0],
-               r: t_range,
-               sigma: (1.0, 1.0),
-            },
-            ..Default::default()
-         },
+      let mut managed_curve = ManagedRatQuad::create_from_weighted(
+         &create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+            sigma: (1.0, 1.0),
+         }),
          drawable_diagram.prep.axes_range,
       );
 
@@ -1218,17 +1226,14 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_o2", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let mut managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPathPower> {
-            path: RatQuadPolyPathPower {
-               a: [-21.0, 1.0, -2.0],
-               b: [-3.1414, 4.7811, 6.5534],
-               c: [0.0, 20.0, 0.0],
-               r: t_range,
-               sigma: (1.0, 1.0),
-            },
-            ..Default::default()
-         },
+      let mut managed_curve = ManagedRatQuad::create_from_weighted(
+         &create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+            sigma: (1.0, 1.0),
+         }),
          drawable_diagram.prep.axes_range,
       );
 
@@ -1273,17 +1278,14 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_p", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let managed_curve = ManagedRatQuad::create_from_polynomial(
-         &Curve::<RatQuadPolyPathPower> {
-            path: RatQuadPolyPathPower {
-               a: [-21.0, 1.0, -2.0],
-               b: [-3.1414, 4.7811, 6.5534],
-               c: [0.0, 20.0, 0.0],
-               r: t_range,
-               sigma: (1.0, 1.0),
-            },
-            ..Default::default()
-         },
+      let managed_curve = ManagedRatQuad::create_from_weighted(
+         &create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+            a: [-21.0, 1.0, -2.0],
+            b: [-3.1414, 4.7811, 6.5534],
+            c: [0.0, 20.0, 0.0],
+            r: t_range,
+            sigma: (1.0, 1.0),
+         }),
          drawable_diagram.prep.axes_range,
       );
 
@@ -1320,16 +1322,14 @@ mod tests {
    #[test]
    fn rat_quad_test() {
       let r: f64 = 1.5;
-      let orig_quad = Curve::<RatQuadPolyPathPower> {
-         path: RatQuadPolyPathPower {
+      let orig_quad =
+         Curve::<RatQuadHomogPower>::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
             a: [-21.0, 1.0, -2.0],
             b: [-3.1414, 4.7811, 6.5534],
-            r: [r, r],
+            r: [-r, r],
             sigma: (1.0, 1.0),
             ..Default::default()
-         },
-         ..Default::default()
-      };
+         }));
 
       let t_int: Vec<i32> = (0..12).collect();
       let mut t = Vec::<f64>::with_capacity(t_int.len());
@@ -1337,9 +1337,9 @@ mod tests {
          t.push(item as f64 / 3.0 - 2.0);
       }
 
-      let a_1 = orig_quad.path.a[1];
-      let a_s = r * r * orig_quad.path.a[2] + orig_quad.path.a[0];
-      let a_d = r * r * orig_quad.path.a[2] - orig_quad.path.a[0];
+      let a_1 = orig_quad.path.h.0[2][1];
+      let a_s = r * r * orig_quad.path.h.0[2][2] + orig_quad.path.h.0[2][0];
+      let a_d = r * r * orig_quad.path.h.0[2][2] - orig_quad.path.h.0[2][0];
       let sigma = ((a_s - a_1 * r) / (a_s + a_1 * r)).abs().sqrt();
 
       let mut unwarped_t = Vec::<f64>::with_capacity(t.len());
@@ -1350,12 +1350,12 @@ mod tests {
          );
       }
 
-      let b_1 = orig_quad.path.b[1];
-      let b_s = r * r * orig_quad.path.b[2] + orig_quad.path.b[0];
-      let b_d = r * r * orig_quad.path.b[2] - orig_quad.path.b[0];
+      let b_1 = orig_quad.path.h.0[0][1];
+      let b_s = r * r * orig_quad.path.h.0[0][2] + orig_quad.path.h.0[0][0];
+      let b_d = r * r * orig_quad.path.h.0[0][2] - orig_quad.path.h.0[0][0];
 
-      let inter_quad = Curve::<RatQuadPolyPathPower> {
-         path: RatQuadPolyPathPower {
+      let inter_quad =
+         Curve::<RatQuadHomogPower>::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
             a: [
                r * r
                   * ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r
@@ -1370,12 +1370,10 @@ mod tests {
                2.0 * r * ((sigma * sigma - 1.0) * b_s + (sigma * sigma + 1.0) * b_1 * r),
                ((sigma * sigma + 1.0) * b_s + (sigma * sigma - 1.0) * b_1 * r + 2.0 * sigma * b_d),
             ],
-            r: [r, r],
+            r: [-r, r],
             sigma: (1.0, 1.0),
             ..Default::default()
-         },
-         ..Default::default()
-      };
+         }));
 
       let t_gold = orig_quad.eval_no_bilinear(&unwarped_t);
       let t_inter = inter_quad.eval_no_bilinear(&t);
@@ -1390,20 +1388,18 @@ mod tests {
       let lambda = (a_s * a_s - a_1 * a_1 * r * r).sqrt() * (a_s + a_1 * r).signum();
       assert!((lambda - sigma * (a_s + a_1 * r)).abs() < 0.0001);
 
-      let final_quad = Curve::<RatQuadPolyPathPower> {
-         path: RatQuadPolyPathPower {
+      let final_quad =
+         Curve::<RatQuadHomogPower>::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
             a: [r * r * lambda * (lambda - a_d), 0.0, lambda * (lambda + a_d)],
             b: [
                r * r * (a_s * b_s - a_1 * b_1 * r * r - lambda * b_d),
                2.0 * r * r * (a_s * b_1 - a_1 * b_s),
                (a_s * b_s - a_1 * b_1 * r * r + lambda * b_d),
             ],
-            r: [r, r],
+            r: [-r, r],
             sigma: (1.0, 1.0),
             ..Default::default()
-         },
-         ..Default::default()
-      };
+         }));
 
       let t_gold = orig_quad.eval_no_bilinear(&unwarped_t);
       let t_final = final_quad.eval_no_bilinear(&t);
