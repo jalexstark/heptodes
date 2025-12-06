@@ -23,6 +23,15 @@ pub struct Curve<T: Default + PartialEq> {
    pub path: T,
 }
 
+impl<U, T: Default + PartialEq> From<&Curve<T>> for Curve<U>
+where
+   U: Default + PartialEq + for<'a> From<&'a T>,
+{
+   fn from(src: &Curve<T>) -> Self {
+      Self { path: U::from(&src.path) }
+   }
+}
+
 pub trait CurveEval {
    fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;

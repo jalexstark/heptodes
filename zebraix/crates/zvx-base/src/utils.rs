@@ -44,6 +44,7 @@ impl<'a, const N: usize> AbsDiffEq for F64SliceWrapped<'a, N> {
    }
 }
 
+// This probably should be generalized and merged with `Curve<>`.
 trait HomogContainer<'a> {
    type Homog;
    type HomogWrapped;

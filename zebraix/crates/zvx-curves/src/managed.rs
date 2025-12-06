@@ -15,15 +15,12 @@
 use crate::{Curve, CurveTransform, FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
-use zvx_base::{
-   RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted, RatQuadPolyPathPower,
-   RatQuadPolyPathWeighted,
-};
+use zvx_base::{RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted};
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
 pub struct ManagedRatQuad {
-   pub poly: Curve<RatQuadPolyPathPower>,
+   pub rq_curve: Curve<RatQuadHomogWeighted>,
    // How originally specified, FourPoint or ThreePointAngle, for plotting and diagnostics only.
    pub specified: SpecifiedRatQuad,
    pub canvas_range: [f64; 4],
@@ -50,11 +47,11 @@ const fn extract_y_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
 #[allow(clippy::missing_panics_doc)]
 impl ManagedRatQuad {
    #[must_use]
-   pub fn create_from_polynomial(
-      poly: &Curve<RatQuadPolyPathPower>,
+   pub fn create_from_weighted(
+      rq_curve: &Curve<RatQuadHomogWeighted>,
       canvas_range: [f64; 4],
    ) -> Self {
-      Self { poly: poly.clone(), canvas_range, ..Default::default() }
+      Self { rq_curve: rq_curve.clone(), canvas_range, ..Default::default() }
    }
 
    // #[must_use]
@@ -86,7 +83,7 @@ impl ManagedRatQuad {
    //       sigma: four_points.sigma,
    //    };
    //    Self {
-   //       poly: Curve::<RatQuadPolyPathPower>::create_from_weighted(&rat_quad).unwrap(),
+   //       rq_curve: Curve::<RatQuadPolyPathPower>::create_from_weighted(&rat_quad).unwrap(),
    //       specified: SpecifiedRatQuad::FourPoint(four_points.clone()),
    //       canvas_range,
    //    }
@@ -123,19 +120,15 @@ impl ManagedRatQuad {
       let b = [b_0, b_1, b_2];
       let c = [c_0, c_1, c_2];
       let a = [a_0, a_1, a_2];
-      let rat_quad = Curve::<RatQuadPolyPathPower> {
-         path: RatQuadPolyPathPower::from(&RatQuadHomogPower::from(&RatQuadHomogWeighted {
+      let rat_quad = Curve::<RatQuadHomogWeighted> {
+         path: RatQuadHomogWeighted {
             r: four_points.r,
             h: RatQuadHomog([b, c, a]),
             sigma: four_points.sigma,
-         })),
+         },
       };
 
-      Self {
-         poly: rat_quad,
-         specified: SpecifiedRatQuad::FourPoint(four_points.clone()),
-         canvas_range,
-      }
+      Self { rq_curve: rat_quad, specified: SpecifiedRatQuad::FourPoint, canvas_range }
    }
 
    #[allow(clippy::missing_errors_doc)]
@@ -153,56 +146,48 @@ impl ManagedRatQuad {
       let b = [xs[0], 2.0 * f_mult_1p5 * xs[1], xs[2]];
       let c = [ys[0], 2.0 * f_mult_1p5 * ys[1], ys[2]];
       let a = [1.0, 2.0 * f_mult_1p5, 1.0];
-      let rat_quad = Curve::<RatQuadPolyPathWeighted> {
-         path: RatQuadPolyPathWeighted {
+      let rat_quad = Curve::<RatQuadHomogWeighted> {
+         path: RatQuadHomogWeighted {
             r: three_point_rat_quad.r,
-            a,
-            b,
-            c,
+            h: RatQuadHomog([b, c, a]),
             sigma: three_point_rat_quad.sigma,
          },
       };
-      Ok(Self {
-         poly: Curve::<RatQuadPolyPathPower>::create_from_weighted(&rat_quad).unwrap(),
-         specified: SpecifiedRatQuad::ThreePointAngle(three_point_rat_quad.clone()),
-         canvas_range,
-      })
-   }
-
-   #[allow(clippy::missing_errors_doc)]
-   pub fn get_poly_rat_quad_repr(&self) -> Result<Curve<RatQuadPolyPathPower>, &'static str> {
-      Ok(self.poly.clone())
+      Ok(Self { rq_curve: rat_quad, specified: SpecifiedRatQuad::ThreePointAngle, canvas_range })
    }
 
    #[allow(clippy::missing_errors_doc)]
    // Velocity at beginning multiplied by sigma, and velocity at end divided by sigma.
    pub fn apply_bilinear(&mut self, sigma_ratio: (f64, f64)) -> Result<(), &'static str> {
-      self.poly = self.poly.rq_apply_bilinear(sigma_ratio);
+      self.rq_curve = self.rq_curve.rq_apply_bilinear(sigma_ratio);
       Ok(())
    }
 
+   // Only used in one test.  Perhaps change to apply sigma such that velocities match.
+   //
    // Remove as bilinear is properly applied.
    #[allow(clippy::suboptimal_flops)]
    pub fn patch_up_poly_symmetric(&mut self) {
-      let rat_poly = self.poly.figure_symmetric_range_rat_quad();
+      let rat_poly =
+         Curve::<RatQuadHomogPower>::from(&self.rq_curve).figure_symmetric_range_rat_quad();
 
       let r_both = rat_poly.path.r[1];
-      let a_s = rat_poly.path.a[2] * r_both * r_both + rat_poly.path.a[0];
+      let a_s = rat_poly.path.h.0[2][2] * r_both * r_both + rat_poly.path.h.0[2][0];
       // let a_d = rat_poly.path.a[2] * r * r - rat_poly.path.a[0];
-      let combo_s = a_s + rat_poly.path.a[1] * r_both;
-      let combo_d = a_s - rat_poly.path.a[1] * r_both;
+      let combo_s = a_s + rat_poly.path.h.0[2][1] * r_both;
+      let combo_d = a_s - rat_poly.path.h.0[2][1] * r_both;
 
       let sigma_ratio = (combo_d.abs().sqrt(), combo_s.abs().sqrt());
 
-      self.poly = rat_poly.rq_apply_bilinear(sigma_ratio);
+      self.rq_curve = self.rq_curve.rq_apply_bilinear(sigma_ratio);
    }
 
    pub fn raw_change_range(&mut self, new_range: [f64; 2]) {
-      self.poly.raw_change_range(new_range);
+      self.rq_curve.raw_change_range(new_range);
    }
 
    // These should account for sigma.
    pub fn select_range(&mut self, new_range: [f64; 2]) {
-      self.poly.select_range(new_range);
+      self.rq_curve.select_range(new_range);
    }
 }

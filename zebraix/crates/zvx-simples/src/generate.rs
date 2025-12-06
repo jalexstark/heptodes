@@ -15,7 +15,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use zvx_base::{
-   ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadPolyPathPower,
+   ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadHomogWeighted,
 };
 use zvx_curves::{
    Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, SpecifiedRatQuad,
@@ -28,22 +28,6 @@ use zvx_drawable::{
    TextSizeChoice,
 };
 
-const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
-   [p[0][0], p[1][0], p[2][0], p[3][0]]
-}
-
-const fn extract_y_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
-   [p[0][1], p[1][1], p[2][1], p[3][1]]
-}
-
-const fn extract_x_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
-   [p[0][0], p[1][0], p[2][0]]
-}
-
-const fn extract_y_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
-   [p[0][1], p[1][1], p[2][1]]
-}
-
 #[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq)]
 pub enum SampleOption {
    #[default]
@@ -54,46 +38,54 @@ pub enum SampleOption {
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
-fn create_rat_quad_path(poly_curve: &Curve<RatQuadPolyPathPower>) -> OneOfSegment {
-   RatQuadOoeSubclassed::segment_from_ordinary(poly_curve, 0.01).unwrap()
+fn create_rat_quad_path(curve: &Curve<RatQuadHomogWeighted>) -> OneOfSegment {
+   RatQuadOoeSubclassed::segment_from_ordinary(curve, 0.01).unwrap()
 }
 
+// Take a one-of-path (OneOfSegment) and push drawable piece onto drawables vector.
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
-fn push_rat_quad_drawable(
-   spartan: &mut DrawableDiagram,
-   poly_curve: &Curve<RatQuadPolyPathPower>,
+fn push_path_segment_drawable(
+   drawables: &mut Vec<QualifiedDrawable>,
+   one_of_path: &OneOfSegment,
    path_choices: PathChoices,
    layer: i32,
 ) {
-   let one_of_path = create_rat_quad_path(poly_curve);
-
    match one_of_path {
       OneOfSegment::Arc(path) => {
-         spartan.drawables.push(QualifiedDrawable {
+         drawables.push(QualifiedDrawable {
             layer,
-            drawable: OneOfDrawable::Arc(Strokeable::<ArcPath> { path, path_choices }),
+            drawable: OneOfDrawable::Arc(Strokeable::<ArcPath> {
+               path: path.clone(),
+               path_choices,
+            }),
          });
       }
       OneOfSegment::Cubic(path) => {
-         spartan.drawables.push(QualifiedDrawable {
+         drawables.push(QualifiedDrawable {
             layer,
-            drawable: OneOfDrawable::Cubic(Strokeable::<CubicPath> { path, path_choices }),
+            drawable: OneOfDrawable::Cubic(Strokeable::<CubicPath> {
+               path: path.clone(),
+               path_choices,
+            }),
          });
       }
       OneOfSegment::Hyperbolic(path) => {
-         spartan.drawables.push(QualifiedDrawable {
+         drawables.push(QualifiedDrawable {
             layer,
             drawable: OneOfDrawable::Hyperbolic(Strokeable::<HyperbolicPath> {
-               path,
+               path: path.clone(),
                path_choices,
             }),
          });
       }
       OneOfSegment::Polyline(path) => {
-         spartan.drawables.push(QualifiedDrawable {
+         drawables.push(QualifiedDrawable {
             layer,
-            drawable: OneOfDrawable::Polyline(Strokeable::<PolylinePath> { path, path_choices }),
+            drawable: OneOfDrawable::Polyline(Strokeable::<PolylinePath> {
+               path: path.clone(),
+               path_choices,
+            }),
          });
       }
       OneOfSegment::Neither => {
@@ -145,6 +137,8 @@ impl Default for SampleCurveConfig {
    }
 }
 
+#[allow(clippy::suboptimal_flops)]
+#[allow(clippy::similar_names)]
 #[allow(clippy::too_many_lines)]
 #[allow(clippy::missing_panics_doc)]
 pub fn draw_sample_rat_quad(
@@ -152,30 +146,38 @@ pub fn draw_sample_rat_quad(
    spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let deprecated_rat_quad: Curve<RatQuadPolyPathPower> =
-      managed_rat_quad.get_poly_rat_quad_repr().expect("Never should be missing");
+   let deprecated_rat_quad: &Curve<RatQuadHomogWeighted> = &managed_rat_quad.rq_curve;
 
    if let Some(color_choice) = &curve_config.control_color {
-      // assert!(false);
-
       let end_points_vec;
       let control_points_vec;
       match &managed_rat_quad.specified {
-         SpecifiedRatQuad::None => {
-            panic!("Unable to draw control points when RQC not specified via control points.");
+         SpecifiedRatQuad::None | SpecifiedRatQuad::FourPoint => {
+            let ([[x_0, y_0], [x_3, y_3]], [[dx_1, dy_1], [dx_2, dy_2]]) =
+               deprecated_rat_quad.characterize_endpoints();
+            let scale = 1.0 / 3.0;
+            end_points_vec = vec![[x_0, y_0], [x_3, y_3]];
+            control_points_vec = vec![
+               [x_0 + dx_1 * scale, y_0 + dy_1 * scale],
+               [x_3 - dx_2 * scale, y_3 - dy_2 * scale],
+            ];
          }
-         // SpecifiedRatQuad:: Base(BaseRatQuad), // Three-points and angle, for example.
-         SpecifiedRatQuad::FourPoint(specified) => {
-            let x = extract_x_from_4(&specified.p);
-            let y = extract_y_from_4(&specified.p);
-            end_points_vec = vec![[x[0], y[0]], [x[3], y[3]]];
-            control_points_vec = vec![[x[1], y[1]], [x[2], y[2]]];
-         }
-         SpecifiedRatQuad::ThreePointAngle(specified) => {
-            let x = extract_x_from_3(&specified.p);
-            let y = extract_y_from_3(&specified.p);
-            end_points_vec = vec![[x[0], y[0]], [x[2], y[2]]];
-            control_points_vec = vec![[x[1], y[1]]];
+         SpecifiedRatQuad::ThreePointAngle => {
+            let ([[x_0, y_0], [x_3, y_3]], [[dx_1, dy_1], [dx_2, dy_2]]) =
+               deprecated_rat_quad.characterize_endpoints();
+            let det = dx_1 * dy_2 - dx_2 * dy_1;
+            let scale;
+            if det.abs() > 0.001 {
+               // Calculate intersection.
+               scale = ((x_3 - x_0) * dy_2 - dx_2 * (y_3 - y_0)) / det;
+            } else if (x_3 - x_0).abs() > (y_3 - y_0).abs() {
+               // Otherwise assume sigma is unit.
+               scale = (x_3 - x_0) / (dx_1 + dx_2);
+            } else {
+               scale = (y_3 - y_0) / (dy_1 + dy_2);
+            }
+            end_points_vec = vec![[x_0, y_0], [x_3, y_3]];
+            control_points_vec = vec![[x_0 + dx_1 * scale, y_0 + dy_1 * scale]];
          }
       }
 
@@ -289,10 +291,11 @@ pub fn draw_sample_rat_quad(
             }),
          });
       } else {
-         let ordinary_rat_quad: &Curve<RatQuadPolyPathPower> = &managed_rat_quad.poly;
-         push_rat_quad_drawable(
-            spartan,
-            ordinary_rat_quad,
+         let ordinary_rat_quad: &Curve<RatQuadHomogWeighted> = &managed_rat_quad.rq_curve;
+         let one_of_path = create_rat_quad_path(ordinary_rat_quad);
+         push_path_segment_drawable(
+            &mut spartan.drawables,
+            &one_of_path,
             PathChoices {
                color: color_choice.clone(),
                line_choice: curve_config.main_line_choice,
@@ -310,8 +313,7 @@ pub fn draw_derivatives_rat_quad(
    spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let deprecated_rat_quad: Curve<RatQuadPolyPathPower> =
-      managed_rat_quad.get_poly_rat_quad_repr().expect("Never should be missing");
+   let deprecated_rat_quad: &Curve<RatQuadHomogWeighted> = &managed_rat_quad.rq_curve;
 
    let t_int: Vec<i32> = (0..=curve_config.points_num_segments).collect();
    let mut t = Vec::<f64>::with_capacity(t_int.len());
@@ -322,9 +324,8 @@ pub fn draw_derivatives_rat_quad(
       t.push(f64::from(*item).mul_add(scale, offset));
    }
 
-   // let start_vec = managed_rat_quad.poly.eval_with_bilinear(&t);
-   let start_vec = managed_rat_quad.poly.eval_homog(&t);
-   let mut end_vec = managed_rat_quad.poly.eval_derivative_scaled(&t, scale);
+   let start_vec = managed_rat_quad.rq_curve.eval_homog(&t);
+   let mut end_vec = managed_rat_quad.rq_curve.eval_derivative_scaled(&t, scale);
    let mut delta_lines = Vec::<([f64; 2], [f64; 2])>::with_capacity(t_int.len());
    assert_eq!(start_vec.len(), t_int.len());
    assert_eq!(end_vec.len(), t_int.len());
@@ -539,7 +540,7 @@ pub fn draw_sample_segment_sequence(
          }
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
-            let ordinary_rat_quad: &Curve<RatQuadPolyPathPower> = &managed_rat_quad.poly;
+            let ordinary_rat_quad: &Curve<RatQuadHomogWeighted> = &managed_rat_quad.rq_curve;
             segments_paths.push(create_rat_quad_path(ordinary_rat_quad));
          }
          OneOfManagedSegment::Polyline(locations) => {
