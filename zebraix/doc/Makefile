@@ -18,7 +18,8 @@ all:	depdirs $(TARGETS)
 DEP_DIRS=styling.dir
 REQ_STYLES=crested.css
 
-PANDOC_HTML_DEPS=$(STYLING_DIR)/crested.css $(STYLING_DIR)/header-html.html $(STYLING_DIR)/defs-html.yaml
+PANDOC_HTML_DEPS=$(STYLING_DIR)/crested.css $(STYLING_DIR)/header-html.html \
+	$(STYLING_DIR)/defs-html.yaml $(STYLING_DIR)/definitions.tex
 PANDOC_PDF_DEPS=$(STYLING_DIR)/header-pdflatex.tex $(STYLING_DIR)/defs-pdflatex.yaml
 
 # .PHONY:	depdirs	$(DEP_DIRS)
@@ -87,12 +88,14 @@ $(HTML_TARGETS):	html/%.html: src/%.md $(PANDOC_HTML_DEPS)
 	pandoc --toc --standalone --to html5 \
 	      $(STYLING_DIR)/header-html.html --metadata-file $(STYLING_DIR)/defs-html.yaml -c crested.css \
 	      --mathjax="${MATHJAX_URL}" \
-	      -f markdown -t html --number-sections $< -o $@
+	      -f markdown -t html --number-sections \
+	      $(STYLING_DIR)/definitions.tex $< -o $@
 
 $(GFM_TARGETS):	gfm/%.md: src/%.md
 	mkdir -p $(dir $@) && \
 	pandoc --toc --standalone \
-	      -f markdown -t gfm --number-sections $< -o $@
+	      -f markdown -t gfm --number-sections \
+	      $(STYLING_DIR)/definitions.tex $< -o $@
 
 # Stashing some attempts at automatically checking figure directories.
 #

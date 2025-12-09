@@ -37,16 +37,16 @@ pub fn rat_quad_expand_power(t: &[f64]) -> Vec<[f64; 3]> {
    ret_val
 }
 
-#[inline]
-#[must_use]
-pub fn cubic_expand_power(t: &[f64]) -> CVec {
-   let mut ret_val = CVec::with_capacity(t.len());
-   for item in t {
-      let sq = *item * *item;
-      ret_val.push([1.0, *item, sq, sq * *item]);
-   }
-   ret_val
-}
+// #[inline]
+// #[must_use]
+// pub fn cubic_expand_power(t: &[f64]) -> CVec {
+//    let mut ret_val = CVec::with_capacity(t.len());
+//    for item in t {
+//       let sq = *item * *item;
+//       ret_val.push([1.0, *item, sq, sq * *item]);
+//    }
+//    ret_val
+// }
 
 #[inline]
 #[must_use]
