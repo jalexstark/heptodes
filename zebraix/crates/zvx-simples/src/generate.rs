@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -269,7 +269,7 @@ pub fn draw_sample_rat_quad(
             t.push(f64::from(*item).mul_add(scale, offset));
          }
 
-         let mut pattern_vec = deprecated_rat_quad.eval_no_bilinear(&t);
+         let mut pattern_vec = deprecated_rat_quad.eval_with_bilinear(&t);
 
          // // XXXXXXXXXXXXXXXXXXXXXXXX
 

@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ impl RatQuadOoeSubclassed {
 
 impl TEval for HyperbolicPath {
    #[allow(clippy::suboptimal_flops)]
-   fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
+   fn eval_maybe_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
 
       let lambda = self.lambda;

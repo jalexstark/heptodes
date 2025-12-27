@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1125,7 +1125,7 @@ mod tests {
          drawable_diagram.prep.axes_range,
       );
 
-      managed_curve.apply_bilinear((sigma, 1.0)).unwrap();
+      managed_curve.juice_bilinear((sigma, 1.0)).unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1183,7 +1183,7 @@ mod tests {
       // Doesn't make much sense. Remove.
       // TODO: Consider removing or reworking this test, likely redundant.
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.apply_bilinear((sigma * 0.3, 0.3)).unwrap();
+      managed_curve.juice_bilinear((sigma * 0.3, 0.3)).unwrap();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1201,10 +1201,14 @@ mod tests {
       render_and_check(&mut runner);
    }
 
+   // TODO: Reinstate when we can compare "collapsed sigma" vs direct eval, with o2 and o1
+   // matching but using different methods.
+   //
    // Symmetric range, warped.
    //
    // This does not need to be graphical, but instead should match numerically.  The polyline
    // points should not move.
+   #[ignore = "Convert to check of sigma collapse"]
    #[test]
    fn spartan_sizing_o2_test() {
       let t_range = [-6.0, 14.0];
@@ -1226,7 +1230,7 @@ mod tests {
       let mut runner = build_from_sizing("spartan_sizing_o2", &sizing);
       let drawable_diagram = &mut runner.combo.drawable_diagram;
 
-      let mut managed_curve = ManagedRatQuad::create_from_weighted(
+      let managed_curve = ManagedRatQuad::create_from_weighted(
          &create_from_legacy_power(&LegacyRatQuadPolyPathPower {
             a: [-21.0, 1.0, -2.0],
             b: [-3.1414, 4.7811, 6.5534],
@@ -1238,8 +1242,8 @@ mod tests {
       );
 
       // TODO: Consider removing or reworking this test, likely redundant.
-      // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.patch_up_poly_symmetric();
+      // // managed_curve.raise_to_symmetric_range().unwrap();
+      // managed_curve.patch_up_poly_symmetric();
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1375,8 +1379,8 @@ mod tests {
             ..Default::default()
          }));
 
-      let t_gold = orig_quad.eval_no_bilinear(&unwarped_t);
-      let t_inter = inter_quad.eval_no_bilinear(&t);
+      let t_gold = RatQuadHomogWeighted::from(&orig_quad.path).eval_with_bilinear(&unwarped_t);
+      let t_inter = RatQuadHomogWeighted::from(&inter_quad.path).eval_with_bilinear(&t);
 
       for i in 0..t_gold.len() {
          assert!((t_gold[i][0] - t_inter[i][0]).abs() < 0.0001);
@@ -1401,8 +1405,8 @@ mod tests {
             ..Default::default()
          }));
 
-      let t_gold = orig_quad.eval_no_bilinear(&unwarped_t);
-      let t_final = final_quad.eval_no_bilinear(&t);
+      let t_gold = RatQuadHomogWeighted::from(&orig_quad.path).eval_with_bilinear(&unwarped_t);
+      let t_final = RatQuadHomogWeighted::from(&final_quad.path).eval_with_bilinear(&t);
 
       for i in 0..t_gold.len() {
          assert!((t_gold[i][0] - t_final[i][0]).abs() < 0.0001);

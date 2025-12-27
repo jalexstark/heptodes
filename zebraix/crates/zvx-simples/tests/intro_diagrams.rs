@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -792,7 +792,6 @@ mod tests {
                main_color: Some(ColorChoice::Green),
                points_color: Some(ColorChoice::Blue),
                points_num_segments: 18,
-               approx_num_segments: 30,
                ..Default::default()
             },
          );

@@ -59,6 +59,9 @@ $$
 * Variety of specification methods, for these preferring affine
   invariance.  Example of corners of a parallelogram being, in some
   senses "logically" right angles even though "physically" not.
+* We also care about solvability.  That is, for some curve
+  specifications it is possible first to set some parameters and then
+  set constrainable locations and lengths.
 
 $$
 \begin{aligned}
@@ -989,6 +992,13 @@ $$
 Interestingly, the weighted expression of the velocity in terms of $a(t)$ works for
 $\sigma\neq 1$.  The proof requires rather fussy manipulation.
 
+(Aside: In general, if $b^*(t)^2 + c^*(t)^2 \propto a^*(t)^2$, this
+will be true with the application of $\sigma$.  Start with the
+weighted form, and formulate as the outer product of coefficient
+vectors with themselves.  The sums of (anti) diagonal-direction sweeps
+must match.  These are invariant on multiplication of the coefficient
+vectors by the powers of $\sigma$.)
+
 
 ## RGC four-point
 
@@ -1108,6 +1118,9 @@ $$
 
 The $b$ and $c$ coefficients can be found in the same way as for the
 four-point task.
+
+## Cutting corners
+
 
 ## Cubilinear
 
@@ -1418,3 +1431,161 @@ w^2 & -vw & v^2\\
 \end{bmatrix}
 \end{aligned}
 $$
+
+
+
+
+<!-- ============================================================ -->
+
+\pagebreak
+
+## Cutting corners
+
+We can pull out useful relations if we begin with the quarter circle
+and cut a new range $[0, \tau]$.  Let the start and end points be
+$\mathrm{S}$ and $\mathrm{F}$, and let the tangents at these points
+meet at point $\mathrm{M}$.  The lines $\mathrm{SM}$ and $\mathrm{MF}$
+have length $\tau$ and the line $\mathrm{SF}$ has length equal to
+twice the sine of the half angle.  That is,
+
+$$
+\bigl\lvert \mathrm{SF} \bigr\rvert
+=
+\frac{2\tau}{\sqrt{1+\tau^2}}
+\ts
+$$
+
+If we divide this by 3 and square, we get the product of the lengths
+of the control lines.
+
+$$
+\left(\tfrac{1}{3}\bigl\lvert \mathrm{SF}\bigr\rvert \right)^2
+=
+\Biggl(\frac{2}{3}\tau\Biggr)
+\Biggl(\frac{2\tau}{3(1+\tau^2)}\Biggr)
+\ts
+$$
+
+This is the "division into thirds" rule.  It matches the rule that
+we found before for three-point RGCs.  The needed proportions are
+
+$$
+\lambda_1 = \frac{2}{3}
+\qquad\qquad
+\lambda_2 = \frac{2}{3(1+\tau^2)}
+\ts
+$$
+
+Furthermore, this naturally becomes the parabolic special case when
+$\tau = 0$.
+
+## Cubilinear curve specification
+
+
+$$
+  \begin{aligned}
+3(x_1-x_0) &= (w-v)x'(v) = b_1-3b_0
+\\
+3(x_3-x_2) &= (w-v)x'(w) = 3b_3-b_2
+\end{aligned}
+$$
+
+$$
+  \begin{bmatrix}
+  b_0 & b_1 & b_2 & b_3 \\
+  c_0 & c_1 & c_2 & c_3
+\end{bmatrix}
+=
+  \begin{bmatrix}
+  x_0 & x_1 & x_2 & x_3 \\
+  y_0 & y_1 & y_2 & y_3
+\end{bmatrix}
+  \begin{bmatrix}
+  1 & 0 & 0 & 0 \\
+  0 & 3 & 0 & 0 \\
+  0 & 0 & 3 & 0 \\
+  0 & 0 & 0 & 1
+\end{bmatrix}
+\ts
+$$
+
+
+$$
+  \begin{aligned}
+  \begin{bmatrix}
+  b^*_0 & b^*_1 & b^*_2 \\
+  c^*_0 & c^*_1 & c^*_2
+\end{bmatrix}
+&=
+(w-v)
+  \begin{bmatrix}
+  b_0 & b_1 & b_2 & b_3 \\
+  c_0 & c_1 & c_2 & c_3
+\end{bmatrix}
+  \begin{bmatrix}
+  -3 & 0 & 0 \\
+  1 & -2 & 0 \\
+  0 & 2 & -1 \\
+  0 & 0 & 3
+\end{bmatrix}
+\\
+&=
+(w-v)
+  \begin{bmatrix}
+  x_0 & x_1 & x_2 & x_3 \\
+  y_0 & y_1 & y_2 & y_3
+\end{bmatrix}
+  \begin{bmatrix}
+  -3 & 0 & 0 \\
+  3 & -6 & 0 \\
+  0 & 6 & -3 \\
+  0 & 0 & 3
+\end{bmatrix}
+\end{aligned}
+$$
+
+## RQC solvable split
+
+
+$$
+  \begin{bmatrix}
+  b_0 & b_1 & b_2 \\
+  c_0 & c_1 & c_2 \\
+  a_0 & a_1 & a_2
+\end{bmatrix}
+=
+  \begin{bmatrix}
+  x_0 & x_c & x_3 \\
+  y_0 & y_c & y_3 \\
+  1 & 1 & 1
+\end{bmatrix}
+  \begin{bmatrix}
+  \lambda_2 & 0 & 0 \\
+  0 & \lambda_1 \lambda_2 & 0 \\
+  0 & 0 & \lambda_1
+\end{bmatrix}
+\ts
+$$
+
+
+
+$$
+  \begin{bmatrix}
+  b^*_0 & b^*_1 & b^*_2 \\
+  c^*_0 & c^*_1 & c^*_2
+\end{bmatrix}
+=
+(w-v)
+  \begin{bmatrix}
+  b_0 & b_1 & b_2 \\
+  c_0 & c_1 & c_2
+\end{bmatrix}
+  \begin{bmatrix}
+  -a_1 & -2a_2 & 0 \\
+  a_0 & 0 & -a_2 \\
+  0 & 2a_0 & a_1
+\end{bmatrix}
+\ts
+$$
+
+

@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -464,7 +464,7 @@ impl UnfixedCairoSpartanRender {
          t.push(f64::from(*item).mul_add(scale, offset));
       }
 
-      let pattern_vec = path.eval_no_bilinear(&t);
+      let pattern_vec = path.eval_maybe_bilinear(&t);
 
       self.draw_polyline(
          &pattern_vec,
