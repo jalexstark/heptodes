@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -91,6 +91,24 @@ impl From<&RatQuadHomogPower> for RatQuadHomogWeighted {
       let out_quad_homog = power.h.apply_q_mat(&tran_q_mat);
 
       Self { r: *r, h: out_quad_homog, sigma: power.sigma }
+   }
+}
+
+impl RatQuadHomogPower {
+   #[must_use]
+   pub fn normalize(&self) -> Self {
+      let mut retval = self.clone();
+      retval.h.normalize();
+      retval
+   }
+}
+
+impl RatQuadHomogWeighted {
+   #[must_use]
+   pub fn normalize(&self) -> Self {
+      let mut retval = self.clone();
+      retval.h.normalize();
+      retval
    }
 }
 

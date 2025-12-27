@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@ use crate::{CubicHomog, CubicPath, RatQuadHomog, RatQuadHomogPower, RatQuadHomog
 use approx::AbsDiffEq;
 
 #[derive(PartialEq, Debug)]
-pub struct F64SliceWrapped<'a, const N: usize> {
+pub struct F64ArrayWrapped<'a, const N: usize> {
    v: &'a [f64; N],
 }
 
-impl<'a, const N: usize> From<&'a [f64; N]> for F64SliceWrapped<'a, N> {
+impl<'a, const N: usize> From<&'a [f64; N]> for F64ArrayWrapped<'a, N> {
    fn from(unwrapped: &'a [f64; N]) -> Self {
-      F64SliceWrapped::<N> { v: unwrapped }
+      F64ArrayWrapped::<N> { v: unwrapped }
    }
 }
 
 #[allow(clippy::elidable_lifetime_names)]
-impl<'a, const N: usize> AbsDiffEq for F64SliceWrapped<'a, N> {
+impl<'a, const N: usize> AbsDiffEq for F64ArrayWrapped<'a, N> {
    type Epsilon = f64;
 
    fn default_epsilon() -> f64 {
@@ -37,6 +37,73 @@ impl<'a, const N: usize> AbsDiffEq for F64SliceWrapped<'a, N> {
    fn abs_diff_eq(&self, other: &Self, epsilon: f64) -> bool {
       for i in 0..N {
          if !f64::abs_diff_eq(&self.v[i], &other.v[i], epsilon) {
+            return false;
+         }
+      }
+      true
+   }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct F64SliceWrapped<'a> {
+   v: &'a [f64],
+}
+
+impl<'a> From<&'a [f64]> for F64SliceWrapped<'a> {
+   fn from(unwrapped: &'a [f64]) -> Self {
+      F64SliceWrapped { v: unwrapped }
+   }
+}
+
+#[allow(clippy::elidable_lifetime_names)]
+impl<'a> AbsDiffEq for F64SliceWrapped<'a> {
+   type Epsilon = f64;
+
+   fn default_epsilon() -> f64 {
+      1.0e-06
+   }
+
+   fn abs_diff_eq(&self, other: &Self, epsilon: f64) -> bool {
+      if !usize::abs_diff_eq(&self.v.len(), &other.v.len(), 0) {
+         return false;
+      }
+      for i in 0..self.v.len() {
+         if !f64::abs_diff_eq(&self.v[i], &other.v[i], epsilon) {
+            return false;
+         }
+      }
+      true
+   }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct CoordSliceWrapped<'a> {
+   v: &'a [[f64; 2]],
+}
+
+impl<'a> From<&'a [[f64; 2]]> for CoordSliceWrapped<'a> {
+   fn from(unwrapped: &'a [[f64; 2]]) -> Self {
+      CoordSliceWrapped { v: unwrapped }
+   }
+}
+
+#[allow(clippy::elidable_lifetime_names)]
+impl<'a> AbsDiffEq for CoordSliceWrapped<'a> {
+   type Epsilon = f64;
+
+   fn default_epsilon() -> f64 {
+      1.0e-06
+   }
+
+   fn abs_diff_eq(&self, other: &Self, epsilon: f64) -> bool {
+      if !usize::abs_diff_eq(&self.v.len(), &other.v.len(), 0) {
+         return false;
+      }
+      for i in 0..self.v.len() {
+         if !f64::abs_diff_eq(&self.v[i][0], &other.v[i][0], epsilon) {
+            return false;
+         }
+         if !f64::abs_diff_eq(&self.v[i][1], &other.v[i][1], epsilon) {
             return false;
          }
       }
@@ -134,8 +201,8 @@ where
          <<P as HomogContainer<'a>>::HomogWrapped as AbsDiffEq>::Epsilon::from(epsilon);
       P::HomogWrapped::from(self.v.h())
          .abs_diff_eq(&P::HomogWrapped::from(other.v.h()), epsilon_wrap)
-         && F64SliceWrapped::from(&self.v.r())
-            .abs_diff_eq(&F64SliceWrapped::from(&other.v.r()), epsilon)
+         && F64SliceWrapped::from(&self.v.r()[..])
+            .abs_diff_eq(&F64SliceWrapped::from(&other.v.r()[..]), epsilon)
          && self.v.sigma().0.abs_diff_eq(&other.v.sigma().0, epsilon)
          && self.v.sigma().1.abs_diff_eq(&other.v.sigma().1, epsilon)
    }
@@ -162,9 +229,9 @@ impl<'a> AbsDiffEq for CubicHomogWrapped<'a> {
 
    fn abs_diff_eq(&self, other: &Self, epsilon: f64) -> bool {
       for k in 0..2 {
-         if !F64SliceWrapped::<4>::abs_diff_eq(
-            &F64SliceWrapped::<4>::from(&self.v.0[k]),
-            &F64SliceWrapped::<4>::from(&other.v.0[k]),
+         if !F64ArrayWrapped::<4>::abs_diff_eq(
+            &F64ArrayWrapped::<4>::from(&self.v.0[k]),
+            &F64ArrayWrapped::<4>::from(&other.v.0[k]),
             epsilon,
          ) {
             return false;
@@ -195,9 +262,9 @@ impl<'a> AbsDiffEq for RatQuadHomogWrapped<'a> {
 
    fn abs_diff_eq(&self, other: &Self, epsilon: f64) -> bool {
       for k in 0..3 {
-         if !F64SliceWrapped::<3>::abs_diff_eq(
-            &F64SliceWrapped::<3>::from(&self.v.0[k]),
-            &F64SliceWrapped::<3>::from(&other.v.0[k]),
+         if !F64ArrayWrapped::<3>::abs_diff_eq(
+            &F64ArrayWrapped::<3>::from(&self.v.0[k]),
+            &F64ArrayWrapped::<3>::from(&other.v.0[k]),
             epsilon,
          ) {
             return false;

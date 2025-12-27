@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +21,22 @@ use serde_default::DefaultFromSerde;
 use zvx_base::utils::PathWrapped;
 use zvx_base::CubicHomog;
 use zvx_base::{CubicFourPoint, CubicPath};
+
+// TODO: Checklist, Eval end points.
+// TODO: Checklist, Eval end point derivatives.
+// TODO: Checklist, Eval derivatives.
+// TODO: Checklist, Euler diff test derivatives.
+// TODO: Checklist, Eval.
+// TODO: Checklist, Test collapse bilinear with eval.
+// TODO: Checklist, Eval without bilinear (internal).
+// TODO: Checklist, Four-point specification.
+// TODO: Checklist, Three-point specification.
+// TODO: Checklist, Range cut / select.
+// TODO: Checklist, Test range cut, perhaps via bilinear collapse.
+// TODO: Checklist, Test solvable split for three-point.
+// TODO: Checklist, Test solvable split for four-point.
+// TODO: Checklist, Test transformation of form.
+// TODO: Checklist, Test direct modify bilinear and range.
 
 const fn displace_4(p: &mut [[f64; 4]; 2], d: [f64; 2]) {
    p[0][0] += d[0];
@@ -116,11 +132,6 @@ impl Curve<CubicPath> {
 }
 
 impl CurveEval for Curve<CubicPath> {
-   fn eval_no_bilinear(&self, _t: &[f64]) -> Vec<[f64; 2]> {
-      unimplemented!("It takes time.");
-      // self.path.eval_no_bilinear(t)
-   }
-
    #[allow(clippy::many_single_char_names)]
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]> {
       let mut ret_val = Vec::<[f64; 2]>::with_capacity(t.len());
@@ -340,18 +351,6 @@ impl ManagedCubic {
             path: CubicPath {
                r: control_points.r,
                h: CubicHomog([
-                  // [
-                  //    control_points.h.0[0][0],
-                  //    control_points.h.0[0][1],
-                  //    control_points.h.0[0][2],
-                  //    control_points.h.0[0][3],
-                  // ],
-                  // [
-                  //    control_points.h.0[1][0],
-                  //    control_points.h.0[1][1],
-                  //    control_points.h.0[1][2],
-                  //    control_points.h.0[1][3],
-                  // ],
                   [
                      control_points.h.0[0][0],
                      3.0 * control_points.h.0[0][1],

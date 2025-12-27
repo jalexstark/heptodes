@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 use crate::{Curve, CurveTransform, FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
-use zvx_base::{RatQuadHomog, RatQuadHomogPower, RatQuadHomogWeighted};
+use zvx_base::{RatQuadHomog, RatQuadHomogWeighted};
 
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
@@ -158,29 +158,30 @@ impl ManagedRatQuad {
 
    #[allow(clippy::missing_errors_doc)]
    // Velocity at beginning multiplied by sigma, and velocity at end divided by sigma.
-   pub fn apply_bilinear(&mut self, sigma_ratio: (f64, f64)) -> Result<(), &'static str> {
+   pub fn juice_bilinear(&mut self, sigma_ratio: (f64, f64)) -> Result<(), &'static str> {
       self.rq_curve = self.rq_curve.rq_apply_bilinear(sigma_ratio);
+      self.rq_curve = self.rq_curve.rq_weighted_collapse_bilinear();
       Ok(())
    }
 
-   // Only used in one test.  Perhaps change to apply sigma such that velocities match.
-   //
-   // Remove as bilinear is properly applied.
-   #[allow(clippy::suboptimal_flops)]
-   pub fn patch_up_poly_symmetric(&mut self) {
-      let rat_poly =
-         Curve::<RatQuadHomogPower>::from(&self.rq_curve).figure_symmetric_range_rat_quad();
+   // // Only used in one test.  Perhaps change to apply sigma such that velocities match.
+   // //
+   // // Remove as bilinear is properly applied.
+   // #[allow(clippy::suboptimal_flops)]
+   // pub fn patch_up_poly_symmetric(&mut self) {
+   //    let rat_poly =
+   //       Curve::<RatQuadHomogPower>::from(&self.rq_curve).figure_symmetric_range_rat_quad();
 
-      let r_both = rat_poly.path.r[1];
-      let a_s = rat_poly.path.h.0[2][2] * r_both * r_both + rat_poly.path.h.0[2][0];
-      // let a_d = rat_poly.path.a[2] * r * r - rat_poly.path.a[0];
-      let combo_s = a_s + rat_poly.path.h.0[2][1] * r_both;
-      let combo_d = a_s - rat_poly.path.h.0[2][1] * r_both;
+   //    let r_both = rat_poly.path.r[1];
+   //    let a_s = rat_poly.path.h.0[2][2] * r_both * r_both + rat_poly.path.h.0[2][0];
+   //    // let a_d = rat_poly.path.a[2] * r * r - rat_poly.path.a[0];
+   //    let combo_s = a_s + rat_poly.path.h.0[2][1] * r_both;
+   //    let combo_d = a_s - rat_poly.path.h.0[2][1] * r_both;
 
-      let sigma_ratio = (combo_d.abs().sqrt(), combo_s.abs().sqrt());
+   //    let sigma_ratio = (combo_d.abs().sqrt(), combo_s.abs().sqrt());
 
-      self.rq_curve = self.rq_curve.rq_apply_bilinear(sigma_ratio);
-   }
+   //    self.rq_curve = self.rq_curve.rq_apply_bilinear(sigma_ratio);
+   // }
 
    pub fn raw_change_range(&mut self, new_range: [f64; 2]) {
       self.rq_curve.raw_change_range(new_range);

@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ pub mod managed;
 pub mod rat_quad;
 pub mod threes;
 
-pub use crate::base::{Curve, CurveEval, CurveTransform, ZebraixAngle};
+pub use crate::base::{
+   bilinear_transform_timepoints, Curve, CurveEval, CurveTransform, ZebraixAngle,
+};
 pub use crate::cubic::ManagedCubic;
 pub use crate::managed::ManagedRatQuad;
 pub use crate::rat_quad::{FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};

@@ -1,3 +1,8 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
 //      http://www.apache.org/licenses/LICENSE-2.0
 //
@@ -12,7 +17,7 @@ use zvx_base::is_default;
 
 // Intended for use directly on paths, rather than those wrapped into Curves.
 pub trait TEval {
-   fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
+   fn eval_maybe_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
 }
 
 // Sigma is a bilinear transformation of `t` that does not change the end-points of the
@@ -33,7 +38,7 @@ where
 }
 
 pub trait CurveEval {
-   fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
+   // fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
 
    // Positions of start and finish, and and velocity at end points.
@@ -51,13 +56,33 @@ pub trait CurveTransform {
 
    fn bilinear_transform(&mut self, sigma_ratio: (f64, f64));
 
-   // TODO: Probably better style to use tuple for range.
-   //
    // Redefine current range as new range, not changing the curve.
    fn raw_change_range(&mut self, new_range: [f64; 2]);
 
    // Sub- or super-select range, based on current range.
    fn select_range(&mut self, new_range: [f64; 2]);
+}
+
+// CurveMath: Bilinear transformation (timepoints).
+//
+// Weighted form, sort-of.
+#[must_use]
+#[allow(clippy::suboptimal_flops)]
+pub fn bilinear_transform_timepoints(
+   t_in: &[f64],
+   sigma_ratio: (f64, f64),
+   range: [f64; 2],
+) -> Vec<f64> {
+   let mut t_out = Vec::<f64>::with_capacity(t_in.len());
+   let v = range[0];
+   let w = range[1];
+   let a = sigma_ratio.0;
+   let b = sigma_ratio.1;
+
+   for t in t_in {
+      t_out.push((v * b * (w - t) + a * w * (t - v)) / (b * (w - t) + a * (t - v)));
+   }
+   t_out
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

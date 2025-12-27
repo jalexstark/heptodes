@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ pub mod pieces;
 pub mod utils;
 pub use crate::matrix::{
    q_mat_power_to_weighted, q_mat_weighted_to_power, q_reduce, rat_quad_expand_power,
-   rat_quad_power_eval, CurveMatrix, QMat,
+   rat_quad_expand_weighted, rat_quad_rq_eval, CurveMatrix, QMat,
 };
 pub use pieces::{
    ArcPath, CubicFourPoint, CubicHomog, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath,

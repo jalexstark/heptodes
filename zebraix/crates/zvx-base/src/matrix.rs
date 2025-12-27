@@ -1,4 +1,4 @@
-// Copyright 2025 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,16 +37,28 @@ pub fn rat_quad_expand_power(t: &[f64]) -> Vec<[f64; 3]> {
    ret_val
 }
 
-// #[inline]
-// #[must_use]
-// pub fn cubic_expand_power(t: &[f64]) -> CVec {
-//    let mut ret_val = CVec::with_capacity(t.len());
-//    for item in t {
-//       let sq = *item * *item;
-//       ret_val.push([1.0, *item, sq, sq * *item]);
-//    }
-//    ret_val
-// }
+#[inline]
+#[must_use]
+#[allow(clippy::many_single_char_names)]
+pub fn rat_quad_expand_weighted(
+   t: &[f64],
+   sigma_ratio: (f64, f64),
+   range: [f64; 2],
+) -> Vec<[f64; 3]> {
+   let v = range[0];
+   let w = range[1];
+   let a = sigma_ratio.0;
+   let b = sigma_ratio.1;
+
+   let mut ret_val = Vec::<[f64; 3]>::with_capacity(t.len());
+
+   for item in t {
+      let left = b * (w - *item);
+      let right = a * (*item - v);
+      ret_val.push([left * left, left * right, right * right]);
+   }
+   ret_val
+}
 
 #[inline]
 #[must_use]
@@ -61,7 +73,7 @@ fn q_power_eval_single(c: &QMat, t: &[f64; 3]) -> [f64; 3] {
 
 #[inline]
 #[must_use]
-pub fn rat_quad_power_eval(power_curve: &QMat, t: &QVec) -> QVec {
+pub fn rat_quad_rq_eval(power_curve: &QMat, t: &QVec) -> QVec {
    let mut power_points = QVec::with_capacity(t.len());
    for item in t {
       power_points.push(q_power_eval_single(power_curve, item));
@@ -80,6 +92,8 @@ pub fn q_reduce(v: &QVec) -> Vec<[f64; 2]> {
    ret_val
 }
 
+// CurveMath: Transform RQC from weighted to power.
+//
 // QMat that will convert a path in weighted form into power form.
 #[must_use]
 pub fn q_mat_weighted_to_power(r: &[f64; 2]) -> QMat {
@@ -88,6 +102,8 @@ pub fn q_mat_weighted_to_power(r: &[f64; 2]) -> QMat {
    [[w * w, -w * 2.0, 1.0], [-v * w, v + w, -1.0], [v * v, -2.0 * v, 1.0]]
 }
 
+// CurveMath: Transform RQC from power to weighted.
+//
 // QMat that will convert a path in weighted form into power form.
 #[must_use]
 pub fn q_mat_power_to_weighted(r: &[f64; 2]) -> QMat {
@@ -102,7 +118,8 @@ pub trait CurveMatrix {
    #[must_use]
    fn apply_q_mat(&self, tran_q_mat: &QMat) -> Self;
 }
-
+// CurveMath: Normalize RQC.
+//
 #[allow(clippy::suboptimal_flops)]
 impl CurveMatrix for RatQuadHomog {
    fn normalize(&mut self) {
