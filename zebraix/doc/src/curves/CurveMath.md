@@ -597,9 +597,9 @@ b^*(v) &=
 b^*(w) &=
 (w-v)^3\sigma^3(a_1b_2 - a_2b_1) \\
 a^*(v) &=
-(w-v)^2 a_0{}^2 \\
+(w-v)^2 a_0 \\
 a^*(w) &=
-(w-v)^2\sigma^2 a_2{}^2
+(w-v)^2\sigma^2 a_2
 \end{aligned}
 $$
 

@@ -19,9 +19,10 @@ mod tests {
       CubicFourPoint, CubicHomog, OneOfSegment, PolylinePath, RatQuadHomog, RatQuadHomogPower,
       RatQuadHomogWeighted,
    };
+   use zvx_curves::rat_quad::rq_weighted_collapse_bilinear;
    use zvx_curves::{
-      Curve, CurveEval, FourPointRatQuad, ManagedCubic, ManagedRatQuad, ThreePointAngleRepr,
-      ZebraixAngle,
+      Curve, CurveEval, CurveTransform, FourPointRatQuad, ManagedCubic, ManagedRatQuad,
+      ThreePointAngleRepr, ZebraixAngle,
    };
    use zvx_docagram::diagram::DrawableDiagram;
    use zvx_docagram::{AxesSpec, AxesStyle, AxisNumbering, SizingScheme};
@@ -1125,7 +1126,9 @@ mod tests {
          drawable_diagram.prep.axes_range,
       );
 
-      managed_curve.juice_bilinear((sigma, 1.0)).unwrap();
+      // managed_curve.juice_bilinear().unwrap();
+      managed_curve.rq_curve.path.bilinear_transform((sigma, 1.0));
+      managed_curve.rq_curve.path = rq_weighted_collapse_bilinear(&managed_curve.rq_curve.path);
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1183,7 +1186,8 @@ mod tests {
       // Doesn't make much sense. Remove.
       // TODO: Consider removing or reworking this test, likely redundant.
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.juice_bilinear((sigma * 0.3, 0.3)).unwrap();
+      managed_curve.rq_curve.path.bilinear_transform((sigma * 0.3, 0.3));
+      managed_curve.rq_curve.path = rq_weighted_collapse_bilinear(&managed_curve.rq_curve.path);
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1453,7 +1457,7 @@ mod tests {
          &SampleCurveConfig {
             main_color: Some(ColorChoice::Green),
             control_color: Some(ColorChoice::YellowBrown),
-            points_color: None,
+            points_color: Some(ColorChoice::BlueGreen),
             ..Default::default()
          },
       );
@@ -1473,7 +1477,7 @@ mod tests {
       );
 
       let mut managed_curve_d = managed_curve_b.clone();
-      managed_curve_d.select_range([t_range[0] + 0.5, t_range[0] + 5.5]);
+      managed_curve_d.select_range([t_range[0] + 0.5, t_range[0] + 6.5]);
       draw_sample_cubilinear(
          &managed_curve_d,
          drawable_diagram,
@@ -1482,7 +1486,7 @@ mod tests {
             points_color: Some(ColorChoice::Green),
             control_color: Some(ColorChoice::YellowBrown),
             points_choice: PointChoice::Circle,
-            points_num_segments: 5,
+            points_num_segments: 6,
             ..Default::default()
          },
       );
@@ -1490,7 +1494,7 @@ mod tests {
       let mut managed_curve_c = managed_curve_a;
       managed_curve_c.displace([4.0, 0.0]);
       managed_curve_c.bilinear_transform((sigma, 1.0));
-      managed_curve_c.raw_change_range([t_range[0] - 1.5, t_range[1] + 4.5]);
+      managed_curve_c.four_point.path.raw_change_range([t_range[0] - 1.5, t_range[1] + 4.5]);
       draw_sample_cubilinear(
          &managed_curve_c,
          drawable_diagram,
@@ -1951,7 +1955,7 @@ mod tests {
             drawable_diagram.prep.axes_range,
          );
 
-         managed_curve.select_range([-0.33333333, 0.5]);
+         managed_curve.rq_curve.path.select_range([-0.33333333, 0.5]);
 
          draw_sample_rat_quad(
             &managed_curve,

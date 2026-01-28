@@ -13,6 +13,7 @@
 // limitations under the License.
 
 /// Curve matrix mini library.
+use crate::CubicHomog;
 use crate::RatQuadHomog;
 
 // Transforms are row-major, that is each row nested.
@@ -118,6 +119,14 @@ pub trait CurveMatrix {
    #[must_use]
    fn apply_q_mat(&self, tran_q_mat: &QMat) -> Self;
 }
+
+pub trait CurveCubicMatrix {
+   fn normalize(&mut self);
+
+   #[must_use]
+   fn apply_c_mat(&self, tran_c_mat: &CMat) -> Self;
+}
+
 // CurveMath: Normalize RQC.
 //
 #[allow(clippy::suboptimal_flops)]
@@ -175,6 +184,55 @@ impl CurveMatrix for RatQuadHomog {
             in_quad_homog[2][0] * tran_q_mat[0][2]
                + in_quad_homog[2][1] * tran_q_mat[1][2]
                + in_quad_homog[2][2] * tran_q_mat[2][2],
+         ],
+      ])
+   }
+}
+
+// CurveMath: Normalize RQC.
+//
+#[allow(clippy::suboptimal_flops)]
+impl CurveCubicMatrix for CubicHomog {
+   fn normalize(&mut self) {}
+
+   fn apply_c_mat(&self, tran_c_mat: &CMat) -> Self {
+      let in_cubic_homog = &self.0;
+      Self([
+         [
+            in_cubic_homog[0][0] * tran_c_mat[0][0]
+               + in_cubic_homog[0][1] * tran_c_mat[1][0]
+               + in_cubic_homog[0][2] * tran_c_mat[2][0]
+               + in_cubic_homog[0][3] * tran_c_mat[3][0],
+            in_cubic_homog[0][0] * tran_c_mat[0][1]
+               + in_cubic_homog[0][1] * tran_c_mat[1][1]
+               + in_cubic_homog[0][2] * tran_c_mat[2][1]
+               + in_cubic_homog[0][3] * tran_c_mat[3][1],
+            in_cubic_homog[0][0] * tran_c_mat[0][2]
+               + in_cubic_homog[0][1] * tran_c_mat[1][2]
+               + in_cubic_homog[0][2] * tran_c_mat[2][2]
+               + in_cubic_homog[0][3] * tran_c_mat[3][2],
+            in_cubic_homog[0][0] * tran_c_mat[0][3]
+               + in_cubic_homog[0][1] * tran_c_mat[1][3]
+               + in_cubic_homog[0][2] * tran_c_mat[2][3]
+               + in_cubic_homog[0][3] * tran_c_mat[3][3],
+         ],
+         [
+            in_cubic_homog[1][0] * tran_c_mat[0][0]
+               + in_cubic_homog[1][1] * tran_c_mat[1][0]
+               + in_cubic_homog[1][2] * tran_c_mat[2][0]
+               + in_cubic_homog[1][3] * tran_c_mat[3][0],
+            in_cubic_homog[1][0] * tran_c_mat[0][1]
+               + in_cubic_homog[1][1] * tran_c_mat[1][1]
+               + in_cubic_homog[1][2] * tran_c_mat[2][1]
+               + in_cubic_homog[1][3] * tran_c_mat[3][1],
+            in_cubic_homog[1][0] * tran_c_mat[0][2]
+               + in_cubic_homog[1][1] * tran_c_mat[1][2]
+               + in_cubic_homog[1][2] * tran_c_mat[2][2]
+               + in_cubic_homog[1][3] * tran_c_mat[3][2],
+            in_cubic_homog[1][0] * tran_c_mat[0][3]
+               + in_cubic_homog[1][1] * tran_c_mat[1][3]
+               + in_cubic_homog[1][2] * tran_c_mat[2][3]
+               + in_cubic_homog[1][3] * tran_c_mat[3][3],
          ],
       ])
    }

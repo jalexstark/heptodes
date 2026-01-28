@@ -17,7 +17,7 @@ pub mod pieces;
 pub mod utils;
 pub use crate::matrix::{
    q_mat_power_to_weighted, q_mat_weighted_to_power, q_reduce, rat_quad_expand_power,
-   rat_quad_expand_weighted, rat_quad_rq_eval, CurveMatrix, QMat,
+   rat_quad_expand_weighted, rat_quad_rq_eval, CurveCubicMatrix, CurveMatrix, QMat,
 };
 pub use pieces::{
    ArcPath, CubicFourPoint, CubicHomog, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath,
