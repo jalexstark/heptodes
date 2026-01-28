@@ -358,6 +358,19 @@ impl UnfixedCairoSpartanRender {
                self.context.close_path();
             }
          }
+         PointChoice::Square => {
+            for center in &drawable.centers {
+               self.transform_saver.save_set_path_transform(&self.context, canvas_layout);
+               let (cx, cy) = self.context.user_to_device(center[0], center[1]);
+               self.transform_saver.restore_transform(&self.context);
+               let square_delta = 2.8 * 1.1 * (0.5_f64).sqrt();
+               self.context.move_to(cx - square_delta, cy - square_delta);
+               self.context.line_to(cx + square_delta, cy - square_delta);
+               self.context.line_to(cx + square_delta, cy + square_delta);
+               self.context.line_to(cx - square_delta, cy + square_delta);
+               self.context.close_path();
+            }
+         }
       }
       self.context.stroke().unwrap();
    }

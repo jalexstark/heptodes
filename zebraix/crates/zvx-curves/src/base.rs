@@ -38,16 +38,18 @@ where
 }
 
 pub trait CurveEval {
-   // fn eval_no_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
+   #[must_use]
    fn eval_with_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
+
+   // Calculate derivates with scaling factor.  Often the scale is (based on) the range, since
+   // this makes the magnitude of the derivatives comparable to the curve coordinates.
+   #[must_use]
+   fn eval_derivative_scaled(&self, t: &[f64], scale: f64) -> Vec<[f64; 2]>;
 
    // Positions of start and finish, and and velocity at end points.
    //
-   // The velocity vectors are not adjusted for the span of the range. Divide by that span to
-   // get the velocity with respect to the linear range traversal.
-   //
-   // The velocities are not adjusted for sigma. Multiply the start velocity by sigma and divide
-   // the finish velocity by sigma to adjust.
+   // The velocity vectors are scaled up by the span of the range.  Divide by that span to get
+   // the velocity with respect to the linear range traversal.
    fn characterize_endpoints(&self) -> ([[f64; 2]; 2], [[f64; 2]; 2]);
 }
 

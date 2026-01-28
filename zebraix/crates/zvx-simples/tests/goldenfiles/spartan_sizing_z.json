@@ -531,6 +531,25 @@
     {
       "layer": 10,
       "drawable": {
+        "Points": {
+          "point_choice": "Square",
+          "color_choice": "YellowBrown",
+          "centers": [
+            [
+              0.75,
+              1.75
+            ],
+            [
+              2,
+              -2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "layer": 10,
+      "drawable": {
         "Lines": {
           "path": {
             "coords": [
@@ -550,8 +569,8 @@
                   -1.5
                 ],
                 [
-                  1.5,
-                  -1.75
+                  2,
+                  -2
                 ]
               ]
             ]

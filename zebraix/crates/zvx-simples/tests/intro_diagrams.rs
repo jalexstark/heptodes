@@ -15,7 +15,7 @@
 #[cfg(test)]
 mod tests {
    use zvx_base::{CubicFourPoint, CubicHomog, OneOfSegment};
-   use zvx_curves::{FourPointRatQuad, ManagedCubic, ManagedRatQuad};
+   use zvx_curves::{CurveTransform, FourPointRatQuad, ManagedCubic, ManagedRatQuad};
    use zvx_docagram::{AxesSpec, AxesStyle, AxisNumbering, SizingScheme};
    use zvx_drawable::{
       ColorChoice, FillChoices, LineChoice, LinesSetSet, OneOfDrawable, PathChoices,
@@ -741,7 +741,7 @@ mod tests {
                },
             );
 
-            managed_curve.select_range([-1.0, 1.0]);
+            managed_curve.rq_curve.path.select_range([-1.0, 1.0]);
 
             draw_sample_rat_quad(
                &managed_curve,
