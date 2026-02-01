@@ -17,9 +17,7 @@ use std::collections::VecDeque;
 use zvx_base::{
    ArcPath, CubicPath, HyperbolicPath, OneOfSegment, PolylinePath, RatQuadHomogWeighted,
 };
-use zvx_curves::{
-   Curve, CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, SpecifiedRatQuad,
-};
+use zvx_curves::{CurveEval, ManagedCubic, ManagedRatQuad, RatQuadOoeSubclassed, SpecifiedRatQuad};
 use zvx_docagram::diagram::DrawableDiagram;
 use zvx_drawable::{
    ColorChoice, LineChoice, LinesSetSet, MarkupChoice, OneOfDrawable, PathChoices, PathCompletion,
@@ -38,7 +36,7 @@ pub enum SampleOption {
 #[allow(clippy::suboptimal_flops)]
 #[allow(clippy::missing_panics_doc)]
 #[must_use]
-fn create_rat_quad_path(curve: &Curve<RatQuadHomogWeighted>) -> OneOfSegment {
+fn create_rat_quad_path(curve: &RatQuadHomogWeighted) -> OneOfSegment {
    RatQuadOoeSubclassed::segment_from_ordinary(curve, 0.01).unwrap()
 }
 
@@ -146,7 +144,7 @@ pub fn draw_sample_rat_quad(
    spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let deprecated_rat_quad: &RatQuadHomogWeighted = &managed_rat_quad.rq_curve.path;
+   let deprecated_rat_quad: &RatQuadHomogWeighted = &managed_rat_quad.rq_curve;
 
    if let Some(color_choice) = &curve_config.control_color {
       let end_points_vec;
@@ -291,7 +289,7 @@ pub fn draw_sample_rat_quad(
             }),
          });
       } else {
-         let ordinary_rat_quad: &Curve<RatQuadHomogWeighted> = &managed_rat_quad.rq_curve;
+         let ordinary_rat_quad: &RatQuadHomogWeighted = &managed_rat_quad.rq_curve;
          let one_of_path = create_rat_quad_path(ordinary_rat_quad);
          push_path_segment_drawable(
             &mut spartan.drawables,
@@ -313,7 +311,7 @@ pub fn draw_derivatives_rat_quad(
    spartan: &mut DrawableDiagram,
    curve_config: &SampleCurveConfig,
 ) {
-   let deprecated_rat_quad: &RatQuadHomogWeighted = &managed_rat_quad.rq_curve.path;
+   let deprecated_rat_quad: &RatQuadHomogWeighted = &managed_rat_quad.rq_curve;
 
    let t_int: Vec<i32> = (0..=curve_config.points_num_segments).collect();
    let mut t = Vec::<f64>::with_capacity(t_int.len());
@@ -324,8 +322,8 @@ pub fn draw_derivatives_rat_quad(
       t.push(f64::from(*item).mul_add(scale, offset));
    }
 
-   let start_vec = managed_rat_quad.rq_curve.path.eval_with_bilinear(&t);
-   let mut end_vec = managed_rat_quad.rq_curve.path.eval_derivative_scaled(&t, scale);
+   let start_vec = managed_rat_quad.rq_curve.eval_with_bilinear(&t);
+   let mut end_vec = managed_rat_quad.rq_curve.eval_derivative_scaled(&t, scale);
    let mut delta_lines = Vec::<([f64; 2], [f64; 2])>::with_capacity(t_int.len());
    assert_eq!(start_vec.len(), t_int.len());
    assert_eq!(end_vec.len(), t_int.len());
@@ -373,24 +371,24 @@ pub fn draw_sample_cubilinear(
    let four_point = &managed_cubic.four_point;
    if let Some(color_choice) = &curve_config.control_color {
       const SIGMA_TOLERANCE: f64 = 0.003;
-      let sigma_path = &four_point.path.sigma;
+      let sigma_path = &four_point.sigma;
       let need_sigma = (sigma_path.1 - sigma_path.0).abs()
          > (sigma_path.0.abs() + sigma_path.1.abs()) * SIGMA_TOLERANCE;
       let front_longer = sigma_path.0.abs() > sigma_path.1.abs();
 
       let ([[x_0, y_0], [x_3, y_3]], [[dx_1, dy_1], [dx_2, dy_2]]) =
-         four_point.path.characterize_endpoints();
+         four_point.characterize_endpoints();
       let scale = 1.0 / 3.0;
       let sigma_control_points_vec =
          vec![[x_0 + dx_1 * scale, y_0 + dy_1 * scale], [x_3 - dx_2 * scale, y_3 - dy_2 * scale]];
 
       let end_points_vec = vec![
-         [four_point.path.h.0[0][0], four_point.path.h.0[1][0]],
-         [four_point.path.h.0[0][3], four_point.path.h.0[1][3]],
+         [four_point.h.0[0][0], four_point.h.0[1][0]],
+         [four_point.h.0[0][3], four_point.h.0[1][3]],
       ];
       let control_points_vec = vec![
-         [four_point.path.h.0[0][1] / 3.0, four_point.path.h.0[1][1] / 3.0],
-         [four_point.path.h.0[0][2] / 3.0, four_point.path.h.0[1][2] / 3.0],
+         [four_point.h.0[0][1] / 3.0, four_point.h.0[1][1] / 3.0],
+         [four_point.h.0[0][2] / 3.0, four_point.h.0[1][2] / 3.0],
       ];
 
       spartan.drawables.push(QualifiedDrawable {
@@ -456,14 +454,13 @@ pub fn draw_sample_cubilinear(
          (0..=curve_config.points_num_segments).collect()
       };
       let mut t = Vec::<f64>::with_capacity(t_int.len());
-      let scale = (four_point.path.r[1] - four_point.path.r[0])
-         / f64::from(curve_config.points_num_segments);
-      let offset = four_point.path.r[0];
+      let scale = (four_point.r[1] - four_point.r[0]) / f64::from(curve_config.points_num_segments);
+      let offset = four_point.r[0];
       for item in &t_int {
          t.push(f64::from(*item).mul_add(scale, offset));
       }
 
-      let pattern_vec = four_point.path.eval_with_bilinear(&t);
+      let pattern_vec = four_point.eval_with_bilinear(&t);
 
       spartan.drawables.push(QualifiedDrawable {
          layer: curve_config.points_layer,
@@ -484,7 +481,7 @@ pub fn draw_sample_cubilinear(
                line_choice: curve_config.main_line_choice,
                ..Default::default()
             },
-            path: four_point.path.clone(),
+            path: four_point.clone(),
          }),
       });
    }
@@ -500,16 +497,15 @@ pub fn draw_derivatives_cubilinear(
 
    let t_int: Vec<i32> = (0..=curve_config.points_num_segments).collect();
    let mut t = Vec::<f64>::with_capacity(t_int.len());
-   let scale =
-      (four_point.path.r[1] - four_point.path.r[0]) / f64::from(curve_config.points_num_segments);
+   let scale = (four_point.r[1] - four_point.r[0]) / f64::from(curve_config.points_num_segments);
 
-   let offset = four_point.path.r[0];
+   let offset = four_point.r[0];
    for item in &t_int {
       t.push(f64::from(*item).mul_add(scale, offset));
    }
 
-   let start_vec = four_point.path.eval_with_bilinear(&t);
-   let mut end_vec = four_point.path.eval_derivative_scaled(&t, scale);
+   let start_vec = four_point.eval_with_bilinear(&t);
+   let mut end_vec = four_point.eval_derivative_scaled(&t, scale);
    let mut delta_lines = Vec::<([f64; 2], [f64; 2])>::with_capacity(t_int.len());
    assert_eq!(start_vec.len(), t_int.len());
    assert_eq!(end_vec.len(), t_int.len());
@@ -567,11 +563,11 @@ pub fn draw_sample_segment_sequence(
       match &segment {
          OneOfManagedSegment::ManagedCubic(managed_cubic) => {
             let four_point = &managed_cubic.four_point;
-            segments_paths.push(OneOfSegment::Cubic(four_point.path.clone()));
+            segments_paths.push(OneOfSegment::Cubic(four_point.clone()));
          }
 
          OneOfManagedSegment::ManagedRatQuad(managed_rat_quad) => {
-            let ordinary_rat_quad: &Curve<RatQuadHomogWeighted> = &managed_rat_quad.rq_curve;
+            let ordinary_rat_quad: &RatQuadHomogWeighted = &managed_rat_quad.rq_curve;
             segments_paths.push(create_rat_quad_path(ordinary_rat_quad));
          }
          OneOfManagedSegment::Polyline(locations) => {

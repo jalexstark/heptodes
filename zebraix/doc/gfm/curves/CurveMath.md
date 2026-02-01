@@ -1,7 +1,7 @@
 ---
 author:
 - J. Alex Stark
-date: 2025
+date: 2026
 title: A Compendium of Curve Mathematics in Zebraix
 ---
 
