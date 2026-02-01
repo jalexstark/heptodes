@@ -14,18 +14,18 @@
 
 use super::*;
 use crate::bilinear_transform_timepoints;
-use crate::Curve;
 use approx::assert_abs_diff_eq;
 use zvx_base::utils::CoordSliceWrapped;
 use zvx_base::utils::PathWrapped;
 use zvx_base::CubicHomog;
 use zvx_base::CubicPath;
 
-// Progress: Checklist, Eval end points.
-// TODO: Checklist, Eval end point derivatives.
-// TODO: Checklist, Eval derivatives.
-// TODO: Checklist, Euler diff test derivatives.
-// TODO: Checklist, Eval.
+// Done: Checklist, Eval end points.
+// Done: Checklist, Eval end point derivatives.
+// Done: Checklist, Eval derivatives.
+// Done: Checklist, Euler diff test derivatives.
+// Done: Checklist, Eval.
+// TODO: Checklist, Test collapse bilinear with eval (not cubic).
 // TODO: Checklist, Eval without bilinear (internal).
 // TODO: Checklist, Four-point specification.
 // TODO: Checklist, Three-point specification.
@@ -33,7 +33,7 @@ use zvx_base::CubicPath;
 // TODO: Checklist, Test range cut, perhaps via bilinear collapse.
 // TODO: Checklist, Test solvable split for three-point.
 // TODO: Checklist, Test solvable split for four-point.
-// TODO: Checklist, Test transformation of form.
+// Done: Checklist, Test transformation of form.
 // TODO: Checklist, Test direct modify bilinear and range.
 // TODO: Checklist, Test displace (method and adjust eval).
 
@@ -175,31 +175,29 @@ fn endpoints_test() {
 #[allow(clippy::similar_names)]
 #[allow(clippy::suboptimal_flops)]
 // Older version, retained as a reference implementation.
-fn select_range_reference(curve: &mut Curve<CubicPath>, new_range: [f64; 2]) {
+fn select_range_reference(curve: &mut CubicPath, new_range: [f64; 2]) {
    let mut new_x = [0.0; 4];
    let mut new_y = [0.0; 4];
 
-   let a_k = curve.path.sigma.0 * (new_range[0] - curve.path.r[0]);
-   let b_k = curve.path.sigma.1 * (curve.path.r[1] - new_range[0]);
-   let a_l = curve.path.sigma.0 * (new_range[1] - curve.path.r[0]);
-   let b_l = curve.path.sigma.1 * (curve.path.r[1] - new_range[1]);
+   let a_k = curve.sigma.0 * (new_range[0] - curve.r[0]);
+   let b_k = curve.sigma.1 * (curve.r[1] - new_range[0]);
+   let a_l = curve.sigma.0 * (new_range[1] - curve.r[0]);
+   let b_l = curve.sigma.1 * (curve.r[1] - new_range[1]);
    let f0_k = 1.0 / (b_k + a_k);
    let recip_denom_k = f0_k * f0_k * f0_k;
    let f0_l = 1.0 / (b_l + a_l);
    let recip_denom_l = f0_l * f0_l * f0_l;
-   let in_x =
-      [curve.path.h.0[0][0], curve.path.h.0[0][1], curve.path.h.0[0][2], curve.path.h.0[0][3]];
-   let in_y =
-      [curve.path.h.0[1][0], curve.path.h.0[1][1], curve.path.h.0[1][2], curve.path.h.0[1][3]];
+   let in_x = [curve.h.0[0][0], curve.h.0[0][1], curve.h.0[0][2], curve.h.0[0][3]];
+   let in_y = [curve.h.0[1][0], curve.h.0[1][1], curve.h.0[1][2], curve.h.0[1][3]];
    new_x[0] = cubic_eval_part(b_k, a_k, &in_x, recip_denom_k);
    new_y[0] = cubic_eval_part(b_k, a_k, &in_y, recip_denom_k);
    new_x[3] = cubic_eval_part(b_l, a_l, &in_x, recip_denom_l);
    new_y[3] = cubic_eval_part(b_l, a_l, &in_y, recip_denom_l);
-   let kl_numerator_k = curve.path.r[1] * a_k + curve.path.r[0] * b_k;
-   let kl_numerator_l = curve.path.r[1] * a_l + curve.path.r[0] * b_l;
+   let kl_numerator_k = curve.r[1] * a_k + curve.r[0] * b_k;
+   let kl_numerator_l = curve.r[1] * a_l + curve.r[0] * b_l;
    // This is [k, l] bilinearly transformed.
    let selected_range_bilineared = kl_numerator_l / (a_l + b_l) - kl_numerator_k / (a_k + b_k);
-   let fudge = selected_range_bilineared / (curve.path.r[1] - curve.path.r[0]);
+   let fudge = selected_range_bilineared / (curve.r[1] - curve.r[0]);
    let dx_1 = fudge
       * f0_k
       * f0_k
@@ -229,43 +227,41 @@ fn select_range_reference(curve: &mut Curve<CubicPath>, new_range: [f64; 2]) {
          + a_l * a_l * (in_y[3] - in_y[2] / 3.0));
    new_y[2] = 3.0 * (new_y[3] - dy_1);
 
-   curve.path.sigma.0 = a_l + b_l;
-   curve.path.sigma.1 = a_k + b_k;
-   curve.path.h.0 = [new_x, new_y];
-   curve.path.r = new_range;
+   curve.sigma.0 = a_l + b_l;
+   curve.sigma.1 = a_k + b_k;
+   curve.h.0 = [new_x, new_y];
+   curve.r = new_range;
 }
 
 #[test]
 #[allow(clippy::unreadable_literal)]
 fn select_range_test() {
-   let mut clc = Curve { path: clc_example_0() };
+   let mut clc = clc_example_0();
 
    let new_range = [1.5, 10.5];
 
    let mut reference_clc = clc.clone();
    select_range_reference(&mut reference_clc, new_range);
-   clc.path.select_range(new_range);
+   clc.select_range(new_range);
 
-   let literal_clc = Curve {
-      path: CubicPath {
-         r: [1.5, 10.5],
-         h: CubicHomog([
-            [3.856, 3.0 * 3.80875, 3.0 * 3.658984375, 3.2529296875],
-            [0.408, 3.0 * 1.00875, 3.0 * 1.58671875, 1.872802734375],
-         ]),
-         sigma: (57.6, 36.0),
-      },
+   let literal_clc = CubicPath {
+      r: [1.5, 10.5],
+      h: CubicHomog([
+         [3.856, 3.0 * 3.80875, 3.0 * 3.658984375, 3.2529296875],
+         [0.408, 3.0 * 1.00875, 3.0 * 1.58671875, 1.872802734375],
+      ]),
+      sigma: (57.6, 36.0),
    };
 
    assert_abs_diff_eq!(
-      &PathWrapped::from(&clc.path),
-      &PathWrapped::from(&literal_clc.path),
+      &PathWrapped::from(&clc),
+      &PathWrapped::from(&literal_clc),
       epsilon = 1.0e-5
    );
 
    assert_abs_diff_eq!(
-      &PathWrapped::from(&clc.path),
-      &PathWrapped::from(&reference_clc.path),
+      &PathWrapped::from(&clc),
+      &PathWrapped::from(&reference_clc),
       epsilon = 1.0e-5
    );
 }

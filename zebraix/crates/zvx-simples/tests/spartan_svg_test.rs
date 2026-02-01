@@ -21,7 +21,7 @@ mod tests {
    };
    use zvx_curves::rat_quad::rq_weighted_collapse_bilinear;
    use zvx_curves::{
-      Curve, CurveEval, CurveTransform, FourPointRatQuad, ManagedCubic, ManagedRatQuad,
+      CurveEval, CurveTransform, FourPointRatQuad, ManagedCubic, ManagedRatQuad,
       ThreePointAngleRepr, ZebraixAngle,
    };
    use zvx_docagram::diagram::DrawableDiagram;
@@ -51,14 +51,12 @@ mod tests {
       pub sigma: (f64, f64),
    }
 
-   fn create_from_legacy_power(power: &LegacyRatQuadPolyPathPower) -> Curve<RatQuadHomogWeighted> {
-      Curve::<RatQuadHomogWeighted> {
-         path: RatQuadHomogWeighted::from(&RatQuadHomogPower {
-            h: RatQuadHomog([power.b, power.c, power.a]),
-            r: power.r,
-            sigma: power.sigma,
-         }),
-      }
+   fn create_from_legacy_power(power: &LegacyRatQuadPolyPathPower) -> RatQuadHomogWeighted {
+      RatQuadHomogWeighted::from(&RatQuadHomogPower {
+         h: RatQuadHomog([power.b, power.c, power.a]),
+         r: power.r,
+         sigma: power.sigma,
+      })
    }
 
    fn add_debug_box(drawable_diagram: &mut DrawableDiagram, sizing: &TestSizing) {
@@ -1127,8 +1125,8 @@ mod tests {
       );
 
       // managed_curve.juice_bilinear().unwrap();
-      managed_curve.rq_curve.path.bilinear_transform((sigma, 1.0));
-      managed_curve.rq_curve.path = rq_weighted_collapse_bilinear(&managed_curve.rq_curve.path);
+      managed_curve.rq_curve.bilinear_transform((sigma, 1.0));
+      managed_curve.rq_curve = rq_weighted_collapse_bilinear(&managed_curve.rq_curve);
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1186,8 +1184,8 @@ mod tests {
       // Doesn't make much sense. Remove.
       // TODO: Consider removing or reworking this test, likely redundant.
       // managed_curve.raise_to_symmetric_range().unwrap();
-      managed_curve.rq_curve.path.bilinear_transform((sigma * 0.3, 0.3));
-      managed_curve.rq_curve.path = rq_weighted_collapse_bilinear(&managed_curve.rq_curve.path);
+      managed_curve.rq_curve.bilinear_transform((sigma * 0.3, 0.3));
+      managed_curve.rq_curve = rq_weighted_collapse_bilinear(&managed_curve.rq_curve);
 
       draw_sample_rat_quad(
          &managed_curve,
@@ -1331,7 +1329,7 @@ mod tests {
    fn rat_quad_test() {
       let r: f64 = 1.5;
       let orig_quad =
-         Curve::<RatQuadHomogPower>::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+         RatQuadHomogPower::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
             a: [-21.0, 1.0, -2.0],
             b: [-3.1414, 4.7811, 6.5534],
             r: [-r, r],
@@ -1345,9 +1343,9 @@ mod tests {
          t.push(item as f64 / 3.0 - 2.0);
       }
 
-      let a_1 = orig_quad.path.h.0[2][1];
-      let a_s = r * r * orig_quad.path.h.0[2][2] + orig_quad.path.h.0[2][0];
-      let a_d = r * r * orig_quad.path.h.0[2][2] - orig_quad.path.h.0[2][0];
+      let a_1 = orig_quad.h.0[2][1];
+      let a_s = r * r * orig_quad.h.0[2][2] + orig_quad.h.0[2][0];
+      let a_d = r * r * orig_quad.h.0[2][2] - orig_quad.h.0[2][0];
       let sigma = ((a_s - a_1 * r) / (a_s + a_1 * r)).abs().sqrt();
 
       let mut unwarped_t = Vec::<f64>::with_capacity(t.len());
@@ -1358,12 +1356,12 @@ mod tests {
          );
       }
 
-      let b_1 = orig_quad.path.h.0[0][1];
-      let b_s = r * r * orig_quad.path.h.0[0][2] + orig_quad.path.h.0[0][0];
-      let b_d = r * r * orig_quad.path.h.0[0][2] - orig_quad.path.h.0[0][0];
+      let b_1 = orig_quad.h.0[0][1];
+      let b_s = r * r * orig_quad.h.0[0][2] + orig_quad.h.0[0][0];
+      let b_d = r * r * orig_quad.h.0[0][2] - orig_quad.h.0[0][0];
 
       let inter_quad =
-         Curve::<RatQuadHomogPower>::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+         RatQuadHomogPower::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
             a: [
                r * r
                   * ((sigma * sigma + 1.0) * a_s + (sigma * sigma - 1.0) * a_1 * r
@@ -1383,8 +1381,8 @@ mod tests {
             ..Default::default()
          }));
 
-      let t_gold = RatQuadHomogWeighted::from(&orig_quad.path).eval_with_bilinear(&unwarped_t);
-      let t_inter = RatQuadHomogWeighted::from(&inter_quad.path).eval_with_bilinear(&t);
+      let t_gold = RatQuadHomogWeighted::from(&orig_quad).eval_with_bilinear(&unwarped_t);
+      let t_inter = RatQuadHomogWeighted::from(&inter_quad).eval_with_bilinear(&t);
 
       for i in 0..t_gold.len() {
          assert!((t_gold[i][0] - t_inter[i][0]).abs() < 0.0001);
@@ -1397,7 +1395,7 @@ mod tests {
       assert!((lambda - sigma * (a_s + a_1 * r)).abs() < 0.0001);
 
       let final_quad =
-         Curve::<RatQuadHomogPower>::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
+         RatQuadHomogPower::from(&create_from_legacy_power(&LegacyRatQuadPolyPathPower {
             a: [r * r * lambda * (lambda - a_d), 0.0, lambda * (lambda + a_d)],
             b: [
                r * r * (a_s * b_s - a_1 * b_1 * r * r - lambda * b_d),
@@ -1409,8 +1407,8 @@ mod tests {
             ..Default::default()
          }));
 
-      let t_gold = RatQuadHomogWeighted::from(&orig_quad.path).eval_with_bilinear(&unwarped_t);
-      let t_final = RatQuadHomogWeighted::from(&final_quad.path).eval_with_bilinear(&t);
+      let t_gold = RatQuadHomogWeighted::from(&orig_quad).eval_with_bilinear(&unwarped_t);
+      let t_final = RatQuadHomogWeighted::from(&final_quad).eval_with_bilinear(&t);
 
       for i in 0..t_gold.len() {
          assert!((t_gold[i][0] - t_final[i][0]).abs() < 0.0001);
@@ -1494,7 +1492,7 @@ mod tests {
       let mut managed_curve_c = managed_curve_a;
       managed_curve_c.displace([4.0, 0.0]);
       managed_curve_c.bilinear_transform((sigma, 1.0));
-      managed_curve_c.four_point.path.raw_change_range([t_range[0] - 1.5, t_range[1] + 4.5]);
+      managed_curve_c.four_point.raw_change_range([t_range[0] - 1.5, t_range[1] + 4.5]);
       draw_sample_cubilinear(
          &managed_curve_c,
          drawable_diagram,
@@ -1955,7 +1953,7 @@ mod tests {
             drawable_diagram.prep.axes_range,
          );
 
-         managed_curve.rq_curve.path.select_range([-0.33333333, 0.5]);
+         managed_curve.rq_curve.select_range([-0.33333333, 0.5]);
 
          draw_sample_rat_quad(
             &managed_curve,

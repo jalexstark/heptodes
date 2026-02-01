@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{Curve, FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
+use crate::{FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
 use serde::Serialize;
 use serde_default::DefaultFromSerde;
 use zvx_base::{RatQuadHomog, RatQuadHomogWeighted};
@@ -20,14 +20,12 @@ use zvx_base::{RatQuadHomog, RatQuadHomogWeighted};
 #[derive(Debug, Serialize, DefaultFromSerde, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
 pub struct ManagedRatQuad {
-   pub rq_curve: Curve<RatQuadHomogWeighted>,
+   pub rq_curve: RatQuadHomogWeighted,
    // How originally specified, FourPoint or ThreePointAngle, for plotting and diagnostics only.
    pub specified: SpecifiedRatQuad,
    // Used as desired, by renders, for clipping and curve approximation.
    pub canvas_range: [f64; 4],
 }
-
-// ========== Now really ratquad-managed.  Cubic-managed is in cubic.rs.
 
 const fn extract_x_from_4(p: &[[f64; 2]; 4]) -> [f64; 4] {
    [p[0][0], p[1][0], p[2][0], p[3][0]]
@@ -48,10 +46,7 @@ const fn extract_y_from_3(p: &[[f64; 2]; 3]) -> [f64; 3] {
 #[allow(clippy::missing_panics_doc)]
 impl ManagedRatQuad {
    #[must_use]
-   pub fn create_from_weighted(
-      rq_curve: &Curve<RatQuadHomogWeighted>,
-      canvas_range: [f64; 4],
-   ) -> Self {
+   pub fn create_from_weighted(rq_curve: &RatQuadHomogWeighted, canvas_range: [f64; 4]) -> Self {
       Self { rq_curve: rq_curve.clone(), canvas_range, ..Default::default() }
    }
 
@@ -86,12 +81,10 @@ impl ManagedRatQuad {
       let b = [b_0, b_1, b_2];
       let c = [c_0, c_1, c_2];
       let a = [a_0, a_1, a_2];
-      let rat_quad = Curve::<RatQuadHomogWeighted> {
-         path: RatQuadHomogWeighted {
-            r: four_points.r,
-            h: RatQuadHomog([b, c, a]),
-            sigma: four_points.sigma,
-         },
+      let rat_quad = RatQuadHomogWeighted {
+         r: four_points.r,
+         h: RatQuadHomog([b, c, a]),
+         sigma: four_points.sigma,
       };
 
       Self { rq_curve: rat_quad, specified: SpecifiedRatQuad::FourPoint, canvas_range }
@@ -112,12 +105,10 @@ impl ManagedRatQuad {
       let b = [xs[0], 2.0 * f_mult_1p5 * xs[1], xs[2]];
       let c = [ys[0], 2.0 * f_mult_1p5 * ys[1], ys[2]];
       let a = [1.0, 2.0 * f_mult_1p5, 1.0];
-      let rat_quad = Curve::<RatQuadHomogWeighted> {
-         path: RatQuadHomogWeighted {
-            r: three_point_rat_quad.r,
-            h: RatQuadHomog([b, c, a]),
-            sigma: three_point_rat_quad.sigma,
-         },
+      let rat_quad = RatQuadHomogWeighted {
+         r: three_point_rat_quad.r,
+         h: RatQuadHomog([b, c, a]),
+         sigma: three_point_rat_quad.sigma,
       };
       Ok(Self { rq_curve: rat_quad, specified: SpecifiedRatQuad::ThreePointAngle, canvas_range })
    }

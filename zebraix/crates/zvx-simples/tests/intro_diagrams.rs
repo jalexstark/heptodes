@@ -741,7 +741,7 @@ mod tests {
                },
             );
 
-            managed_curve.rq_curve.path.select_range([-1.0, 1.0]);
+            managed_curve.rq_curve.select_range([-1.0, 1.0]);
 
             draw_sample_rat_quad(
                &managed_curve,

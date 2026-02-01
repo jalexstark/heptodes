@@ -17,8 +17,7 @@
 // for hyperbolic, and (implied) linear-quadratic for parabolic.
 
 use crate::base::TEval;
-use crate::rat_quad::RegularizedRatQuadPath;
-use crate::Curve;
+use crate::RegularizedRatQuadPath;
 use serde::Serialize;
 use zvx_base::{ArcPath, CubicPath, HyperbolicPath, OneOfSegment, RatQuadHomogWeighted};
 
@@ -27,16 +26,16 @@ pub enum RatQuadOoeSubclassed {
    #[default]
    Neither,
    // TODO: Elliptical to custom OOE.
-   Elliptical(Curve<RegularizedRatQuadPath>),
-   Parabolic(Curve<CubicPath>),
-   Hyperbolic(Curve<HyperbolicPath>),
+   Elliptical(RegularizedRatQuadPath),
+   Parabolic(CubicPath),
+   Hyperbolic(HyperbolicPath),
 }
 
 impl RatQuadOoeSubclassed {
    #[allow(clippy::missing_panics_doc)]
    #[allow(clippy::missing_errors_doc)]
    pub fn segment_from_ordinary(
-      weighted_curve: &Curve<RatQuadHomogWeighted>,
+      weighted_curve: &RatQuadHomogWeighted,
       tolerance: f64,
    ) -> Result<OneOfSegment, &'static str> {
       let ooe_rat_quad_extracted: Self =
@@ -50,16 +49,15 @@ impl RatQuadOoeSubclassed {
       match self {
          Self::Neither => OneOfSegment::Neither,
          Self::Elliptical(ooe_rat_quad) => {
-            let r = ooe_rat_quad.path.range_bound;
-            let s = 1.0 / ooe_rat_quad.path.a_2.sqrt();
-            let mx = ooe_rat_quad.path.b[0];
-            let my = ooe_rat_quad.path.c[0];
-            let (sx, sy) = (0.5 * s * ooe_rat_quad.path.b[1], 0.5 * s * ooe_rat_quad.path.c[1]);
-            let (cx, cy) = (ooe_rat_quad.path.b[2], ooe_rat_quad.path.c[2]);
+            let r = ooe_rat_quad.range_bound;
+            let s = 1.0 / ooe_rat_quad.a_2.sqrt();
+            let mx = ooe_rat_quad.b[0];
+            let my = ooe_rat_quad.c[0];
+            let (sx, sy) = (0.5 * s * ooe_rat_quad.b[1], 0.5 * s * ooe_rat_quad.c[1]);
+            let (cx, cy) = (ooe_rat_quad.b[2], ooe_rat_quad.c[2]);
 
             // The arc range is [-angle_range, angle_range].
-            let angle_range =
-               2.0 * (r * (ooe_rat_quad.path.a_2 / ooe_rat_quad.path.a_0).sqrt()).atan();
+            let angle_range = 2.0 * (r * (ooe_rat_quad.a_2 / ooe_rat_quad.a_0).sqrt()).atan();
 
             OneOfSegment::Arc(ArcPath {
                angle_range: [-angle_range, angle_range],
@@ -68,9 +66,9 @@ impl RatQuadOoeSubclassed {
             })
          }
 
-         Self::Parabolic(four_point) => OneOfSegment::Cubic(four_point.path.clone()),
+         Self::Parabolic(four_point) => OneOfSegment::Cubic(four_point.clone()),
 
-         Self::Hyperbolic(hyper_rat_quad) => OneOfSegment::Hyperbolic(hyper_rat_quad.path.clone()),
+         Self::Hyperbolic(hyper_rat_quad) => OneOfSegment::Hyperbolic(hyper_rat_quad.clone()),
       }
    }
 }

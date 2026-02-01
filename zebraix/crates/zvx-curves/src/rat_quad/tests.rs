@@ -14,7 +14,7 @@
 
 use super::*;
 use crate::bilinear_transform_timepoints;
-use crate::{Curve, CurveEval};
+use crate::CurveEval;
 use approx::assert_abs_diff_eq;
 use zvx_base::rat_quad_expand_power;
 use zvx_base::utils::CoordSliceWrapped;
@@ -48,20 +48,18 @@ use zvx_base::{q_reduce, rat_quad_rq_eval, RatQuadHomog, RatQuadHomogPower, RatQ
 #[allow(clippy::many_single_char_names)]
 // This is really the original version, before the matrix method was created.  It serves as a
 // cross-check.
-fn reference_create_power_from_weighted(
-   weighted: &Curve<RatQuadHomogWeighted>,
-) -> Curve<RatQuadHomogPower> {
+fn reference_create_power_from_weighted(weighted: &RatQuadHomogWeighted) -> RatQuadHomogPower {
    // Get from rat_poly.sigma once confirmed working.
    let sigma = 1.0;
-   let v = weighted.path.r[0];
-   let w = weighted.path.r[1];
+   let v = weighted.r[0];
+   let w = weighted.r[1];
    let a;
    let b;
    let c;
    {
-      let h0 = weighted.path.h.0[2][0];
-      let h1 = 0.5 * sigma * weighted.path.h.0[2][1];
-      let h2 = sigma * sigma * weighted.path.h.0[2][2];
+      let h0 = weighted.h.0[2][0];
+      let h1 = 0.5 * sigma * weighted.h.0[2][1];
+      let h2 = sigma * sigma * weighted.h.0[2][2];
       a = [
          w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
          2.0 * (-w * h0 + (w + v) * h1 - v * h2),
@@ -69,9 +67,9 @@ fn reference_create_power_from_weighted(
       ];
    }
    {
-      let h0 = weighted.path.h.0[0][0];
-      let h1 = 0.5 * sigma * weighted.path.h.0[0][1];
-      let h2 = sigma * sigma * weighted.path.h.0[0][2];
+      let h0 = weighted.h.0[0][0];
+      let h1 = 0.5 * sigma * weighted.h.0[0][1];
+      let h2 = sigma * sigma * weighted.h.0[0][2];
       b = [
          w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
          2.0 * (-w * h0 + (w + v) * h1 - v * h2),
@@ -79,9 +77,9 @@ fn reference_create_power_from_weighted(
       ];
    }
    {
-      let h0 = weighted.path.h.0[1][0];
-      let h1 = 0.5 * sigma * weighted.path.h.0[1][1];
-      let h2 = sigma * sigma * weighted.path.h.0[1][2];
+      let h0 = weighted.h.0[1][0];
+      let h1 = 0.5 * sigma * weighted.h.0[1][1];
+      let h2 = sigma * sigma * weighted.h.0[1][2];
       c = [
          w * w * h0 - 2.0 * v * w * h1 + v * v * h2,
          2.0 * (-w * h0 + (w + v) * h1 - v * h2),
@@ -89,13 +87,7 @@ fn reference_create_power_from_weighted(
       ];
    }
 
-   Curve::<RatQuadHomogPower> {
-      path: RatQuadHomogPower {
-         r: weighted.path.r,
-         h: RatQuadHomog([b, c, a]),
-         sigma: weighted.path.sigma,
-      },
-   }
+   RatQuadHomogPower { r: weighted.r, h: RatQuadHomog([b, c, a]), sigma: weighted.sigma }
 }
 
 #[allow(clippy::unreadable_literal)]
@@ -115,46 +107,43 @@ fn weighted_example_0() -> RatQuadHomogWeighted {
 #[allow(clippy::unreadable_literal)]
 fn weighted_power_conversion_test() {
    // The data in these tests are not deeply thought out.
-   let weighted = Curve { path: weighted_example_0() };
+   let weighted = weighted_example_0();
 
-   let reference_powered = reference_create_power_from_weighted(&weighted).path;
-   let powered = Curve {
-      path: RatQuadHomogPower {
-         r: [-6.0, 14.0],
-         h: RatQuadHomog([
-            [-718.8918942063235, 35.35533905932739, -6.874649261535881],
-            [-319.38251506503764, 140.7473543286449, -0.40679613724090746],
-            [689.0243700979975, -9.204745830513225, 1.1505932288141536],
-         ]),
-         sigma: (2.0, 1.5),
-      },
+   let reference_powered = reference_create_power_from_weighted(&weighted);
+   let powered = RatQuadHomogPower {
+      r: [-6.0, 14.0],
+      h: RatQuadHomog([
+         [-718.8918942063235, 35.35533905932739, -6.874649261535881],
+         [-319.38251506503764, 140.7473543286449, -0.40679613724090746],
+         [689.0243700979975, -9.204745830513225, 1.1505932288141536],
+      ]),
+      sigma: (2.0, 1.5),
    };
 
    // Test in power form.
    assert_abs_diff_eq!(
       &PathWrapped::from(&reference_powered),
-      &PathWrapped::from(&powered.path),
+      &PathWrapped::from(&powered),
       epsilon = 1.0e-5
    );
 
    // Test in power form.
    assert_abs_diff_eq!(
-      &PathWrapped::from(&powered.path),
-      &PathWrapped::from(&RatQuadHomogPower::from(&weighted.path)),
+      &PathWrapped::from(&powered),
+      &PathWrapped::from(&RatQuadHomogPower::from(&weighted)),
       epsilon = 1.0e-5
    );
 
    // Test in weighted form.
    assert_abs_diff_eq!(
-      &PathWrapped::from(&weighted.path.normalize()),
-      &PathWrapped::from(&RatQuadHomogWeighted::from(&powered.path).normalize()),
+      &PathWrapped::from(&weighted.normalize()),
+      &PathWrapped::from(&RatQuadHomogWeighted::from(&powered).normalize()),
       epsilon = 1.0e-5
    );
 
    // Collapse while in power form, tested in weighted.
-   let direct = rq_weighted_collapse_bilinear(&weighted.path).normalize();
-   let indirect =
-      RatQuadHomogWeighted::from(&rq_power_collapse_bilinear(&powered.path)).normalize();
+   let direct = rq_weighted_collapse_bilinear(&weighted).normalize();
+   let indirect = RatQuadHomogWeighted::from(&rq_power_collapse_bilinear(&powered)).normalize();
    assert_abs_diff_eq!(
       &PathWrapped::from(&direct),
       &PathWrapped::from(&indirect),
@@ -193,10 +182,10 @@ fn eval_test() {
       t.push(f64::from(*item).mul_add(scale, offset));
    }
 
-   let curve = Curve::<RatQuadHomogWeighted> { path: weighted.clone() };
+   let curve = weighted.clone();
 
    {
-      let points = curve.path.eval_with_bilinear(&t);
+      let points = curve.eval_with_bilinear(&t);
       let reference_points = reference_eval_with_bilinear(&weighted, &t);
 
       assert_abs_diff_eq!(
@@ -210,12 +199,12 @@ fn eval_test() {
       // Test application of bilinear to curve structure vs applying directly to time points.
       let test_sigma = (2.5, 3.7);
       let mut bilineared_curve = curve.clone();
-      bilineared_curve.path.bilinear_transform(test_sigma);
+      bilineared_curve.bilinear_transform(test_sigma);
       let points = reference_eval_with_bilinear(
          &weighted,
-         &bilinear_transform_timepoints(&t, test_sigma, curve.path.r),
+         &bilinear_transform_timepoints(&t, test_sigma, curve.r),
       );
-      let reference_points = reference_eval_with_bilinear(&bilineared_curve.path, &t);
+      let reference_points = reference_eval_with_bilinear(&bilineared_curve, &t);
 
       assert_abs_diff_eq!(
          &CoordSliceWrapped::from(&points[..]),

@@ -13,28 +13,10 @@
 // limitations under the License.
 
 use serde::{Deserialize, Serialize};
-use zvx_base::is_default;
 
 // Intended for use directly on paths, rather than those wrapped into Curves.
 pub trait TEval {
    fn eval_maybe_bilinear(&self, t: &[f64]) -> Vec<[f64; 2]>;
-}
-
-// Sigma is a bilinear transformation of `t` that does not change the end-points of the
-// curve. Thus conversion to a path does not generally need to involve sigma.
-#[derive(Debug, Serialize, Deserialize, Default, PartialEq, Eq, Clone)]
-pub struct Curve<T: Default + PartialEq> {
-   #[serde(skip_serializing_if = "is_default")]
-   pub path: T,
-}
-
-impl<U, T: Default + PartialEq> From<&Curve<T>> for Curve<U>
-where
-   U: Default + PartialEq + for<'a> From<&'a T>,
-{
-   fn from(src: &Curve<T>) -> Self {
-      Self { path: U::from(&src.path) }
-   }
 }
 
 pub trait CurveEval {

@@ -12,18 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod base;
-pub mod cubic;
-pub mod rat_quad;
-pub mod subclasses;
-
-pub use crate::base::{bilinear_transform_timepoints, CurveEval, CurveTransform, ZebraixAngle};
-pub use crate::cubic::managed::ManagedCubic;
-pub use crate::rat_quad::managed::ManagedRatQuad;
-pub use crate::rat_quad::{FourPointRatQuad, SpecifiedRatQuad, ThreePointAngleRepr};
-pub use crate::subclasses::convert::RegularizedRatQuadPath;
-pub use crate::subclasses::threes::RatQuadOoeSubclassed;
-
-// #[cfg(test)]
-// #[macro_use]
-extern crate approx;
+pub mod convert;
+pub mod threes;
