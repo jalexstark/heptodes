@@ -1,0 +1,27 @@
+[package]
+name = "zvx-jaywalk"
+version = "0.1.0"
+edition = "2021"
+homepage = "https://github.com/jalexstark/heptodes"
+description = "Diagramming jaywalk test"
+keywords = ["svg", "test"]
+documentation = "https://docs.rs/zvx-jaywalk"
+repository = "https://github.com/jalexstark/heptodes/tree/main/zebraix/crates/zvx-jaywalk"
+readme = "README.md"
+license = "MIT"
+categories = ["graphics", "development-tools::testing"]
+
+[dependencies]
+approx = { version = "0.5" }
+serde = { version = "1.0", features = ["derive"] }
+serde_default = "0.2"
+zvx-base =  { path = "../zvx-base", version = "0.1" }
+
+[dev-dependencies]
+ndarray = "0.15.4"
+permutohedron = "0.2.4"
+factorial = "0.2.1"
+shuffle = "0.1.7"
+rand = "0.8.4"
+rand_pcg = "0.3.1"
+

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Obsolete: Re-implemented in zvx-jaywalk Rust crate.
+
 #include "base_dir/mid_dir/mid_dir/zebraix/base/dominance.h"
 
 #include <algorithm>

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+// Obsolete: Re-implemented in zvx-jaywalk Rust crate.
+
 #ifndef BASE_DIR_MID_DIR_MID_DIR_ZEBRAIX_BASE_DOMINANCE_H_
 #define BASE_DIR_MID_DIR_MID_DIR_ZEBRAIX_BASE_DOMINANCE_H_
 
