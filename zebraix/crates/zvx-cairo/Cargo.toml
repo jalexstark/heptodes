@@ -11,6 +11,8 @@ readme = "README.md"
 license = "MIT"
 categories = ["graphics", "development-tools::testing"]
 
+# Move needed elements of docagram to base (if reasonable) or
+# drawables, and break dependency thereupon.
 [dependencies]
 pangocairo = "0.20"
 zvx-base =  { path = "../zvx-base", version = "0.1" }
