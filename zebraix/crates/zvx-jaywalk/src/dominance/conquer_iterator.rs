@@ -38,6 +38,9 @@ pub struct MergeStep {
    pub singles_to_add: u32,
 }
 
+// Used to "un-mark" entries and to initialize state.
+const PHONEY_SHIFTED_LEVEL: u32 = usize::MAX.count_ones() - 1;
+
 /// An iterator which counts from one to five
 pub struct MinusPlusShift {
    size: usize,
@@ -59,14 +62,13 @@ impl MinusPlusShift {
    pub fn new(merge_size: usize) -> Self {
       assert!(merge_size >= 2);
       // The initial state is based on a phoney "previous" state.
-      let phoney_shifted_level = usize::MAX.count_ones() - 1;
       assert!((!usize::MAX + 1).is_power_of_two());
       assert!(merge_size < usize::MAX);
       Self {
          size: merge_size,
-         shifted: 1 << phoney_shifted_level,
-         negation: 1 << phoney_shifted_level,
-         shifted_level: phoney_shifted_level,
+         shifted: 1 << PHONEY_SHIFTED_LEVEL,
+         negation: 1 << PHONEY_SHIFTED_LEVEL,
+         shifted_level: PHONEY_SHIFTED_LEVEL,
          high_sort_mark: 0,
       }
    }
@@ -181,5 +183,203 @@ mod tests {
          assert!(1 << final_shifted_level < sort_size);
          assert!(2 << final_shifted_level >= sort_size);
       }
+   }
+
+   fn mark_stretch_single(check_vector: &mut [u32], location: usize, level: u32) {
+      // dbg!((check_vector[location], location, level));
+      assert_eq!(check_vector[location], PHONEY_SHIFTED_LEVEL);
+      check_vector[location] = level;
+      // dbg!((location, level));
+   }
+
+   fn mark_stretch(
+      check_vector: &mut [u32],
+      lower: usize,
+      middle: usize,
+      upper: usize,
+      level: u32,
+   ) {
+      // for check_index in lower..middle {
+      //    assert_eq!(check_vector[check_index], level - 1);
+      //    check_vector[check_index] = level;
+      // }
+      for item in &mut check_vector[lower..middle] {
+         assert_eq!(*item, level - 1);
+         *item = level;
+      }
+      for item in &mut check_vector[middle..upper] {
+         assert!(*item < level);
+         *item = level;
+      }
+   }
+
+   #[test]
+   fn traversal_scan() {
+      let stop_sort_size: usize = 9;
+
+      for sort_size in 2..stop_sort_size {
+         let mut check_vector = vec![PHONEY_SHIFTED_LEVEL; sort_size];
+         let mut final_shifted_level = 0;
+         let mut final_merge_step_lower = 0;
+         let mut final_merge_step_upper = 0;
+
+         let iter = MinusPlusShift::new(sort_size);
+         for merge_step in iter {
+            match merge_step.singles_to_add {
+               2 => {
+                  assert_eq!(merge_step.middle, merge_step.lower + 1);
+                  assert_eq!(merge_step.upper, merge_step.middle + 1);
+                  mark_stretch_single(
+                     &mut check_vector,
+                     merge_step.lower,
+                     merge_step.shifted_level,
+                  );
+                  mark_stretch_single(
+                     &mut check_vector,
+                     merge_step.middle,
+                     merge_step.shifted_level,
+                  );
+               }
+               1 => {
+                  assert_eq!(merge_step.upper, merge_step.middle + 1);
+                  mark_stretch_single(
+                     &mut check_vector,
+                     merge_step.middle,
+                     merge_step.shifted_level,
+                  );
+                  mark_stretch(
+                     &mut check_vector,
+                     merge_step.lower,
+                     merge_step.middle, // Effectively skip the upper part.
+                     merge_step.middle,
+                     merge_step.shifted_level,
+                  );
+               }
+               0 => {
+                  mark_stretch(
+                     &mut check_vector,
+                     merge_step.lower,
+                     merge_step.middle,
+                     merge_step.upper,
+                     merge_step.shifted_level,
+                  );
+               }
+               _ => {
+                  panic!("invalid value for singles_to_add (not 0, 1 or 2).");
+               }
+            }
+
+            final_shifted_level = merge_step.shifted_level;
+            final_merge_step_lower = merge_step.lower;
+            final_merge_step_upper = merge_step.upper;
+         }
+
+         assert_eq!(final_merge_step_lower, 0);
+         assert_eq!(final_merge_step_upper, sort_size);
+         for item in check_vector {
+            assert_eq!(item, final_shifted_level);
+         }
+      }
+   }
+}
+
+#[test]
+fn check_small_sizes() {
+   // Sizes 0, 1 are invalid.
+
+   {
+      let mut check_vector = Vec::<(usize, usize, usize, u32, u32)>::default();
+      let iter = MinusPlusShift::new(2);
+      for merge_step in iter {
+         check_vector.push((
+            merge_step.lower,
+            merge_step.middle,
+            merge_step.upper,
+            merge_step.shifted_level,
+            merge_step.singles_to_add,
+         ));
+      }
+      assert_eq!(check_vector, vec![(0, 1, 2, 0, 2)]);
+   }
+   {
+      let mut check_vector = Vec::<(usize, usize, usize, u32, u32)>::default();
+      let iter = MinusPlusShift::new(3);
+      for merge_step in iter {
+         check_vector.push((
+            merge_step.lower,
+            merge_step.middle,
+            merge_step.upper,
+            merge_step.shifted_level,
+            merge_step.singles_to_add,
+         ));
+      }
+      assert_eq!(check_vector, vec![(0, 1, 2, 0, 2), (0, 2, 3, 1, 1)]);
+   }
+   {
+      let mut check_vector = Vec::<(usize, usize, usize, u32, u32)>::default();
+      let iter = MinusPlusShift::new(6);
+      for merge_step in iter {
+         check_vector.push((
+            merge_step.lower,
+            merge_step.middle,
+            merge_step.upper,
+            merge_step.shifted_level,
+            merge_step.singles_to_add,
+         ));
+      }
+      assert_eq!(
+         check_vector,
+         vec![(0, 1, 2, 0, 2), (2, 3, 4, 0, 2), (0, 2, 4, 1, 0), (4, 5, 6, 0, 2), (0, 4, 6, 2, 0)]
+      );
+   }
+   {
+      let mut check_vector = Vec::<(usize, usize, usize, u32, u32)>::default();
+      let iter = MinusPlusShift::new(7);
+      for merge_step in iter {
+         check_vector.push((
+            merge_step.lower,
+            merge_step.middle,
+            merge_step.upper,
+            merge_step.shifted_level,
+            merge_step.singles_to_add,
+         ));
+      }
+      assert_eq!(
+         check_vector,
+         vec![
+            (0, 1, 2, 0, 2),
+            (2, 3, 4, 0, 2),
+            (0, 2, 4, 1, 0),
+            (4, 5, 6, 0, 2),
+            (4, 6, 7, 1, 1),
+            (0, 4, 7, 2, 0)
+         ]
+      );
+   }
+   {
+      let mut check_vector = Vec::<(usize, usize, usize, u32, u32)>::default();
+      let iter = MinusPlusShift::new(9);
+      for merge_step in iter {
+         check_vector.push((
+            merge_step.lower,
+            merge_step.middle,
+            merge_step.upper,
+            merge_step.shifted_level,
+            merge_step.singles_to_add,
+         ));
+      }
+      assert_eq!(
+         check_vector,
+         vec![
+            (0, 1, 2, 0, 2),
+            (2, 3, 4, 0, 2),
+            (0, 2, 4, 1, 0),
+            (4, 5, 6, 0, 2),
+            (6, 7, 8, 0, 2),
+            (4, 6, 8, 1, 0),
+            (0, 4, 8, 2, 0),
+            (0, 8, 9, 3, 1)
+         ]
+      );
    }
 }

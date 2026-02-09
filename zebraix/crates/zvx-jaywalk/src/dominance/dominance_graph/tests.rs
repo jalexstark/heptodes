@@ -15,6 +15,7 @@
 use super::*;
 
 use permutohedron::Heap;
+use rand::Rng;
 use rand_pcg::Pcg32;
 use shuffle::fy::FisherYates;
 use shuffle::shuffler::Shuffler;
@@ -57,7 +58,7 @@ impl ReferenceDominanceGraph for DominanceGraph {
 
       // If first and last nodes are not naturally root source and sink, force their creation.
       self.imputed_source |= self.nodes.first().unwrap().obverse_rank != min_obverse;
-      self.imputed_sink |= self.nodes.last().unwrap().prime_rank != max_obverse;
+      self.imputed_sink |= self.nodes.last().unwrap().obverse_rank != max_obverse;
 
       if self.imputed_source {
          self.nodes.insert(
@@ -622,7 +623,7 @@ fn complicated_direct_test() {
 // manipulation for greater testing.
 #[test]
 fn exhaustive_permutations_test() {
-   const TEST_LENGTH: RankType = 5;
+   const TEST_LENGTH: RankType = 6;
 
    let prime_ranks: Vec<RankType> = (0..TEST_LENGTH).collect();
    let mut obverse_ranks = prime_ranks.clone();
@@ -665,9 +666,11 @@ fn exhaustive_permutations_test() {
 
 #[test]
 #[allow(clippy::unreadable_literal)]
+#[allow(clippy::cognitive_complexity)]
 fn random_shuffles_test() {
-   const TEST_LENGTH: RankType = 5;
-   const NUM_TESTS: usize = 100;
+   const TEST_LENGTH: RankType = 11;
+   const NUDGE_PROPORTION: f32 = 0.1;
+   const NUM_TESTS: usize = 300;
    const SEED_STATE: u64 = 0xd6acf0e0b5d5ee15;
    const SEED_STREAM: u64 = 0xabb2df070cab73b7;
    let mut rng = Pcg32::new(SEED_STATE, SEED_STREAM);
@@ -678,10 +681,58 @@ fn random_shuffles_test() {
 
    for _i in 0..NUM_TESTS {
       assert!(fy.shuffle(&mut obverse_ranks, &mut rng).is_ok());
+
+      let mut nudged_obverse_ranks = obverse_ranks.clone();
+      for obverse in &mut nudged_obverse_ranks {
+         let nudge_change_i32: i32 = if rng.gen::<f32>() < NUDGE_PROPORTION {
+            if rng.gen::<f32>() < 0.5 {
+               -1
+            } else {
+               1
+            }
+         } else {
+            0
+         };
+         *obverse += nudge_change_i32 as RankType;
+      }
+
       let test_pairs: Vec<(RankType, RankType)> =
-         zip(prime_ranks.clone(), obverse_ranks.clone()).collect();
+         zip(prime_ranks.clone(), nudged_obverse_ranks.clone()).collect();
 
       {
+         let orig_graph = DominanceGraph::new_from_pairs(&test_pairs[..], true, true);
+         let mut graph = orig_graph.clone();
+         assert!(graph.flesh_out_graph_nodes().is_ok());
+         assert!(graph.connect_graph().is_ok());
+
+         let mut base_reference_graph = orig_graph.clone();
+         assert!(base_reference_graph.reference_flesh_out_graph_nodes().is_ok());
+         assert!(base_reference_graph.reference_connect_graph().is_ok());
+
+         {
+            let mut reference_graph = orig_graph.clone();
+            assert!(reference_graph.reference_flesh_out_graph_nodes().is_ok());
+            assert!(reference_graph.reference_forewards_connect_graph().is_ok());
+            assert_eq!(reference_graph, base_reference_graph);
+            assert_eq!(graph, reference_graph);
+
+            assert_eq!(graph, base_reference_graph);
+         }
+         {
+            let mut reference_graph = orig_graph.clone();
+            assert!(reference_graph.reference_flesh_out_graph_nodes().is_ok());
+            assert!(reference_graph.reference_backwards_connect_graph().is_ok());
+            assert_eq!(graph, reference_graph);
+         }
+
+         let parenting_check = graph.check_children_parent();
+         assert!(parenting_check.is_ok(), "{parenting_check:?}");
+         let descents_check = graph.check_descents();
+         assert!(descents_check.is_ok(), "{descents_check:?}");
+      }
+
+      {
+         // Extra test, with not-necessarily imputed source and sink.
          let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], false, false);
          let mut reference_graph = graph.clone();
          assert!(graph.flesh_out_graph_nodes().is_ok());
@@ -694,21 +745,75 @@ fn random_shuffles_test() {
          let parenting_check = graph.check_children_parent();
          assert!(parenting_check.is_ok(), "{parenting_check:?}");
       }
+   }
+}
 
-      {
-         let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], true, true);
-         let mut reference_graph = graph.clone();
-         assert!(graph.flesh_out_graph_nodes().is_ok());
-         assert!(graph.connect_graph().is_ok());
-         assert!(reference_graph.reference_flesh_out_graph_nodes().is_ok());
-         assert!(reference_graph.reference_connect_graph().is_ok());
+#[test]
+#[allow(clippy::unreadable_literal)]
+#[allow(clippy::cognitive_complexity)]
+fn sizes_shuffles_test() {
+   const MAX_TEST_LENGTH: RankType = 17;
+   const NUDGE_PROPORTION: f32 = 0.1;
+   const NUM_TESTS_PER_SIZE: usize = 30;
+   const SEED_STATE: u64 = 0xd6acf0e0b5d5ee15;
+   const SEED_STREAM: u64 = 0xabb2df070cab73b7;
+   let mut rng = Pcg32::new(SEED_STATE, SEED_STREAM);
+   let mut fy = FisherYates::default();
 
-         assert_eq!(graph, reference_graph);
+   for test_length in 2..MAX_TEST_LENGTH {
+      let prime_ranks: Vec<RankType> = (0..test_length).collect();
+      let mut obverse_ranks = prime_ranks.clone();
 
-         let parenting_check = graph.check_children_parent();
-         assert!(parenting_check.is_ok(), "{parenting_check:?}");
-         let descents_check = graph.check_descents();
-         assert!(descents_check.is_ok(), "{descents_check:?}");
+      for _i in 0..NUM_TESTS_PER_SIZE {
+         assert!(fy.shuffle(&mut obverse_ranks, &mut rng).is_ok());
+
+         let mut nudged_obverse_ranks = obverse_ranks.clone();
+         for obverse in &mut nudged_obverse_ranks {
+            let nudge_change_i32: i32 = if rng.gen::<f32>() < NUDGE_PROPORTION {
+               if rng.gen::<f32>() < 0.5 {
+                  -1
+               } else {
+                  1
+               }
+            } else {
+               0
+            };
+            *obverse += nudge_change_i32 as RankType;
+         }
+
+         let test_pairs: Vec<(RankType, RankType)> =
+            zip(prime_ranks.clone(), nudged_obverse_ranks.clone()).collect();
+
+         {
+            let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], true, true);
+            let mut reference_graph = graph.clone();
+            assert!(graph.flesh_out_graph_nodes().is_ok());
+            assert!(graph.connect_graph().is_ok());
+            assert!(reference_graph.reference_flesh_out_graph_nodes().is_ok());
+            assert!(reference_graph.reference_connect_graph().is_ok());
+
+            assert_eq!(graph, reference_graph);
+
+            let parenting_check = graph.check_children_parent();
+            assert!(parenting_check.is_ok(), "{parenting_check:?}");
+            let descents_check = graph.check_descents();
+            assert!(descents_check.is_ok(), "{descents_check:?}");
+         }
+
+         {
+            // Extra test, with not-necessarily imputed source and sink.
+            let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], false, false);
+            let mut reference_graph = graph.clone();
+            assert!(graph.flesh_out_graph_nodes().is_ok());
+            assert!(graph.connect_graph().is_ok());
+            assert!(reference_graph.reference_flesh_out_graph_nodes().is_ok());
+            assert!(reference_graph.reference_connect_graph().is_ok());
+
+            assert_eq!(graph, reference_graph);
+
+            let parenting_check = graph.check_children_parent();
+            assert!(parenting_check.is_ok(), "{parenting_check:?}");
+         }
       }
    }
 }
@@ -777,6 +882,36 @@ fn grid_direct_test() {
       ],
    };
    assert_eq!(graph, expected);
+   let parenting_check = graph.check_children_parent();
+   assert!(parenting_check.is_ok(), "{parenting_check:?}");
+   let descents_check = graph.check_descents();
+   assert!(descents_check.is_ok(), "{descents_check:?}");
+}
+
+// Once found to cause failure.
+#[test]
+fn specific_0_test() {
+   let complicated_pairs = [(0_i32, 1_i32), (1, 3), (2, 0), (3, 5), (4, 4), (5, 2)];
+
+   let mut graph = DominanceGraph::new_from_pairs(&complicated_pairs[..], false, false);
+   assert!(graph.flesh_out_graph_nodes().is_ok());
+   assert!(graph.connect_graph().is_ok());
+
+   let parenting_check = graph.check_children_parent();
+   assert!(parenting_check.is_ok(), "{parenting_check:?}");
+   let descents_check = graph.check_descents();
+   assert!(descents_check.is_ok(), "{descents_check:?}");
+}
+
+// Once found to cause failure.
+#[test]
+fn specific_1_test() {
+   let complicated_pairs = [(0_i32, 6_i32), (1, 4), (2, 1), (3, 2), (4, 5), (5, 0), (5, 3)];
+
+   let mut graph = DominanceGraph::new_from_pairs(&complicated_pairs[..], false, false);
+   assert!(graph.flesh_out_graph_nodes().is_ok());
+   assert!(graph.connect_graph().is_ok());
+
    let parenting_check = graph.check_children_parent();
    assert!(parenting_check.is_ok(), "{parenting_check:?}");
    let descents_check = graph.check_descents();
