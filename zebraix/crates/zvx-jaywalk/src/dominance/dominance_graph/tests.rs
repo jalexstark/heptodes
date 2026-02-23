@@ -15,10 +15,10 @@
 use super::*;
 
 use permutohedron::Heap;
-use rand::Rng;
-use rand_pcg::Pcg32;
-use shuffle::fy::FisherYates;
-use shuffle::shuffler::Shuffler;
+use rand::prelude::SliceRandom;
+use rand::rngs::Xoshiro128PlusPlus;
+use rand::RngExt;
+use rand::SeedableRng;
 use std::iter::zip;
 
 trait ReferenceDominanceGraph {
@@ -671,21 +671,21 @@ fn random_shuffles_test() {
    const TEST_LENGTH: RankType = 11;
    const NUDGE_PROPORTION: f32 = 0.1;
    const NUM_TESTS: usize = 300;
-   const SEED_STATE: u64 = 0xd6acf0e0b5d5ee15;
-   const SEED_STREAM: u64 = 0xabb2df070cab73b7;
-   let mut rng = Pcg32::new(SEED_STATE, SEED_STREAM);
-   let mut fy = FisherYates::default();
+   const SEED_STATE: u64 = 0xd6acf0e05dee155b;
+   // const SEED_STREAM: u64 = 0xabb2df070cab73b7;
+   let mut rng = Xoshiro128PlusPlus::seed_from_u64(SEED_STATE);
+   // let mut fy = FisherYates::default();
 
    let prime_ranks: Vec<RankType> = (0..TEST_LENGTH).collect();
    let mut obverse_ranks = prime_ranks.clone();
 
    for _i in 0..NUM_TESTS {
-      assert!(fy.shuffle(&mut obverse_ranks, &mut rng).is_ok());
+      obverse_ranks.shuffle(&mut rng);
 
       let mut nudged_obverse_ranks = obverse_ranks.clone();
       for obverse in &mut nudged_obverse_ranks {
-         let nudge_change_i32: i32 = if rng.gen::<f32>() < NUDGE_PROPORTION {
-            if rng.gen::<f32>() < 0.5 {
+         let nudge_change_i32: i32 = if rng.random::<f32>() < NUDGE_PROPORTION {
+            if rng.random::<f32>() < 0.5 {
                -1
             } else {
                1
@@ -755,22 +755,20 @@ fn sizes_shuffles_test() {
    const MAX_TEST_LENGTH: RankType = 17;
    const NUDGE_PROPORTION: f32 = 0.1;
    const NUM_TESTS_PER_SIZE: usize = 30;
-   const SEED_STATE: u64 = 0xd6acf0e0b5d5ee15;
-   const SEED_STREAM: u64 = 0xabb2df070cab73b7;
-   let mut rng = Pcg32::new(SEED_STATE, SEED_STREAM);
-   let mut fy = FisherYates::default();
+   const SEED_STATE: u64 = 0xacf0e0b5dee15d5;
+   let mut rng = Xoshiro128PlusPlus::seed_from_u64(SEED_STATE);
 
    for test_length in 2..MAX_TEST_LENGTH {
       let prime_ranks: Vec<RankType> = (0..test_length).collect();
       let mut obverse_ranks = prime_ranks.clone();
 
       for _i in 0..NUM_TESTS_PER_SIZE {
-         assert!(fy.shuffle(&mut obverse_ranks, &mut rng).is_ok());
+         obverse_ranks.shuffle(&mut rng);
 
          let mut nudged_obverse_ranks = obverse_ranks.clone();
          for obverse in &mut nudged_obverse_ranks {
-            let nudge_change_i32: i32 = if rng.gen::<f32>() < NUDGE_PROPORTION {
-               if rng.gen::<f32>() < 0.5 {
+            let nudge_change_i32: i32 = if rng.random::<f32>() < NUDGE_PROPORTION {
+               if rng.random::<f32>() < 0.5 {
                   -1
                } else {
                   1
@@ -797,6 +795,23 @@ fn sizes_shuffles_test() {
             let parenting_check = graph.check_children_parent();
             assert!(parenting_check.is_ok(), "{parenting_check:?}");
             let descents_check = graph.check_descents();
+            assert!(descents_check.is_ok(), "{descents_check:?}");
+         }
+
+         {
+            // The cross-checked graph does some potentially N^2 work by duplicating construction.
+            let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], true, true);
+            let mut cross_checked_graph = graph.clone();
+            assert!(graph.flesh_out_graph_nodes().is_ok());
+            assert!(graph.connect_graph().is_ok());
+            assert!(cross_checked_graph.flesh_out_graph_nodes().is_ok());
+            assert!(cross_checked_graph.cross_checked_connect_graph().is_ok());
+
+            assert_eq!(graph, cross_checked_graph);
+
+            let parenting_check = cross_checked_graph.check_children_parent();
+            assert!(parenting_check.is_ok(), "{parenting_check:?}");
+            let descents_check = cross_checked_graph.check_descents();
             assert!(descents_check.is_ok(), "{descents_check:?}");
          }
 
@@ -916,4 +931,308 @@ fn specific_1_test() {
    assert!(parenting_check.is_ok(), "{parenting_check:?}");
    let descents_check = graph.check_descents();
    assert!(descents_check.is_ok(), "{descents_check:?}");
+}
+
+struct PerSizeStats {
+   num_tests: u32,
+   problem_n: u32,
+   accumulation: CounterData,
+   maxima: CounterData,
+   full_total_max: i32,
+   core_total_max: i32,
+}
+
+impl PerSizeStats {
+   fn create_zeroed(num_tests: u32, problem_n: u32) -> Self {
+      Self {
+         num_tests,
+         problem_n,
+         accumulation: CounterData::create_zeroed(problem_n as IndexType),
+         maxima: CounterData::create_zeroed(problem_n as IndexType),
+         full_total_max: 0_i32,
+         core_total_max: 0_i32,
+      }
+   }
+
+   fn update(&mut self, counts: &CounterData) {
+      self.accumulation.rank_comparisons += counts.rank_comparisons;
+      self.accumulation.square_comparisons += counts.square_comparisons;
+      self.accumulation.flow_comparisons += counts.flow_comparisons;
+      self.accumulation.index_comparisons += counts.index_comparisons;
+      self.accumulation.boolean_branches += counts.boolean_branches;
+      self.accumulation.all_edges += counts.all_edges;
+
+      let core_total = counts.rank_comparisons
+         + counts.flow_comparisons
+         + counts.index_comparisons
+         + counts.boolean_branches;
+      self.core_total_max = std::cmp::max(self.core_total_max, core_total);
+      self.full_total_max =
+         std::cmp::max(self.full_total_max, core_total + counts.square_comparisons);
+      self.maxima.rank_comparisons =
+         std::cmp::max(self.maxima.rank_comparisons, counts.rank_comparisons);
+      self.maxima.square_comparisons =
+         std::cmp::max(self.maxima.square_comparisons, counts.square_comparisons);
+      self.maxima.flow_comparisons =
+         std::cmp::max(self.maxima.flow_comparisons, counts.flow_comparisons);
+      self.maxima.index_comparisons =
+         std::cmp::max(self.maxima.index_comparisons, counts.index_comparisons);
+      self.maxima.boolean_branches =
+         std::cmp::max(self.maxima.boolean_branches, counts.boolean_branches);
+      self.maxima.all_edges = std::cmp::max(self.maxima.all_edges, counts.all_edges);
+   }
+
+   fn report(stat_vec: &Vec<Self>) {
+      println!(
+         "\nTest size, total rank_comparisons,  total square_comparisons, total flow_comparisons, \
+              total index_comparisons, total boolean_branches"
+      );
+      for stats in stat_vec {
+         println!(
+            "{},{},{},{},{},{}",
+            stats.problem_n,
+            stats.accumulation.rank_comparisons,
+            stats.accumulation.square_comparisons,
+            stats.accumulation.flow_comparisons,
+            stats.accumulation.index_comparisons,
+            stats.accumulation.boolean_branches,
+         );
+      }
+      println!(
+         "\nTest size, scaled rank_comparisons, scaled square_comparisons, scaled flow_comparisons, \
+              scaled index_comparisons, scaled boolean_branches, mean all_edges"
+      );
+      for stats in stat_vec {
+         // Normally divisor is N-1, but since we add 2 to N when adding source and sink, normalize by N+1.
+         let adjuster = 1.0 / (stats.num_tests as f64) / ((stats.problem_n + 1) as f64);
+         println!(
+            "{},{},{},{},{},{},{}",
+            stats.problem_n,
+            stats.accumulation.rank_comparisons as f64 * adjuster,
+            stats.accumulation.square_comparisons as f64 * adjuster,
+            stats.accumulation.flow_comparisons as f64 * adjuster,
+            stats.accumulation.index_comparisons as f64 * adjuster,
+            stats.accumulation.boolean_branches as f64 * adjuster,
+            stats.accumulation.all_edges as f64 / (stats.num_tests as f64),
+         );
+      }
+      println!(
+         "\nTest size, max rank_comparisons, max flow_comparisons, \
+              max index_comparisons, max boolean_branches, max all_edges"
+      );
+      for stats in stat_vec {
+         println!(
+            "{},{},{},{},{},{},{}",
+            stats.problem_n,
+            stats.maxima.rank_comparisons,
+            stats.maxima.square_comparisons,
+            stats.maxima.flow_comparisons,
+            stats.maxima.index_comparisons,
+            stats.maxima.boolean_branches,
+            stats.maxima.all_edges,
+         );
+      }
+      println!(
+         "\nTest size, mean of all types, mean no edge, mean edge work, max of all types, \
+       max no edge, max edge work"
+      );
+      for stats in stat_vec {
+         // let max_norm = ;
+         let adjuster = 1.0 / (stats.num_tests as f64) / ((stats.problem_n - 1) as f64);
+         let total_total = stats.accumulation.rank_comparisons
+            + stats.accumulation.flow_comparisons
+            + stats.accumulation.index_comparisons
+            + stats.accumulation.boolean_branches;
+         println!(
+            "{},{},{},{},{},{},{}",
+            stats.problem_n,
+            (total_total + stats.accumulation.square_comparisons) as f64 * adjuster,
+            total_total as f64 * adjuster,
+            stats.accumulation.square_comparisons as f64 * adjuster,
+            stats.full_total_max,
+            stats.core_total_max,
+            stats.maxima.square_comparisons,
+         );
+      }
+   }
+}
+
+// This does not do any N^2 work, beyond needed edge generation, which apparently averages out
+// at roughly Nlog(N) anyway.
+#[test]
+#[allow(clippy::unreadable_literal)]
+#[allow(clippy::cognitive_complexity)]
+#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_sign_loss)]
+#[allow(clippy::cast_possible_wrap)]
+fn counted_shuffles_test() {
+   // Recommendation: also do fine-grained across a limited range, say 256-512
+   // const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
+   // const TEST_SIZES_VECTOR: [u32; 17] =
+   //    [4, 6, 8, 12, 16, 23, 32, 45, 64, 90, 128, 181, 256, 362, 512, 724, 1024];
+   // const TEST_SIZES_VECTOR: [u32; 10] = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
+   //
+   const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
+   // const TEST_SIZES_VECTOR: [u32; 8] = [62, 126, 254, 510, 1022, 2046, 4094, 8190];
+   // const TEST_SIZES_VECTOR: [u32; 11] =
+   //    [62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534];
+   const NUM_TESTS_PER_SIZE: u32 = 100;
+   const SEED_STATE: u64 = 0xfc06aed0b5d5ee15;
+   let mut rng = Xoshiro128PlusPlus::seed_from_u64(SEED_STATE);
+
+   let mut all_sizes_stats: Vec<PerSizeStats> = vec![];
+
+   for test_length in TEST_SIZES_VECTOR {
+      let prime_ranks: Vec<RankType> = (0..test_length as RankType).collect();
+      let mut obverse_ranks = prime_ranks.clone();
+
+      let mut per_size_stats = PerSizeStats::create_zeroed(NUM_TESTS_PER_SIZE, test_length);
+      // per_size_stats.maxima.all_edges = i32::MAX;
+
+      for _i in 0..NUM_TESTS_PER_SIZE {
+         obverse_ranks.shuffle(&mut rng);
+
+         let test_pairs: Vec<(RankType, RankType)> =
+            zip(prime_ranks.clone(), obverse_ranks.clone()).collect();
+
+         {
+            let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], true, true);
+            assert!(graph.flesh_out_graph_nodes().is_ok());
+            let connect_result = graph.connect_graph();
+            if let Ok(counts) = connect_result {
+               per_size_stats.update(&counts);
+            } else {
+               connect_result.unwrap();
+            }
+         }
+      }
+
+      println!("{test_length}");
+      all_sizes_stats.push(per_size_stats);
+   }
+
+   PerSizeStats::report(&all_sizes_stats);
+}
+
+// This does not do any N^2 work, beyond needed edge generation, which apparently averages out
+// at roughly Nlog(N) anyway.
+#[test]
+#[allow(clippy::unreadable_literal)]
+#[allow(clippy::cognitive_complexity)]
+#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_sign_loss)]
+#[allow(clippy::cast_possible_wrap)]
+fn counted_treelike_test() {
+   // Recommendation: also do fine-grained across a limited range, say 256-512
+   // const TEST_SIZES_VECTOR: [u32; 11] =
+   //    [62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534];
+   const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
+   const NUM_TESTS_PER_SIZE: u32 = 100;
+   // Perhaps test for 2/64, 4/64, 8/64.
+   const EXCHANGE_PROPORTION: f64 = 2.0 / 64.0;
+   const SEED_STATE: u64 = 0xabb2df070cab73b7;
+   let mut rng = Xoshiro128PlusPlus::seed_from_u64(SEED_STATE);
+
+   let mut all_sizes_stats: Vec<PerSizeStats> = vec![];
+
+   for test_length in TEST_SIZES_VECTOR {
+      let num_exchanges: u32 = ((test_length as f64) * EXCHANGE_PROPORTION).round() as u32;
+      let prime_ranks: Vec<RankType> = (0..test_length as RankType).collect();
+
+      let mut per_size_stats = PerSizeStats::create_zeroed(NUM_TESTS_PER_SIZE, test_length);
+
+      for _i in 0..NUM_TESTS_PER_SIZE {
+         let mut obverse_ranks = prime_ranks.clone();
+         obverse_ranks.reverse();
+
+         for _x in 0..num_exchanges {
+            let index_a = rng.random_range(..test_length as usize);
+            let mut index_b = rng.random_range(..(test_length - 1) as usize);
+            if index_b >= index_a {
+               index_b += 1; // So that index_b is randomly from range, but != index_a.
+            }
+            obverse_ranks.swap(index_a, index_b);
+         }
+
+         let test_pairs: Vec<(RankType, RankType)> =
+            zip(prime_ranks.clone(), obverse_ranks.clone()).collect();
+
+         {
+            let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], true, true);
+            assert!(graph.flesh_out_graph_nodes().is_ok());
+            let connect_result = graph.connect_graph();
+            if let Ok(counts) = connect_result {
+               per_size_stats.update(&counts);
+            } else {
+               connect_result.unwrap();
+            }
+         }
+      }
+
+      println!("{test_length} done.");
+      all_sizes_stats.push(per_size_stats);
+   }
+
+   PerSizeStats::report(&all_sizes_stats);
+}
+
+// This does not do any N^2 work, beyond needed edge generation, which apparently averages out
+// at roughly Nlog(N) anyway.
+#[test]
+#[allow(clippy::unreadable_literal)]
+#[allow(clippy::cognitive_complexity)]
+#[allow(clippy::cast_possible_truncation)]
+#[allow(clippy::cast_sign_loss)]
+#[allow(clippy::cast_possible_wrap)]
+fn counted_chainlike_test() {
+   // Recommendation: also do fine-grained across a limited range, say 256-512
+   // const TEST_SIZES_VECTOR: [u32; 11] =
+   //    [62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534];
+   const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
+   const NUM_TESTS_PER_SIZE: u32 = 100;
+   // Perhaps test for 2/64, 4/64, 8/64.
+   const EXCHANGE_PROPORTION: f64 = 2.0 / 64.0;
+   const SEED_STATE: u64 = 0xbb2df00acb3b777a;
+   let mut rng = Xoshiro128PlusPlus::seed_from_u64(SEED_STATE);
+
+   let mut all_sizes_stats: Vec<PerSizeStats> = vec![];
+
+   for test_length in TEST_SIZES_VECTOR {
+      let num_exchanges: u32 = ((test_length as f64) * EXCHANGE_PROPORTION).round() as u32;
+      let prime_ranks: Vec<RankType> = (0..test_length as RankType).collect();
+
+      let mut per_size_stats = PerSizeStats::create_zeroed(NUM_TESTS_PER_SIZE, test_length);
+
+      for _i in 0..NUM_TESTS_PER_SIZE {
+         let mut obverse_ranks = prime_ranks.clone();
+
+         for _x in 0..num_exchanges {
+            let index_a = rng.random_range(..test_length as usize);
+            let mut index_b = rng.random_range(..(test_length - 1) as usize);
+            if index_b >= index_a {
+               index_b += 1; // So that index_b is randomly from range, but != index_a.
+            }
+            obverse_ranks.swap(index_a, index_b);
+         }
+
+         let test_pairs: Vec<(RankType, RankType)> =
+            zip(prime_ranks.clone(), obverse_ranks.clone()).collect();
+
+         {
+            let mut graph = DominanceGraph::new_from_pairs(&test_pairs[..], true, true);
+            assert!(graph.flesh_out_graph_nodes().is_ok());
+            let connect_result = graph.connect_graph();
+            if let Ok(counts) = connect_result {
+               per_size_stats.update(&counts);
+            } else {
+               connect_result.unwrap();
+            }
+         }
+      }
+
+      println!("{test_length} done.");
+      all_sizes_stats.push(per_size_stats);
+   }
+
+   PerSizeStats::report(&all_sizes_stats);
 }
