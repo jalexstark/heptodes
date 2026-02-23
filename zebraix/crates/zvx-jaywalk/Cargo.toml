@@ -18,7 +18,5 @@ zvx-base =  { path = "../zvx-base", version = "0.1" }
 
 [dev-dependencies]
 permutohedron = "0.2.4"
-rand = "0.8.4"
-rand_pcg = "0.3.1"
-shuffle = "0.1.7"
+rand = "0.10.0"
 
