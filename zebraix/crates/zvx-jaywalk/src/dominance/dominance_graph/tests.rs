@@ -1072,8 +1072,8 @@ fn counted_shuffles_test() {
    //    [4, 6, 8, 12, 16, 23, 32, 45, 64, 90, 128, 181, 256, 362, 512, 724, 1024];
    // const TEST_SIZES_VECTOR: [u32; 10] = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
    //
-   const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
-   // const TEST_SIZES_VECTOR: [u32; 8] = [62, 126, 254, 510, 1022, 2046, 4094, 8190];
+   // const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
+   const TEST_SIZES_VECTOR: [u32; 8] = [62, 126, 254, 510, 1022, 2046, 4094, 8190];
    // const TEST_SIZES_VECTOR: [u32; 11] =
    //    [62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534];
    const NUM_TESTS_PER_SIZE: u32 = 100;
@@ -1124,9 +1124,10 @@ fn counted_shuffles_test() {
 #[allow(clippy::cast_possible_wrap)]
 fn counted_treelike_test() {
    // Recommendation: also do fine-grained across a limited range, say 256-512
+   // const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
+   const TEST_SIZES_VECTOR: [u32; 8] = [62, 126, 254, 510, 1022, 2046, 4094, 8190];
    // const TEST_SIZES_VECTOR: [u32; 11] =
    //    [62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534];
-   const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
    const NUM_TESTS_PER_SIZE: u32 = 100;
    // Perhaps test for 2/64, 4/64, 8/64.
    const EXCHANGE_PROPORTION: f64 = 2.0 / 64.0;
@@ -1186,9 +1187,10 @@ fn counted_treelike_test() {
 #[allow(clippy::cast_possible_wrap)]
 fn counted_chainlike_test() {
    // Recommendation: also do fine-grained across a limited range, say 256-512
+   // const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
+   const TEST_SIZES_VECTOR: [u32; 8] = [62, 126, 254, 510, 1022, 2046, 4094, 8190];
    // const TEST_SIZES_VECTOR: [u32; 11] =
    //    [62, 126, 254, 510, 1022, 2046, 4094, 8190, 16382, 32766, 65534];
-   const TEST_SIZES_VECTOR: [u32; 6] = [4, 8, 16, 32, 64, 128];
    const NUM_TESTS_PER_SIZE: u32 = 100;
    // Perhaps test for 2/64, 4/64, 8/64.
    const EXCHANGE_PROPORTION: f64 = 2.0 / 64.0;
