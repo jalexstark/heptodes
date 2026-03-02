@@ -166,7 +166,7 @@ struct AuxData {
    right_block_high: IndexType,
 
    right_stack_bottom: IndexType,
-   // left_stack_top: IndexType,
+   left_stack_top: IndexType,
 
    // left_tracer_rank: IndexType,
    // right_tracer_rank: IndexType,
@@ -541,7 +541,7 @@ impl DominanceGraph {
          right_block_high: 0,
 
          right_stack_bottom: 0,
-         // left_stack_top: 0,
+         left_stack_top: 0,
 
          // Construction of graph, perhaps in different storage to final form.
          accum_parents: vec![VecDeque::<IndexType>::new(); node_count],
@@ -640,12 +640,15 @@ impl DominanceGraph {
                aux.counters.rank_comparisons += 1;
                if left_root_rank > right_root_rank {
                   {
-                     // Next after this block.
-                     let left_rank = self.nodes[left_tracer].obverse_rank;
-                     self.build_right_block(&mut aux, left_rank, &mut right_tracer, &merge_step);
-
-                     // L is root, so just tuck before, with no need to adjust root.
+                     self.build_right_block_initial(
+                        &mut aux,
+                        &mut right_tracer,
+                        left_tracer,
+                        &merge_step,
+                     );
+                     Self::apply_downwards_updates(&mut aux, left_tracer);
                      // No L block, so no need to do apply_upwards_appending.
+                     // L is root, so just tuck before, with no need to adjust root.
                      Self::stitch_right_below_left(&mut aux, &mut right_tracer, left_tracer);
                   }
 
@@ -654,46 +657,25 @@ impl DominanceGraph {
                      // Half the main loop, in order to align two root conditions.
                      if aux.right_block_high == aux.right_terminal {
                         self.build_left_block_terminal(&mut aux, &mut left_tracer);
-                        Self::apply_downwards_updates(&mut aux);
 
                         break 'core_step_work;
                      }
                      {
-                        // Next after this block.
-                        let right_rank = self.nodes[right_tracer].obverse_rank;
-                        self.build_left_block(&mut aux, right_rank, &mut left_tracer);
+                        self.build_left_block(&mut aux, &mut left_tracer, right_tracer);
 
-                        Self::apply_downwards_updates(&mut aux);
                         Self::stitch_left_between_right(&mut aux, &mut left_tracer, right_tracer);
                      }
                   }
                } else {
                   {
-                     // Next after this block.
-                     let right_rank = self.nodes[right_tracer].obverse_rank;
-                     self.build_left_block(&mut aux, right_rank, &mut left_tracer);
-
-                     {
-                        let left_next = aux.sorted_next[left_tracer];
-                        assert!(self.nodes[left_tracer].obverse_rank <= right_rank);
-                        assert!(
-                           (self.nodes[left_next].obverse_rank > right_rank)
-                              || (left_tracer == aux.left_terminal)
-                        );
-                     }
-
+                     self.build_left_block_initial(&mut aux, &mut left_tracer, right_tracer);
                      // R is root, so just tuck before, with no need to adjust root.
                      Self::stitch_left_below_right(&mut aux, &mut left_tracer, right_tracer);
                   }
                }
-               // let mut counter = 0i32;
 
                {
-                  // dbg!("Loopiness");
                   loop {
-                     // dbg!("Loopy");
-                     // dbg!(counter);
-                     // counter += 1;
                      aux.counters.index_comparisons += 1;
                      if aux.left_block_high == aux.left_terminal {
                         self.build_right_block_terminal(&mut aux, &mut right_tracer, &merge_step);
@@ -702,40 +684,29 @@ impl DominanceGraph {
                         break 'core_step_work;
                      }
 
-                     // dbg!("Loopy A");
                      {
-                        let left_rank = self.nodes[left_tracer].obverse_rank;
-                        assert!(left_rank > self.nodes[right_tracer].obverse_rank);
-                        // Next after this block is left_rank.
-                        self.build_right_block(&mut aux, left_rank, &mut right_tracer, &merge_step);
-
+                        self.build_right_block(
+                           &mut aux,
+                           &mut right_tracer,
+                           left_tracer,
+                           &merge_step,
+                        );
                         self.apply_upwards_appending(&mut aux, &merge_step);
+                        let left_block_low = left_tracer;
+                        Self::apply_downwards_updates(&mut aux, left_block_low);
+
                         Self::stitch_right_between_left(&mut aux, &mut right_tracer, left_tracer);
                      }
 
                      aux.counters.index_comparisons += 1;
                      if aux.right_block_high == aux.right_terminal {
-                        // dbg!("Loopy B");
                         self.build_left_block_terminal(&mut aux, &mut left_tracer);
-                        Self::apply_downwards_updates(&mut aux);
 
                         break 'core_step_work;
                      }
 
-                     // dbg!("Loopy C");
                      {
-                        let right_rank = self.nodes[right_tracer].obverse_rank;
-
-                        // Next after this block is right_rank.
-                        self.build_left_block(&mut aux, right_rank, &mut left_tracer);
-
-                        assert!(self.nodes[left_tracer].obverse_rank <= right_rank);
-                        assert!(
-                           (self.nodes[aux.sorted_next[left_tracer]].obverse_rank > right_rank)
-                              || (left_tracer == aux.left_terminal)
-                        );
-
-                        Self::apply_downwards_updates(&mut aux);
+                        self.build_left_block(&mut aux, &mut left_tracer, right_tracer);
                         Self::stitch_left_between_right(&mut aux, &mut left_tracer, right_tracer);
                      }
                   }
@@ -805,10 +776,12 @@ impl DominanceGraph {
    fn build_right_block(
       &self,
       aux: &mut AuxData,
-      left_next_rank: RankType,
       right_current: &mut IndexType,
+      left_tracer: IndexType,
       merge_step: &MergeStep,
    ) {
+      // Next after this block is left_rank.
+      let left_next_rank = self.nodes[left_tracer].obverse_rank;
       aux.right_block_low = *right_current;
 
       // Strategy: First traverse WN.  The last will be min_prime.  Then go sort-sortwise.
@@ -855,12 +828,69 @@ impl DominanceGraph {
          *right_current = right_next;
       }
       assert!(self.nodes[*right_current].obverse_rank < left_next_rank);
-      // assert!(
-      //    (self.nodes[right_next].obverse_rank >= left_next_rank)
-      //       || (*right_current == aux.right_terminal)
-      // );
 
       aux.right_block_mid = min_prime;
+      aux.right_block_high = *right_current;
+   }
+
+   // Variation that skips work that would only be needed "below".
+   #[inline]
+   fn build_right_block_initial(
+      &self,
+      aux: &mut AuxData,
+      right_current: &mut IndexType,
+      left_tracer: IndexType,
+      merge_step: &MergeStep,
+   ) {
+      // Next after this block.
+      let left_next_rank = self.nodes[left_tracer].obverse_rank;
+
+      aux.right_block_low = *right_current;
+
+      // Strategy: First traverse WN.  The last will be min_prime.  Then go sort-sortwise.
+      // Cache WN traversal to save work later.
+
+      // Build stack of children on R, using sorted_roots as scratch space.  This stack grows
+      // downwards.  We push the only until min_prime.
+      let mut right_bottom = merge_step.upper - 1;
+
+      // Traversing WN actually slightly increases the average work here (though some gets
+      // reused to rebalanced).
+      loop {
+         aux.sorted_roots[right_bottom] = *right_current;
+         let right_next = aux.cross_wn_links[*right_current];
+
+         aux.counters.flow_comparisons += 1;
+         if right_next == IndexType::MAX {
+            break;
+         }
+
+         aux.counters.rank_comparisons += 1;
+         if self.nodes[right_next].obverse_rank >= left_next_rank {
+            break;
+         }
+
+         *right_current = right_next;
+         right_bottom -= 1;
+      }
+      aux.right_stack_bottom = right_bottom;
+      aux.right_block_mid = *right_current;
+
+      loop {
+         let right_next = aux.sorted_next[*right_current];
+
+         aux.counters.rank_comparisons += 1;
+         if self.nodes[right_next].obverse_rank >= left_next_rank {
+            break;
+         }
+
+         // Note no need to assess terminal case, since already detected by rank, and this is
+         // never actually a terminal block.
+
+         *right_current = right_next;
+      }
+      assert!(self.nodes[*right_current].obverse_rank < left_next_rank);
+
       aux.right_block_high = *right_current;
    }
 
@@ -886,10 +916,8 @@ impl DominanceGraph {
       // Traversing NW actually slightly increases the average work here (though some gets
       // reused to rebalanced).
       let right_terminal = aux.right_terminal;
-      let mut min_prime: IndexType;
       loop {
          right_bottom -= 1;
-         min_prime = *right_current;
          aux.sorted_roots[right_bottom] = *right_current;
          let right_next = aux.cross_wn_links[*right_current];
 
@@ -902,7 +930,7 @@ impl DominanceGraph {
       }
       aux.right_stack_bottom = right_bottom;
 
-      aux.right_block_mid = min_prime;
+      aux.right_block_mid = *right_current;
       aux.right_block_high = right_terminal;
    }
 
@@ -910,9 +938,12 @@ impl DominanceGraph {
    fn build_left_block(
       &self,
       aux: &mut AuxData,
-      right_next_rank: RankType,
       left_current: &mut IndexType,
+      right_tracer: IndexType,
    ) {
+      // Next after this block.
+      let right_next_rank = self.nodes[right_tracer].obverse_rank;
+
       aux.left_block_low = *left_current;
 
       // Strategy: First traverse last child.  The last will be max_prime.  Then go sort-sortwise.
@@ -925,12 +956,10 @@ impl DominanceGraph {
       // on merge_step.)
 
       let left_terminal = aux.left_terminal;
-      let mut max_prime: IndexType;
       loop {
-         max_prime = *left_current;
-
          // OPT: The dual checks _might_ be avoided by maintaining storage of the last child, with sentinel.
          aux.counters.flow_comparisons += 1;
+         aux.cross_es_links[*left_current] = aux.right_block_high;
          let Some(left_next) = aux.accum_children[*left_current].back() else {
             break;
          };
@@ -943,6 +972,9 @@ impl DominanceGraph {
 
          *left_current = *left_next;
       }
+
+      aux.left_block_mid = *left_current;
+
       loop {
          let left_next = aux.sorted_next[*left_current];
 
@@ -959,12 +991,68 @@ impl DominanceGraph {
          *left_current = left_next;
       }
       assert!(self.nodes[*left_current].obverse_rank <= right_next_rank);
-      // assert!(
-      //    (self.nodes[left_next].obverse_rank > right_next_rank)
-      //       || (*left_current == aux.left_terminal)
-      // );
 
-      aux.left_block_mid = max_prime;
+      aux.left_block_high = *left_current;
+   }
+
+   // Variation that skips work that would only be needed "below".
+   #[inline]
+   fn build_left_block_initial(
+      &self,
+      aux: &mut AuxData,
+      left_current: &mut IndexType,
+      right_tracer: IndexType,
+   ) {
+      // Next after this block.
+      let right_next_rank = self.nodes[right_tracer].obverse_rank;
+
+      aux.left_block_low = *left_current;
+
+      // Strategy: First traverse last child.  The last will be max_prime.  Then go sort-sortwise.
+      // OPT: Cache child traversal to save work later.
+
+      // This actually adds some counts for uniform random graphs, but improves significantly
+      // with fewer branches.
+      //
+      // OPT (harder, more code): Only try traversing children for larger blocks.  (Could base
+      // on merge_step.)
+
+      let left_terminal = aux.left_terminal;
+      loop {
+         // OPT: The dual checks _might_ be avoided by maintaining storage of the last child, with sentinel.
+         aux.counters.flow_comparisons += 1;
+         let Some(left_next) = aux.accum_children[*left_current].back() else {
+            break;
+         };
+
+         aux.counters.rank_comparisons += 1;
+         if self.nodes[*left_next].obverse_rank > right_next_rank {
+            // OPT: In this case we know the next loop will not end with left_terminal.
+            break;
+         }
+
+         *left_current = *left_next;
+      }
+
+      aux.left_block_mid = *left_current;
+
+      loop {
+         let left_next = aux.sorted_next[*left_current];
+
+         aux.counters.rank_comparisons += 1;
+         if self.nodes[left_next].obverse_rank > right_next_rank {
+            break;
+         }
+
+         aux.counters.flow_comparisons += 1;
+         if *left_current == left_terminal {
+            break;
+         }
+
+         *left_current = left_next;
+      }
+      assert!(self.nodes[*left_current].obverse_rank <= right_next_rank);
+
       aux.left_block_high = *left_current;
    }
 
@@ -982,6 +1070,7 @@ impl DominanceGraph {
       let left_terminal = aux.left_terminal;
       loop {
          aux.counters.flow_comparisons += 1;
+         aux.cross_es_links[*left_current] = aux.right_block_high;
          let Some(left_next) = aux.accum_children[*left_current].back() else {
             break;
          };
@@ -1054,11 +1143,11 @@ impl DominanceGraph {
    //
    // OPT: Fold ES link into L block generation.
    #[inline]
-   fn apply_downwards_updates(aux: &mut AuxData) {
+   fn apply_downwards_updates(aux: &mut AuxData, left_block_low: IndexType) {
       {
          let mut current_right = aux.right_block_high;
          loop {
-            aux.cross_wn_links[current_right] = aux.left_block_low;
+            aux.cross_wn_links[current_right] = left_block_low;
 
             aux.counters.flow_comparisons += 1;
             if current_right == aux.right_block_mid {
@@ -1067,46 +1156,34 @@ impl DominanceGraph {
             current_right = *aux.accum_parents[current_right].back().unwrap();
          }
       }
-      {
-         let mut current_left = aux.left_block_low;
-         loop {
-            aux.cross_es_links[current_left] = aux.right_block_high;
-
-            aux.counters.flow_comparisons += 1;
-            if current_left == aux.left_block_mid {
-               break;
-            }
-            current_left = *aux.accum_children[current_left].back().unwrap();
-         }
-      }
    }
 
    // Append parents and children between blocks, R above L.
    #[inline]
    fn apply_upwards_appending(&self, aux: &mut AuxData, merge_step: &MergeStep) {
-      // Build stack of parents on L, using sorted_roots as scratch space.
-      let mut left_topmost = merge_step.lower;
       {
-         let mut current_left = aux.left_block_high;
-         loop {
-            aux.sorted_roots[left_topmost] = current_left;
-            left_topmost += 1;
+         // Build stack of parents on L, using sorted_roots as scratch space.
+         let mut left_topmost = merge_step.lower;
+         {
+            let mut current_left = aux.left_block_high;
+            loop {
+               aux.sorted_roots[left_topmost] = current_left;
+               left_topmost += 1;
 
-            aux.counters.flow_comparisons += 1;
-            if current_left == aux.left_block_mid {
-               break;
+               aux.counters.flow_comparisons += 1;
+               if current_left == aux.left_block_mid {
+                  break;
+               }
+               current_left = aux.cross_es_links[current_left];
             }
-            current_left = aux.cross_es_links[current_left];
          }
+         aux.left_stack_top = left_topmost;
       }
+      let left_topmost = aux.left_stack_top;
 
       // Continue to build stack of children on R, using sorted_roots as scratch space.  This
       // stack grows downwards.  We push the maximum set required, which is that for the
       // rightmost L parent.
-
-      // aux.sorted_roots[merge_step.upper - 1] = aux.right_block_low;
-      // aux.right_stack_bottom = merge_step.upper - 1;
-
       let mut right_bottom = aux.right_stack_bottom;
       {
          let index_of_max_left = aux.accum_children[aux.left_block_mid].back();
@@ -1114,8 +1191,8 @@ impl DominanceGraph {
          aux.counters.flow_comparisons += 1;
          let obverse_limit =
             index_of_max_left.map_or(RankType::MAX, |i| self.nodes[*i].obverse_rank);
-         let mut current_right = aux.sorted_roots[right_bottom];
-         // right_bottom -= 1;
+         let mut current_right = aux.right_block_mid;
+         assert_eq!(current_right, aux.sorted_roots[right_bottom]);
 
          loop {
             let right_next = aux.cross_wn_links[current_right];
@@ -1197,7 +1274,7 @@ impl DominanceGraph {
          right_block_high: 0,
 
          right_stack_bottom: 0,
-         // left_stack_top: 0,
+         left_stack_top: 0,
          accum_parents: vec![VecDeque::<IndexType>::new(); node_count],
          accum_children: vec![VecDeque::<IndexType>::new(); node_count],
          cross_wn_links: vec![IndexType::MAX; node_count],
@@ -1249,38 +1326,45 @@ impl DominanceGraph {
             aux.right_root = aux.sorted_roots[merge_step.middle];
             aux.left_terminal = aux.sorted_roots[merge_step.middle - 1];
             aux.right_terminal = aux.sorted_roots[merge_step.upper - 1];
-            let mut left_tracer = aux.left_root;
-            let mut right_tracer = aux.right_root;
 
-            'core_step_work: {
+            let right_begins = {
                let left_root_rank = self.nodes[aux.left_root].obverse_rank;
                let right_root_rank = self.nodes[aux.right_root].obverse_rank;
+               left_root_rank > right_root_rank
+            };
+            let left_ends = self.nodes[aux.left_terminal].obverse_rank
+               > self.nodes[aux.right_terminal].obverse_rank;
 
-               aux.counters.boolean_branches += 1; // Comparison is repeated later.
-               if left_root_rank > right_root_rank {
-                  aux.final_root = aux.right_root;
-               } else {
-                  aux.final_root = aux.left_root;
-               }
+            aux.counters.boolean_branches += 1; // Comparison is repeated later.
+            if right_begins {
+               aux.final_root = aux.right_root;
+            } else {
+               aux.final_root = aux.left_root;
+            }
+
+            aux.counters.rank_comparisons += 1;
+            if left_ends {
+               aux.final_terminal = aux.left_terminal;
+            } else {
+               aux.final_terminal = aux.right_terminal;
+            }
+
+            'core_step_work: {
+               let mut left_tracer = aux.left_root;
+               let mut right_tracer = aux.right_root;
 
                aux.counters.rank_comparisons += 1;
-               if self.nodes[aux.left_terminal].obverse_rank
-                  > self.nodes[aux.right_terminal].obverse_rank
-               {
-                  aux.final_terminal = aux.left_terminal;
-               } else {
-                  aux.final_terminal = aux.right_terminal;
-               }
-
-               aux.counters.rank_comparisons += 1;
-               if left_root_rank > right_root_rank {
+               if right_begins {
                   {
-                     // Next after this block.
-                     let left_rank = self.nodes[left_tracer].obverse_rank;
-                     self.build_right_block(&mut aux, left_rank, &mut right_tracer, &merge_step);
-
-                     // L is root, so just tuck before, with no need to adjust root.
+                     self.build_right_block_initial(
+                        &mut aux,
+                        &mut right_tracer,
+                        left_tracer,
+                        &merge_step,
+                     );
+                     Self::apply_downwards_updates(&mut aux, left_tracer);
                      // No L block, so no need to do apply_upwards_appending.
+                     // L is root, so just tuck before, with no need to adjust root.
                      Self::stitch_right_below_left(&mut aux, &mut right_tracer, left_tracer);
                   }
 
@@ -1289,25 +1373,17 @@ impl DominanceGraph {
                      // Half the main loop, in order to align two root conditions.
                      if aux.right_block_high == aux.right_terminal {
                         self.build_left_block_terminal(&mut aux, &mut left_tracer);
-                        Self::apply_downwards_updates(&mut aux);
 
                         break 'core_step_work;
                      }
                      {
-                        // Next after this block.
-                        let right_rank = self.nodes[right_tracer].obverse_rank;
-                        self.build_left_block(&mut aux, right_rank, &mut left_tracer);
-
-                        Self::apply_downwards_updates(&mut aux);
+                        self.build_left_block(&mut aux, &mut left_tracer, right_tracer);
                         Self::stitch_left_between_right(&mut aux, &mut left_tracer, right_tracer);
                      }
                   }
                } else {
                   {
-                     // Next after this block.
-                     let right_rank = self.nodes[right_tracer].obverse_rank;
-                     self.build_left_block(&mut aux, right_rank, &mut left_tracer);
-
+                     self.build_left_block_initial(&mut aux, &mut left_tracer, right_tracer);
                      // R is root, so just tuck before, with no need to adjust root.
                      Self::stitch_left_below_right(&mut aux, &mut left_tracer, right_tracer);
                   }
@@ -1324,45 +1400,32 @@ impl DominanceGraph {
                      }
 
                      {
-                        let left_rank = self.nodes[left_tracer].obverse_rank;
-                        assert!(left_rank > self.nodes[right_tracer].obverse_rank);
-                        // Next after this block is left_rank.
-                        self.build_right_block(&mut aux, left_rank, &mut right_tracer, &merge_step);
-
+                        self.build_right_block(
+                           &mut aux,
+                           &mut right_tracer,
+                           left_tracer,
+                           &merge_step,
+                        );
                         self.apply_upwards_appending(&mut aux, &merge_step);
+                        Self::apply_downwards_updates(&mut aux, left_tracer);
+
                         Self::stitch_right_between_left(&mut aux, &mut right_tracer, left_tracer);
                      }
 
                      aux.counters.index_comparisons += 1;
                      if aux.right_block_high == aux.right_terminal {
-                        // dbg!("Loopy B");
                         self.build_left_block_terminal(&mut aux, &mut left_tracer);
-                        Self::apply_downwards_updates(&mut aux);
 
                         break 'core_step_work;
                      }
 
-                     // dbg!("Loopy C");
                      {
-                        let right_rank = self.nodes[right_tracer].obverse_rank;
-
-                        // Next after this block is right_rank.
-                        self.build_left_block(&mut aux, right_rank, &mut left_tracer);
-
-                        // assert!(self.nodes[left_tracer].obverse_rank <= right_rank);
-                        // assert!(
-                        //    (self.nodes[aux.sorted_next[left_tracer]].obverse_rank > right_rank)
-                        //       || (left_tracer == aux.left_terminal)
-                        // );
-
-                        Self::apply_downwards_updates(&mut aux);
+                        self.build_left_block(&mut aux, &mut left_tracer, right_tracer);
                         Self::stitch_left_between_right(&mut aux, &mut left_tracer, right_tracer);
                      }
                   }
                }
             } // 'core_step_work.
-
-            // // TODO: skip everything on R if all below L.
 
             aux.sorted_roots[merge_step.lower] = aux.final_root;
             aux.sorted_roots[merge_step.upper - 1] = aux.final_terminal;

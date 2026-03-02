@@ -989,7 +989,7 @@ impl PerSizeStats {
       );
       for stats in stat_vec {
          println!(
-            "{},{},{},{},{},{}",
+            "{}, {}, {}, {}, {}, {}",
             stats.problem_n,
             stats.accumulation.rank_comparisons,
             stats.accumulation.square_comparisons,
@@ -1000,20 +1000,19 @@ impl PerSizeStats {
       }
       println!(
          "\nTest size, scaled rank_comparisons, scaled square_comparisons, scaled flow_comparisons, \
-              scaled index_comparisons, scaled boolean_branches, mean all_edges"
+              scaled index_comparisons, scaled boolean_branches"
       );
       for stats in stat_vec {
          // Normally divisor is N-1, but since we add 2 to N when adding source and sink, normalize by N+1.
          let adjuster = 1.0 / (stats.num_tests as f64) / ((stats.problem_n + 1) as f64);
          println!(
-            "{},{},{},{},{},{},{}",
+            "{}, {}, {}, {}, {}, {}",
             stats.problem_n,
             stats.accumulation.rank_comparisons as f64 * adjuster,
             stats.accumulation.square_comparisons as f64 * adjuster,
             stats.accumulation.flow_comparisons as f64 * adjuster,
             stats.accumulation.index_comparisons as f64 * adjuster,
             stats.accumulation.boolean_branches as f64 * adjuster,
-            stats.accumulation.all_edges as f64 / (stats.num_tests as f64),
          );
       }
       println!(
@@ -1022,7 +1021,7 @@ impl PerSizeStats {
       );
       for stats in stat_vec {
          println!(
-            "{},{},{},{},{},{},{}",
+            "{}, {}, {}, {}, {}, {}, {}",
             stats.problem_n,
             stats.maxima.rank_comparisons,
             stats.maxima.square_comparisons,
@@ -1033,25 +1032,28 @@ impl PerSizeStats {
          );
       }
       println!(
-         "\nTest size, mean of all types, mean no edge, mean edge work, max of all types, \
-       max no edge, max edge work"
+         "\nTest size, adj all types, adj no edge, adj edge work, adj-adj edge work, max of all types, \
+       max no edge, max edge work, mean all_edges"
       );
       for stats in stat_vec {
          // let max_norm = ;
          let adjuster = 1.0 / (stats.num_tests as f64) / ((stats.problem_n - 1) as f64);
+         let adj_adjuster = adjuster / (stats.problem_n as f64).log2();
          let total_total = stats.accumulation.rank_comparisons
             + stats.accumulation.flow_comparisons
             + stats.accumulation.index_comparisons
             + stats.accumulation.boolean_branches;
          println!(
-            "{},{},{},{},{},{},{}",
+            "{}, {}, {}, {}, {}, {}, {}, {}, {}",
             stats.problem_n,
             (total_total + stats.accumulation.square_comparisons) as f64 * adjuster,
             total_total as f64 * adjuster,
             stats.accumulation.square_comparisons as f64 * adjuster,
+            stats.accumulation.square_comparisons as f64 * adj_adjuster,
             stats.full_total_max,
             stats.core_total_max,
             stats.maxima.square_comparisons,
+            stats.accumulation.all_edges as f64 / (stats.num_tests as f64),
          );
       }
    }
