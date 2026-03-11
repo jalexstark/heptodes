@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   width="474px"
+   height="405px"
+   viewBox="-0.5 -0.5 474 405"
+   style="background-color: rgb(255, 255, 255);"
+   id="svg118"
+   sodipodi:docname="Builder-A-Relations.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview120"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="2.5358025"
+     inkscape:cx="237.00584"
+     inkscape:cy="202.89435"
+     inkscape:window-width="2560"
+     inkscape:window-height="1355"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g116" />
+  <defs
+     id="defs2" />
+  <g
+     id="g116">
+    <ellipse
+       cx="41"
+       cy="212"
+       rx="10"
+       ry="10"
+       fill="rgb(255, 255, 255)"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       transform="rotate(180,41,212)"
+       pointer-events="all"
+       id="ellipse78"
+       style="background-color:rgb(255, 255, 255)" />
+    <path
+       d="M 51 212 L 446.76 212"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path6" />
+    <path
+       d="M 458.76 212 L 446.76 216 L 446.76 208 Z"
+       fill="rgb(0, 0, 0)"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path8" />
+    <path
+       d="M 221 392 L 221 26.24"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path10" />
+    <ellipse
+       cx="221"
+       cy="52"
+       rx="10"
+       ry="10"
+       fill="rgb(255, 255, 255)"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       transform="rotate(180,221,52)"
+       pointer-events="all"
+       id="ellipse4"
+       style="background-color:rgb(255, 255, 255)" />
+    <path
+       d="M 221 14.24 L 225 26.24 L 217 26.24 Z"
+       fill="rgb(0, 0, 0)"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="all"
+       id="path12" />
+    <path
+       d="M 241 232 L 451 232"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       stroke-dasharray="6 6"
+       pointer-events="stroke"
+       id="path14" />
+    <path
+       d="M 11 192 L 201 192"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       stroke-dasharray="6 6"
+       pointer-events="stroke"
+       id="path16" />
+    <path
+       d="M 241 232 L 241 382"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       stroke-dasharray="6 6"
+       pointer-events="stroke"
+       id="path18" />
+    <path
+       d="M 224.54 215.54 L 241 232"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       stroke-dasharray="6 6"
+       pointer-events="stroke"
+       id="path20" />
+    <ellipse
+       cx="121"
+       cy="332"
+       rx="10"
+       ry="10"
+       fill="rgb(255, 255, 255)"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       transform="rotate(-180,121,332)"
+       pointer-events="all"
+       id="ellipse22" />
+    <path
+       d="M 201 22 L 201 192"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       stroke-dasharray="6 6"
+       pointer-events="stroke"
+       id="path24" />
+    <rect
+       x="421"
+       y="172"
+       width="40"
+       height="30"
+       fill="none"
+       stroke="none"
+       pointer-events="all"
+       id="rect26" />
+    <g
+       fill="rgb(0, 0, 0)"
+       font-family="Helvetica"
+       font-size="16px"
+       id="g30">
+      <text
+         x="405.31177"
+         y="196.15726"
+         id="text28"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"><tspan
+           sodipodi:role="line"
+           id="tspan280"
+           x="405.31177"
+           y="196.15726">Principal</tspan></text>
+    </g>
+    <rect
+       x="231"
+       y="2"
+       width="40"
+       height="30"
+       fill="none"
+       stroke="none"
+       pointer-events="all"
+       id="rect32" />
+    <g
+       fill="rgb(0, 0, 0)"
+       font-family="Helvetica"
+       font-size="16px"
+       id="g36">
+      <text
+         x="232.5"
+         y="23.5"
+         id="text34"
+         style="-inkscape-font-specification:'Helvetica, Normal';font-family:Helvetica;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:16px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"><tspan
+           sodipodi:role="line"
+           id="tspan282">Converse</tspan></text>
+    </g>
+    <path
+       d="m 211,172 h 20"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path38"
+       style="display:none" />
+    <path
+       d="m 211,132 h 20"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path40"
+       style="display:none" />
+    <path
+       d="m 211,52 h 20"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path42"
+       style="display:none" />
+    <path
+       d="M 231,92 H 211"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path44"
+       style="display:none" />
+    <path
+       d="m 211,252 h 20"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path46"
+       style="display:none" />
+    <path
+       d="m 211,292 h 20"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path48"
+       style="display:none" />
+    <path
+       d="m 211,332 h 20"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path50"
+       style="display:none" />
+    <path
+       d="m 211,372 h 20"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path52"
+       style="display:none" />
+    <path
+       d="M 261,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path54"
+       style="display:none" />
+    <path
+       d="M 301,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path56"
+       style="display:none" />
+    <path
+       d="M 341,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path58"
+       style="display:none" />
+    <path
+       d="M 381,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path60"
+       style="display:none" />
+    <path
+       d="M 420.67,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path62"
+       style="display:none" />
+    <path
+       d="M 181,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path64"
+       style="display:none" />
+    <path
+       d="M 61,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path66"
+       style="display:none" />
+    <path
+       d="M 100.83,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path68"
+       style="display:none" />
+    <path
+       d="M 141,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path70"
+       style="display:none" />
+    <path
+       d="M 21,222 V 202"
+       fill="none"
+       stroke="#000000"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path72"
+       style="display:none" />
+    <ellipse
+       cx="221"
+       cy="212"
+       rx="5"
+       ry="5"
+       fill="#000000"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       transform="rotate(-180,221,212)"
+       pointer-events="all"
+       id="ellipse74" />
+    <path
+       d="M 201 192 L 217.46 208.46"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       stroke-dasharray="6 6"
+       pointer-events="stroke"
+       id="path76" />
+    <path
+       d="M 1 212 L 31 212"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="stroke"
+       id="path80" />
+    <path
+       d="M 371 242 L 391 262"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path82" />
+    <path
+       d="M 371 262 L 391 242"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path84" />
+    <path
+       d="M 291 342 L 311 362"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path86" />
+    <path
+       d="M 291 362 L 311 342"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path88" />
+    <path
+       d="M 91 92 L 111 112"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path90"
+       inkscape:label="path90" />
+    <path
+       d="M 91 112 L 111 92"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path92" />
+    <path
+       d="M 151 62 L 171 82"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path94" />
+    <path
+       d="M 151 82 L 171 62"
+       fill="none"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       stroke-miterlimit="10"
+       pointer-events="none"
+       id="path96" />
+    <g
+       fill="rgb(0, 0, 0)"
+       font-family="Helvetica"
+       pointer-events="none"
+       font-size="16px"
+       id="g100">
+      <text
+         x="282.5"
+         y="143.5"
+         id="text98"
+         style="-inkscape-font-specification:'Helvetica, Normal';font-family:Helvetica;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:16px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"><tspan
+           sodipodi:role="line"
+           id="tspan386">Descendants</tspan></text>
+    </g>
+    <g
+       fill="rgb(0, 0, 0)"
+       font-family="Helvetica"
+       pointer-events="none"
+       font-size="16px"
+       id="g104">
+      <text
+         x="292.5"
+         y="293.5"
+         id="text102"><tspan
+           sodipodi:role="line"
+           id="tspan396">Cousins</tspan></text>
+    </g>
+    <g
+       fill="rgb(0, 0, 0)"
+       font-family="Helvetica"
+       pointer-events="none"
+       font-size="16px"
+       id="g108">
+      <text
+         x="72.5"
+         y="293.5"
+         id="text106"><tspan
+           sodipodi:role="line"
+           id="tspan392">Ancestors</tspan></text>
+    </g>
+    <g
+       fill="rgb(0, 0, 0)"
+       font-family="Helvetica"
+       pointer-events="none"
+       font-size="16px"
+       id="g112">
+      <text
+         x="52.5"
+         y="143.5"
+         id="text110"
+         style="-inkscape-font-specification:'Helvetica, Normal';font-family:Helvetica;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:16px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"><tspan
+           sodipodi:role="line"
+           id="tspan388">Cousins</tspan></text>
+    </g>
+    <ellipse
+       cx="421"
+       cy="72"
+       rx="10"
+       ry="10"
+       fill="rgb(255, 255, 255)"
+       stroke="rgb(0, 0, 0)"
+       stroke-width="2"
+       transform="rotate(-180,421,72)"
+       pointer-events="none"
+       id="ellipse114" />
+    <circle
+       cx="-318.19379"
+       cy="-167.52342"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="2"
+       transform="scale(-1)"
+       pointer-events="none"
+       id="ellipse114-5"
+       r="10" />
+    <circle
+       cx="-188.2485"
+       cy="-318.66055"
+       fill="#ffffff"
+       stroke="#000000"
+       stroke-width="2"
+       transform="scale(-1)"
+       pointer-events="none"
+       id="ellipse114-6"
+       r="10" />
+  </g>
+</svg>

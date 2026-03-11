@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Creator: fig2dev Version 3.2.9 -->
+<!-- CreationDate: 2026-07-01 09:23:40 -->
+<!-- Magnification: 0.63 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="279pt" height="283pt"
+	viewBox="-304 -6772 7358 7469">
+<g fill="none">
+<!-- Circle -->
+<circle cx="6975" cy="-2475" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="6300" cy="-2700" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<rect x="6300" y="-2700" width="675" height="225"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Line -->
+<polyline points=" 6300,-2700 6975,-2475"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="3600" cy="-6075" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="4725" cy="-6300" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<rect x="3600" y="-6300" width="1125" height="225"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Circle -->
+<circle cx="2700" cy="-5175" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="450" cy="-5400" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="2025" cy="-5850" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="1575" cy="-5625" r="45" fill="#000000"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polygon points=" 450,-5400 2025,-5850 2700,-5175"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<rect x="450" y="-5850" width="2250" height="675"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Text -->
+<text xml:space="preserve" x="1800" y="-5400" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">Q</text>
+<!-- Circle -->
+<circle cx="5850" cy="-4500" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="5400" cy="-3600" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="6075" cy="-4050" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="4275" cy="-3825" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="4500" cy="-450" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="5175" cy="-1125" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="5625" cy="-225" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="6750" cy="-900" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="4050" cy="-675" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="4950" cy="450" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="3825" cy="-4950" r="45" fill="#000000"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="6525" cy="225" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="0" cy="-4275" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="3150" cy="0" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="900" cy="-2025" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="1800" cy="-2250" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="1350" cy="-1800" r="45" fill="#000000"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="2250" cy="-1350" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="225" cy="-1575" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="-225" cy="-3375" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="2925" cy="-2925" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="675" cy="-4725" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="1125" cy="-3150" r="45" fill="#000000"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Circle -->
+<circle cx="2475" cy="-6525" r="64"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polygon points=" 4275,-3825 5400,-3600 6075,-4050"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<rect x="4275" y="-4050" width="1800" height="450"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Line -->
+<polygon points=" 4050,-675 4500,-450 5625,-225 6750,-900 5175,-1125"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<rect x="4050" y="-1125" width="2700" height="900"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Line -->
+<rect x="4950" y="225" width="1575" height="225"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Line -->
+<polygon points=" 225,-1575 900,-2025 1800,-2250 2250,-1350"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<rect x="225" y="-2250" width="2025" height="900"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Line -->
+<polyline points=" -225,-3375 1125,-3150 2925,-2925"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<rect x="-225" y="-3375" width="3150" height="450"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 60"/>
+<!-- Line -->
+<polyline points=" 3375,-6750 3375,675"
+	stroke="#000000" stroke-width="15px" stroke-dasharray="60 30 10 30"/>
+<!-- Line -->
+<polyline points=" 3600,-6075 4725,-6300"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polyline points=" 4950,450 6525,225"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<defs>
+<clipPath id="cp0">
+	<path clip-rule="evenodd" d="M -304,-6772 H 7054 V 697 H -304 z
+		M 1303,390 1303,510 1586,461 1586,440z
+		M -60,-403 60,-403 11,-685 -10,-685z"/>
+</clipPath>
+</defs>
+<polyline points=" 0,-675 0,450 1575,450" clip-path="url(#cp0)"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Forward arrow to point 1575,450 -->
+<polygon points=" 1303,510 1543,450 1303,390 1303,510"
+	stroke="#000000" stroke-width="15px" stroke-miterlimit="8" fill="#000000"/>
+<!-- Backward arrow to point 0,-675 -->
+<polygon points=" 60,-403 0,-643 -60,-403 60,-403"
+	stroke="#000000" stroke-width="15px" stroke-miterlimit="8" fill="#000000"/>
+<!-- Text -->
+<text xml:space="preserve" x="4050" y="-4950" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">B</text>
+<!-- Text -->
+<text xml:space="preserve" x="4050" y="-3600" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">C</text>
+<!-- Text -->
+<text xml:space="preserve" x="1575" y="-1575" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">P</text>
+<!-- Text -->
+<text xml:space="preserve" x="900" y="-2925" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">A</text>
+<!-- Text -->
+<text xml:space="preserve" x="1350" y="225" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="start">Principal</text>
+<!-- Text -->
+<text xml:space="preserve" x="225" y="-450" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="start">Converse</text>
+</g>
+</svg>
