@@ -2,7 +2,8 @@
 STYLING_DIR=styling
 
 BASENAMES=background/RatQuad background/JaywalkConcepts background/JaywalkBuilder \
-	background/DesignDrawableSvg curves/CurveMath curves/CurveIntro curves/Cookbook
+	background/DesignDrawableSvg curves/CurveMath curves/CurveIntro curves/Cookbook \
+	jaywalk/JaywalkEncode jaywalk/JaywalkFoundation jaywalk/JaywalkDagify \
 
 HTML_TARGETS=$(addprefix html/,$(addsuffix .html,$(BASENAMES)))
 GFM_TARGETS=$(addprefix gfm/,$(addsuffix .md,$(BASENAMES)))
@@ -52,23 +53,48 @@ JaywalkConcepts-FIGS=$(addprefix background/figs-concepts/, $(addsuffix .svg, \
 	Concepts-T Concepts-U Concepts-V Concepts-W Concepts-X))
 CurveIntro-FIGS=$(addprefix curves/figs-intro/, $(addsuffix .svg, \
 	intro_cubic_controlled intro_cubic_slider intro_cubic_multi))
+JaywalkEncode-FIGS=$(addprefix jaywalk/figs-encode/, $(addsuffix .svg, \
+	inference on_grid \
+	TreeNumMerge TreeEdiblesMerge ComplexEdibles))
+JaywalkFoundation-FIGS=$(addprefix jaywalk/figs-foundation/, $(addsuffix .svg, \
+	Concepts-O-1 Concepts-E Concepts-H Foundation-F NetTreesDfs NetTreesAb \
+	Builder-A-Relations Foundation-D))
+JaywalkDagify-FIGS=$(addprefix jaywalk/figs-dagify/, $(addsuffix .svg, \
+	Dag-A))
 
 AUTO_FIGS=$(CurveIntro-FIGS)
 SRC_AUTO_FIGS=$(addprefix src/,$(CurveIntro-FIGS))
 
-HTML_FIGS=$(addprefix html/,$(RatQuad-FIGS) $(JaywalkBuilder-FIGS) \
-	$(JaywalkConcepts-FIGS) $(AUTO_FIGS))
-GFM_FIGS=$(addprefix gfm/,$(RatQuad-FIGS) $(JaywalkBuilder-FIGS) \
-	$(JaywalkConcepts-FIGS) $(AUTO_FIGS))
+ALL_FIGS=$(RatQuad-FIGS) $(JaywalkBuilder-FIGS) $(JaywalkConcepts-FIGS) \
+	$(JaywalkEncode-FIGS) $(JaywalkFoundation-FIGS) $(JaywalkDagify-FIGS) \
+	$(AUTO_FIGS)
+
+HTML_FIGS=$(addprefix html/,$(ALL_FIGS))
+GFM_FIGS=$(addprefix gfm/,$(ALL_FIGS))
 
 html/background/RatQuad.html:	$(addprefix html/,$(RatQuad-FIGS))
 html/background/JaywalkBuilder.html:	$(addprefix html/,$(JaywalkBuilder-FIGS))
 html/background/JaywalkConcepts.html:	$(addprefix html/,$(JaywalkConcepts-FIGS))
 html/curves/CurveIntro.html:	$(addprefix html/,$(CurveIntro-FIGS))
+html/curves/CurveMath.html:	$(addprefix html/,$(CurveMath-FIGS))
+html/curves/Cookbook.html:	$(addprefix html/,$(Cookbook-FIGS))
+html/jaywalk/JaywalkEncode.html:	$(addprefix html/,$(JaywalkEncode-FIGS))
+html/jaywalk/JaywalkFoundation.html:	$(addprefix html/,$(JaywalkFoundation-FIGS))
+html/jaywalk/JaywalkDagify.html:	$(addprefix html/,$(JaywalkDagify-FIGS))
+
 gfm/background/RatQuad.md:	$(addprefix gfm/,$(RatQuad-FIGS))
 gfm/background/JaywalkBuilder.md:	$(addprefix gfm/,$(JaywalkBuilder-FIGS))
 gfm/background/JaywalkConcepts.md:	$(addprefix gfm/,$(JaywalkConcepts-FIGS))
 gfm/curves/CurveIntro.md:	$(addprefix gfm/,$(CurveIntro-FIGS))
+gfm/curves/CurveMath.md:	$(addprefix gfm/,$(CurveMath-FIGS))
+gfm/curves/Cookbook.md:	$(addprefix gfm/,$(Cookbook-FIGS))
+gfm/jaywalk/JaywalkEncode.html:	$(addprefix gfm/,$(JaywalkEncode-FIGS))
+gfm/jaywalk/JaywalkFoundation.html:	$(addprefix gfm/,$(JaywalkFoundation-FIGS))
+gfm/jaywalk/JaywalkDagify.html:	$(addprefix gfm/,$(JaywalkDagify-FIGS))
+
+pdf/jaywalk/JaywalkEncode.pdf:	$(addprefix gfm/,$(JaywalkEncode-FIGS))
+pdf/jaywalk/JaywalkFoundation.pdf:	$(addprefix gfm/,$(JaywalkFoundation-FIGS))
+pdf/jaywalk/JaywalkDagify.pdf:	$(addprefix gfm/,$(JaywalkDagify-FIGS))
 
 $(SRC_AUTO_FIGS):	src/%:	../crates/zvx-simples/tests/goldenfiles/%
 	mkdir -p $(dir $@) && cp $< $@
