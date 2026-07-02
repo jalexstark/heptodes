@@ -1,4 +1,4 @@
-# Copyright 2022 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,14 +21,16 @@ number-sections: true
 
 fontsize: 10pt
 # fontfamily: "TeX Gyre Pagella"
-mainfont: "Gentium"
+mainfont: "Gentium Book Plus"
 sansfont: "Cabin"
 # mathfont: "libertinus math"   # Not properly supported.
 mathfont: "TeXGyreDejaVuMath-Regular"
 monofont: "Latin Modern Mono"
 mainfontoptions:
-- "BoldFont=Gentium Basic Bold"
-- "ItalicFont=Gentium Italic"
+- "BoldFont=Gentium Plus Bold"
+- "ItalicFont=Gentium Book Plus Italic"
+- "Ligatures=Common"
+- "Ligatures=TeX"
 # - Scale = MatchLowercase  # Default anyway.
 # Other font packages considered:
 # \usepackage[libertine,bigdelims,vvarbb]{newtxmath}
