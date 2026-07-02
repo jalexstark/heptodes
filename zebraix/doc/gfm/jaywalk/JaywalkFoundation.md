@@ -5,6 +5,11 @@ date: 2026
 title: Jaywalk Foundation
 ---
 
+- [<span class="toc-section-number">1</span> Section
+  sample](#section-sample)
+  - [<span class="toc-section-number">1.1</span> Subsection
+    sample](#subsection-sample)
+
 <!--%% Copyright 2025 Google LLC
 %%
 %% Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,80 +47,148 @@ required to be placed with each usage, such as in figure captions.
 <!-- mdformat off (Document metadata) -->
 <!-- mdformat on -->
 
-In between text.
+# Section sample
 
-<figure>
-<img src="figs-foundation/Concepts-E.svg"
-alt="Fig B. A tree with principal and obverse indices (shown as pairs) that are found by depth-first search." />
-<figcaption aria-hidden="true">Fig B. A tree with principal and obverse
-indices (shown as pairs) that are found by depth-first
-search.</figcaption>
-</figure>
+<!-- \def\test#1#2{% -->
+<!-- #2 $\to$ {\addfontfeature{#1} #2}\\} -->
+<!-- <\!-- \fontspec{LinLibertine_R.otf} -\-> -->
+<!-- \test{Ligatures=Historic}{strict Fluffy soufflé.} -->
+<!-- \test{Ligatures=CommonOff}{firefly Fluffy soufflé.} -->
+<!-- \fontspec{LinLibertine_R.otf} -->
+<!-- \test{Ligatures=Historic}{strict Fluffy soufflé.} -->
+<!-- \test{Ligatures=CommonOff}{firefly Fluffy soufflé.} -->
 
-In between text.
-
-<!-- mdformat off (Document metadata) -->
+## Subsection sample
 
 <figure>
 <img src="figs-foundation/Concepts-O-1.svg"
-alt="Fig A. Example of a jaywalk graph with global source and sink, which makes it an st-planar graph. Jaywalks are DAGs that are transitively irreducible, and have external sources and sinks. The graph is shown as a dominance drawing with coordinates that correspond to principal and obverse orderings. All jaywalks are posets of order-dimension 2, so the orderings are sufficient for a jaywalk." />
-<figcaption aria-hidden="true">Fig A. Example of a jaywalk graph with
-global source and sink, which makes it an st-planar graph. Jaywalks are
-DAGs that are transitively irreducible, and have external sources and
-sinks. The graph is shown as a dominance drawing with coordinates that
-correspond to principal and obverse orderings. All jaywalks are posets
-of order-dimension 2, so the orderings are sufficient for a
-jaywalk.</figcaption>
-</figure>
-
-<figure>
-<img src="figs-foundation/Concepts-H.svg"
-alt="Fig H. Part of a graph where a waypoint has been added along the direct path between A and D so that the path is not removed by transitive reduction. This has the important result that we can distinguish which edges we “are on” when in a transitionary pseudo-state between A and D." />
-<figcaption aria-hidden="true">Fig H. Part of a graph where a
-<em>waypoint</em> has been added along the direct path between A and D
-so that the path is not removed by transitive reduction. This has the
-important result that we can distinguish which edges we “are on” when in
-a transitionary pseudo-state between A and D.</figcaption>
-</figure>
-
-<figure>
-<img src="figs-foundation/Foundation-F.svg"
-alt="Fig C. Within a graph, a subgraph can be defined as all nodes that are descendents of an ancestor vertex and also ancestors of a descendent vertex. Here the ancestor is A and the descendent D." />
-<figcaption aria-hidden="true">Fig C. Within a graph, a subgraph can be
-defined as all nodes that are descendents of an ancestor vertex and also
-ancestors of a descendent vertex. Here the ancestor is A and the
-descendent D.</figcaption>
-</figure>
-
-<figure>
-<img src="figs-foundation/NetTreesDfs.svg" alt="Fig E." />
-<figcaption aria-hidden="true">Fig E.</figcaption>
-</figure>
-
-<figure>
-<img src="figs-foundation/NetTreesAb.svg" alt="Fig F." />
-<figcaption aria-hidden="true">Fig F.</figcaption>
+alt="An example Jaywalk shown as a dominance drawing. It is perhaps atypically complicated, but illustrates the main features of Jaywalk DAGs. For any two nodes, if one is above and to the right of the other, it is a descendent reachable by forward edges. If there is an indirect path, that is via more than one edge in succession, then there is no direct edge between them. In a sense a Jaywalk DAG has all necessary and no unnecessary edges. This example has a global sink but does not have a global source. Many methods for manipulating a Jaywalk are simpler if it has both, and the Jaywalk DAG is then an st-planar graph. In this example we could add a node at (0,0), and we often do this, perform an analysis, and then trim the result." />
+<figcaption aria-hidden="true">An example Jaywalk shown as a dominance
+drawing. It is perhaps atypically complicated, but illustrates the main
+features of Jaywalk DAGs. For any two nodes, if one is above and to the
+right of the other, it is a descendent reachable by forward edges. If
+there is an indirect path, that is via more than one edge in succession,
+then there is no direct edge between them. In a sense a Jaywalk DAG has
+all necessary and no unnecessary edges. This example has a global sink
+but does not have a global source. Many methods for manipulating a
+Jaywalk are simpler if it has both, and the Jaywalk DAG is then an
+<em>st-planar graph</em>. In this example we could add a node at (0,0),
+and we often do this, perform an analysis, and then trim the
+result.</figcaption>
 </figure>
 
 <figure>
 <img src="figs-foundation/Builder-A-Relations.svg"
-alt="Fig G. Lexicographic comparison of principal and obverse indices. The diagram shows, with respect to the vertex in the centre, the locations or combinations of indices that a vertex can have to be in a dominant or co-dominant relationship. If a vertex has strictly greater principal and obverse indices (upper-right quadrant) it is reachable in the dominance drawing. Likewise, vertices in the bottom-left quadrant can reach the vertex in question. In contrast, vertices in the top-left and bottom-right quadrants have a reachability relationship only in the co-dominance drawing. On the axes, we employ a lexicographic comparison so here vertices are reachable only in the dominance. Therefore dominance and co-dominance drawings are not quite complementary in regard to handling comparisons for reachability." />
-<figcaption aria-hidden="true">Fig G. Lexicographic comparison of
-principal and obverse indices. The diagram shows, with respect to the
-vertex in the centre, the locations or combinations of indices that a
-vertex can have to be in a dominant or co-dominant relationship. If a
-vertex has strictly greater principal and obverse indices (upper-right
-quadrant) it is reachable in the dominance drawing. Likewise, vertices
-in the bottom-left quadrant can reach the vertex in question. In
-contrast, vertices in the top-left and bottom-right quadrants have a
-reachability relationship only in the co-dominance drawing. On the axes,
-we employ a lexicographic comparison so here vertices are reachable only
-in the dominance. Therefore dominance and co-dominance drawings are not
-quite complementary in regard to handling comparisons for
-reachability.</figcaption>
+style="width:3.47222in"
+alt="Relationships between nodes in a dominance drawing. From the perspective of one node (at the origin here), nodes above and to the right are descendants. Nodes below and to the left are ancestors. For Jaywalks we allow nodes to be exactly aligned vertically or horizontally, and the relationship is ancestor to descendant. All other nodes are cousins, which means that the other node cannot be reached via only forward edges or only backward edges.." />
+<figcaption aria-hidden="true">Relationships between nodes in a
+dominance drawing. From the perspective of one node (at the origin
+here), nodes above and to the right are descendants. Nodes below and to
+the left are ancestors. For Jaywalks we allow nodes to be exactly
+aligned vertically or horizontally, and the relationship is ancestor to
+descendant. All other nodes are cousins, which means that the other node
+cannot be reached via only forward edges or only backward
+edges..</figcaption>
+</figure>
+
+In between text.
+
+<figure>
+<img src="figs-foundation/NetTreesDfs.svg"
+alt="Two rank sequences for the Jaywalk DAG of figure , shown on trees with the edges traversed in the DFSs. The left diagram shows the principal ranks. These are found via a DFS topological sort, traversing children right to left, and numbering children first in descending rank. For the converse rank children are traversed left to right. These are shown in the right diagram. A global source is added in order to illustrate how it simplifies the handling of multiple sources. This requires knowing their order. The global source would be dropped after ranks are obtained." />
+<figcaption aria-hidden="true">Two rank sequences for the Jaywalk DAG of
+figure , shown on trees with the edges traversed in the DFSs. The left
+diagram shows the principal ranks. These are found via a DFS topological
+sort, traversing children right to left, and numbering children first in
+descending rank. For the converse rank children are traversed left to
+right. These are shown in the right diagram. A global source is added in
+order to illustrate how it simplifies the handling of multiple sources.
+This requires knowing their order. The global source would be dropped
+after ranks are obtained.</figcaption>
 </figure>
 
 <figure>
-<img src="figs-foundation/Foundation-D.svg" alt="Fig D." />
-<figcaption aria-hidden="true">Fig D.</figcaption>
+<img src="figs-foundation/Concepts-E.svg"
+alt="A Jaywalk that is a tree, displayed as a dominance drawing rotated 45-degrees clockwise. The principal and converse ranks are shown, and these are also the coordinates for the nodes before rotation." />
+<figcaption aria-hidden="true">A Jaywalk that is a tree, displayed as a
+dominance drawing rotated 45-degrees clockwise. The principal and
+converse ranks are shown, and these are also the coordinates for the
+nodes before rotation.</figcaption>
+</figure>
+
+In between text.
+
+<figure>
+<img src="figs-foundation/Foundation-F.svg"
+alt="A Jaywalk that is longer and narrower than a tree. The dominance drawing is labelled and rotated as in figure . While a Jaywalk like this is not in a clearly specific subcategory, it is generally of the form that we might expect for states and state transitions. State Jaywalks may have multiple leaves like a tree but are somewhat narrow. We call these chain-like Jaywalks, and aim to provide strong support for them from textual specification through to rendering." />
+<figcaption aria-hidden="true">A Jaywalk that is longer and narrower
+than a tree. The dominance drawing is labelled and rotated as in figure
+. While a Jaywalk like this is not in a clearly specific subcategory, it
+is generally of the form that we might expect for states and state
+transitions. State Jaywalks may have multiple leaves like a tree but are
+somewhat narrow. We call these <em>chain-like</em> Jaywalks, and aim to
+provide strong support for them from textual specification through to
+rendering.</figcaption>
+</figure>
+
+<figure>
+<img src="figs-foundation/Concepts-H.svg"
+alt="When used to describe states, it is often useful for Jaywalks to have edges directly linking states that would be removed by transitive reduction. Such scenarios are handled by adding a waypoint node, shown here smaller and shaded. State transitions would not stop in this state, but would pass through it, creating an extra transition from A to D. When Jaywalks are used as states, the system is may be between states rather than at one. Or a system may be in a range of states. The waypoint has the important feature that we can distinguish which edges we are “on” when in a transitory pseudo-state between A and D." />
+<figcaption aria-hidden="true">When used to describe states, it is often
+useful for Jaywalks to have edges directly linking states that would be
+removed by transitive reduction. Such scenarios are handled by adding a
+<em>waypoint</em> node, shown here smaller and shaded. State transitions
+would not stop in this state, but would pass through it, creating an
+extra transition from A to D. When Jaywalks are used as states, the
+system is may be between states rather than at one. Or a system may be
+in a range of states. The waypoint has the important feature that we can
+distinguish which edges we are “on” when in a transitory pseudo-state
+between A and D.</figcaption>
+</figure>
+
+<figure>
+<img src="figs-foundation/NetTreesAb.svg"
+alt="Four variations on node pairings that, chained together, form trees. These were generated for the Jaywalk DAG in figure . Clockwise from top-left these are BNA, ANA, ANB and BNB, where B=before and A=after. The first letter refers to the principal rank (x-coordinate) and the second refers to the converse rank (y-coordinate). For example, in the BNA pairings, each node is paired with a node whos principal rank comes before and whose converse rank comes after. Among all such nodes the one with the least converse rank is selected, that is the Next After. In other words, for each node find the next node above that is to the left. Nodes on the perimeter of the figure have no nodes to pair, and so these become roots of trees. These pairings are used as the basis for text (in-code) representations of Jaywalks. They are also used in algorithms for the construction of Jaywalk DAGs, that is finding the ordered parent-child edges from the node ranks. These tasks are discussed in accompanying documents. Observe that the ANA parigins are the rightmost child of each node and that the BNB pairings are the rightmost parents (as viewed from the node towards the bottom-left). The BNB tree is the same as the DFS tree for converse ranks in figure . The ANA tree is also a topological DFS, but the ranks are reversed and the search begun from the top-left. Any of these pairwise associations is sufficient to encode a Jaywalk, as explained in the main text by means of a reconstruction method." />
+<figcaption aria-hidden="true">Four variations on node pairings that,
+chained together, form trees. These were generated for the Jaywalk DAG
+in figure . Clockwise from top-left these are BNA, ANA, ANB and BNB,
+where B=before and A=after. The first letter refers to the principal
+rank (x-coordinate) and the second refers to the converse rank
+(y-coordinate). For example, in the BNA pairings, each node is paired
+with a node whos principal rank comes before and whose converse rank
+comes after. Among all such nodes the one with the least converse rank
+is selected, that is the Next After. In other words, for each node find
+the next node above that is to the left. Nodes on the perimeter of the
+figure have no nodes to pair, and so these become roots of trees. These
+pairings are used as the basis for text (in-code) representations of
+Jaywalks. They are also used in algorithms for the construction of
+Jaywalk DAGs, that is finding the ordered parent-child edges from the
+node ranks. These tasks are discussed in accompanying documents. Observe
+that the ANA parigins are the rightmost child of each node and that the
+BNB pairings are the rightmost parents (as viewed from the node towards
+the bottom-left). The BNB tree is the same as the DFS tree for converse
+ranks in figure . The ANA tree is also a topological DFS, but the ranks
+are reversed and the search begun from the top-left. Any of these
+pairwise associations is sufficient to encode a Jaywalk, as explained in
+the main text by means of a reconstruction method.</figcaption>
+</figure>
+
+<figure>
+<img src="figs-foundation/Foundation-D.svg"
+alt="The scope of the Jaywalks tooling, illustrated as a progression that encapsulates the transformations, analysis and rendering that we expect to be most common. Most usages will begin with a textual (code) representation and be parsed and converted to rank pairs or stored in a data structure as pairs. One advantage of the textual representations (as explored in detail in an accompanying document) is that they also encode the ordering of nodes by converse rank. One of the biggest technical challenges is the mathematical and algorithmic task of constructing a Jaywalk’s DAG from its ranks. (This is explored in another accompanying document.) The reverse process can use DFS topological sorting, and that is relatively simple. Rendering Jaywalk DAGs as dominance drawings is algorithmically simple. The drawings are convenient, but their layout is often not ideal. Therefore the Jaywalk ecosystem will include tools for rendering in a set of polished layouts and styles." />
+<figcaption aria-hidden="true">The scope of the Jaywalks tooling,
+illustrated as a progression that encapsulates the transformations,
+analysis and rendering that we expect to be most common. Most usages
+will begin with a textual (code) representation and be parsed and
+converted to rank pairs or stored in a data structure as pairs. One
+advantage of the textual representations (as explored in detail in an
+accompanying document) is that they also encode the ordering of nodes by
+converse rank. One of the biggest technical challenges is the
+mathematical and algorithmic task of constructing a Jaywalk’s DAG from
+its ranks. (This is explored in another accompanying document.) The
+reverse process can use DFS topological sorting, and that is relatively
+simple. Rendering Jaywalk DAGs as dominance drawings is algorithmically
+simple. The drawings are convenient, but their layout is often not
+ideal. Therefore the Jaywalk ecosystem will include tools for rendering
+in a set of polished layouts and styles.</figcaption>
 </figure>
