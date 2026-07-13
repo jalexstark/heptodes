@@ -14,10 +14,13 @@
 
 fail-if-warnings: true
 
+# Use nohead in geometry options when that works.
+documentclass: article
+
 variable:
 - colorlinks: true
 
-number-sections: true
+numbersections: true
 
 fontsize: 10pt
 # fontfamily: "TeX Gyre Pagella"
@@ -37,7 +40,7 @@ mainfontoptions:
 # \usepackage[cal=boondoxo]{mathalfa}
 
 colorlinks: true
-geometry: "paperwidth=209mm,paperheight=10.9in,nohead,margin=1.2in"
+geometry: "paperwidth=209mm,paperheight=10.95in,margin=1.2in"
 
 hyperrefoptions:
 - linktoc=all
