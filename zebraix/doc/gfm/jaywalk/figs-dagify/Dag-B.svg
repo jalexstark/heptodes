@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Creator: fig2dev Version 3.2.9 -->
-<!-- CreationDate: 2026-07-11 10:30:46 -->
+<!-- CreationDate: 2026-09-06 18:37:30 -->
 <!-- Magnification: 0.84 -->
 <svg	xmlns="http://www.w3.org/2000/svg"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -321,5 +321,9 @@
 <text xml:space="preserve" x="4545" y="4635" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="start">ANA</text>
 <!-- Text -->
 <text xml:space="preserve" x="1800" y="1980" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="end">BNB</text>
+<!-- Text -->
+<text xml:space="preserve" x="945" y="2790" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="end">X</text>
+<!-- Text -->
+<text xml:space="preserve" x="5355" y="3015" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="192" text-anchor="start">Y</text>
 </g>
 </svg>

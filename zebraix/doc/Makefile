@@ -60,7 +60,7 @@ JaywalkFoundation-FIGS=$(addprefix jaywalk/figs-foundation/, $(addsuffix .svg, \
 	Concepts-O-1 Concepts-E Concepts-H Foundation-F NetTreesDfs NetTreesAb \
 	Builder-A-Relations Foundation-D))
 JaywalkDagify-FIGS=$(addprefix jaywalk/figs-dagify/, $(addsuffix .svg, \
-	Dag-A Dag-B Dag-C Dag-D))
+	Dag-A Dag-B Dag-C Dag-D Builder-B Concepts-Q))
 
 AUTO_FIGS=$(CurveIntro-FIGS)
 SRC_AUTO_FIGS=$(addprefix src/,$(CurveIntro-FIGS))
