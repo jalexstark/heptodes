@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Creator: fig2dev Version 3.2.9 -->
-<!-- CreationDate: 2026-07-11 10:36:21 -->
+<!-- CreationDate: 2026-09-06 22:38:02 -->
 <!-- Magnification: 0.63 -->
 <svg	xmlns="http://www.w3.org/2000/svg"
 	xmlns:xlink="http://www.w3.org/1999/xlink"
-	width="279pt" height="283pt"
-	viewBox="-304 -6772 7358 7469">
+	width="280pt" height="283pt"
+	viewBox="-343 -6772 7397 7469">
 <g fill="none">
 <!-- Circle -->
 <circle cx="5850" cy="-4500" r="64"
@@ -124,7 +124,7 @@
 <!-- Line -->
 <defs>
 <clipPath id="cp0">
-	<path clip-rule="evenodd" d="M -304,-6772 H 7054 V 697 H -304 z
+	<path clip-rule="evenodd" d="M -343,-6772 H 7054 V 697 H -343 z
 		M 1303,390 1303,510 1586,461 1586,440z
 		M -60,-403 60,-403 11,-685 -10,-685z"/>
 </clipPath>
@@ -181,8 +181,16 @@
 <!-- Text -->
 <text xml:space="preserve" x="1800" y="-5400" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">Q</text>
 <!-- Text -->
-<text xml:space="preserve" x="4050" y="-3600" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">B</text>
+<text xml:space="preserve" x="5445" y="-3240" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">B</text>
 <!-- Text -->
-<text xml:space="preserve" x="4050" y="-4950" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">C</text>
+<text xml:space="preserve" x="4050" y="-4950" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">D</text>
+<!-- Text -->
+<text xml:space="preserve" x="-90" y="-3510" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">E</text>
+<!-- Text -->
+<text xml:space="preserve" x="-225" y="-4320" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">G</text>
+<!-- Text -->
+<text xml:space="preserve" x="4050" y="-3690" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">C</text>
+<!-- Text -->
+<text xml:space="preserve" x="2790" y="-2610" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="normal" font-size="216" text-anchor="middle">F</text>
 </g>
 </svg>

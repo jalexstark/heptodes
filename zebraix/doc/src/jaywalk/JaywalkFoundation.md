@@ -65,8 +65,8 @@ more of a hodgepodge than a coherent foundation.
 We use the name *Jaywalk* to refer to (a) a particular class of
 directed acyclic graph (DAG), along with (b) schemes for representing
 them in code and in markdown-like text, (c) a set of manipulation
-tools, and (d) ways of rendering them as drawings.  These are closely
-tied together.
+tools, and (d) ways of rendering them as drawings.  These aspects are
+quite closely tied together.
 
 ## Core definitions
 
@@ -116,12 +116,12 @@ values are equal, comparison of the obverse values resolves the tie.
 ## Jaywalk DAGs and dominance drawings
 
 ![Relationships between nodes in a dominance drawing.  From the
-perspective of one node (at the origin here), nodes above and to the
-right are descendants.  Nodes below and to the left are ancestors.
-For Jaywalks we allow nodes to be exactly aligned vertically or
-horizontally, and the relationship is ancestor to descendant.  All
-other nodes are cousins, which means that the other node cannot be
-reached via only forward edges or only backward
+perspective of one node (at the origin, shown here as a solid dot),
+nodes above and to the right are descendants.  Nodes below and to the
+left are ancestors.  For Jaywalks we allow nodes to be exactly aligned
+vertically or horizontally, and the relationship is ancestor to
+descendant.  All other nodes are cousins, which means that the other
+node cannot be reached via only forward edges or only backward
 edges.\label{figG}.](figs-foundation/Builder-A-Relations.svg){width=250pt}
 
 Every Jaywalk is associated with a DAG, so closely that the DAG is
